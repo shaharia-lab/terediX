@@ -40,7 +40,7 @@ the resources as they become available.
 - Download the binary from latest release
 - Run `chmod +x ./teredix` to make it executable
 
-## Run discovery
+## Run Discovery
 
 ```shell
 teredix discovery --config config.yaml
