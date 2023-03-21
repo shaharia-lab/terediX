@@ -3,7 +3,7 @@
 all: test build
 
 build:
-	go build -o build/teredix ./main.go
+	go build -o build/teredix
 
 test:
 	go test -v ./...
