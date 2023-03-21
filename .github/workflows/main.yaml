@@ -27,9 +27,11 @@ jobs:
         uses: golangci/golangci-lint-action@v2
 
       - name: Run General Linting
-        uses: docker://ghcr.io/github/super-linter:slim-v4.8.5
+        uses: github/super-linter@v4
         env:
           VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         run: make build
