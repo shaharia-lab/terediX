@@ -42,7 +42,7 @@ the resources as they become available.
 
 ## Run discovery
 
-```
+```shell
 teredix discovery --config config.yaml
 ```
 
@@ -50,7 +50,7 @@ teredix discovery --config config.yaml
 
 Here is an example `config.yaml` file. You should create your own config file with all the configuration.
 
-```
+```yaml
 ---
 organization:
   name: Acme Tech
@@ -109,7 +109,7 @@ source:
 
 It will scan the file system and generate resource for each file. Required configuration:
 
-```
+```yaml
 source:
   csv_data_sets:
     type: file_system
@@ -123,7 +123,7 @@ source:
 
 To configure the PostgreSQL database, you need to update your configuration as following:
 
-```sql
+```yaml
 storage:
   batch_size: 2
   engines:
