@@ -19,6 +19,10 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
 
+    permissions:
+      # required for all workflows
+      security-events: write
+
     strategy:
       fail-fast: false
       matrix:
@@ -46,7 +50,7 @@ jobs:
         uses: github/codeql-action/init@v2
         with:
           languages: ${{ matrix.language }}
-          external-repository-token: ${{ secrets.PAT_TOKEN_PRI }}
+          #external-repository-token: ${{ secrets.PAT_TOKEN_PRI }}
           # If you wish to specify custom queries, you can do so here or in a config file.
           # By default, queries listed here will override any specified in a config file.
           # Prefix the list here with "+" to use these queries and those in the config file.
@@ -70,5 +74,5 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
-        with:
-          external-repository-token: ${{ secrets.PAT_TOKEN_PRI }}
+        #with:
+          #external-repository-token: ${{ secrets.PAT_TOKEN_PRI }}
