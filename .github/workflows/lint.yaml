@@ -1,4 +1,4 @@
-name: Go Build and Test
+name: Linting
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: [ '1.17', '1.18' ]
+        go-version: [ '1.18' ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -32,9 +32,3 @@ jobs:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_PRI }}
-
-      - name: Build
-        run: make build
-
-      - name: Test
-        run: make test
