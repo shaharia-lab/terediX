@@ -30,10 +30,6 @@ jobs:
         uses: docker://ghcr.io/github/super-linter:slim-v4.8.5
         env:
           VALIDATE_ALL_CODEBASE: false
-          VALIDATE_GO: false
-          VALIDATE_JSCPD: false
-          VALIDATE_GITHUB_ACTIONS: false
-          VALIDATE_NATURAL_LANGUAGE: false
 
       - name: Build
         run: make build
