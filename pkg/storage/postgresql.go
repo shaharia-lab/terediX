@@ -58,7 +58,10 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			err := tx.Rollback()
+			if err != nil {
+				return
+			}
 			return
 		}
 		err = tx.Commit()
