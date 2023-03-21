@@ -4,11 +4,11 @@ package processor
 import (
 	"fmt"
 	"github.com/kyokomi/emoji"
-	"infrastructure-discovery/pkg/source"
-	"infrastructure-discovery/pkg/storage"
 	"sync"
+	"teredix/pkg/source"
+	"teredix/pkg/storage"
 
-	"infrastructure-discovery/pkg/resource"
+	"teredix/pkg/resource"
 )
 
 type Processor struct {

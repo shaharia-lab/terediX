@@ -4,7 +4,7 @@ package storage
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
-	"infrastructure-discovery/pkg/resource"
+	"teredix/pkg/resource"
 	"time"
 )
 

@@ -2,12 +2,12 @@ package processor
 
 import (
 	"github.com/stretchr/testify/mock"
-	"infrastructure-discovery/pkg/resource"
-	"infrastructure-discovery/pkg/source"
-	"infrastructure-discovery/pkg/source/scanner"
-	"infrastructure-discovery/pkg/storage"
 	"math"
 	"sync"
+	"teredix/pkg/resource"
+	"teredix/pkg/source"
+	"teredix/pkg/source/scanner"
+	"teredix/pkg/storage"
 	"testing"
 )
 

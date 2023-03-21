@@ -1,8 +1,8 @@
 package source
 
 import (
-	"infrastructure-discovery/pkg/config"
-	"infrastructure-discovery/pkg/source/scanner"
+	"teredix/pkg/config"
+	"teredix/pkg/source/scanner"
 )
 
 type Source struct {

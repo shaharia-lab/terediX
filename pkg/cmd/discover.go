@@ -3,10 +3,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"infrastructure-discovery/pkg/config"
-	"infrastructure-discovery/pkg/processor"
-	"infrastructure-discovery/pkg/source"
-	"infrastructure-discovery/pkg/storage"
+	"teredix/pkg/config"
+	"teredix/pkg/processor"
+	"teredix/pkg/source"
+	"teredix/pkg/storage"
 )
 
 func NewDiscoverCommand() *cobra.Command {

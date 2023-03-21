@@ -75,7 +75,7 @@ source:
   fs_one:
     type: file_system
     configuration:
-      root_directory: "/home/shaharia/Projects/infrastructure-discovery/pkg"
+      root_directory: "/home/shaharia/Projects/teredix/pkg"
   fs_two:
     type: file_system
     configuration:

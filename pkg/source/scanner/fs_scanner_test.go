@@ -3,9 +3,9 @@ package scanner
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"infrastructure-discovery/pkg/resource"
 	"os"
 	"path/filepath"
+	"teredix/pkg/resource"
 	"testing"
 )
 

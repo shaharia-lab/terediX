@@ -1,11 +1,11 @@
 package scanner
 
 import (
-	"infrastructure-discovery/pkg/resource"
-	"infrastructure-discovery/pkg/util"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"teredix/pkg/resource"
+	"teredix/pkg/util"
 )
 
 type FsScanner struct {

@@ -1,7 +1,7 @@
 package scanner
 
 import (
-	"infrastructure-discovery/pkg/resource"
+	"teredix/pkg/resource"
 )
 
 type Scanner interface {

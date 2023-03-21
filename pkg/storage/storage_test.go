@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"infrastructure-discovery/pkg/storage"
+	"teredix/pkg/storage"
 )
 
 func TestAddFilter(t *testing.T) {

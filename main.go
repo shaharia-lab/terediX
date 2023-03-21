@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"infrastructure-discovery/pkg/cmd"
 	"log"
+	"teredix/pkg/cmd"
 )
 
 func main() {

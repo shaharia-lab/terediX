@@ -3,10 +3,10 @@ package storage
 import (
 	"database/sql"
 	"fmt"
-	"infrastructure-discovery/pkg/config"
-	"infrastructure-discovery/pkg/resource"
 	"log"
 	"strings"
+	"teredix/pkg/config"
+	"teredix/pkg/resource"
 )
 
 type ResourceFilter struct {
