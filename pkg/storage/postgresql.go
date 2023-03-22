@@ -4,6 +4,7 @@ package storage
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
+	"teredix/pkg/config"
 	"teredix/pkg/resource"
 	"time"
 )
@@ -194,4 +195,8 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	}
 
 	return resources, nil
+}
+
+func (p *PostgreSQL) StoreRelations(criteria []config.RelationCriteria) error {
+	return nil
 }

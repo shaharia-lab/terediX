@@ -25,6 +25,9 @@ type Storage interface {
 
 	// Find will return the resources based on ResourceFilter
 	Find(filter ResourceFilter) ([]resource.Resource, error)
+
+	// StoreRelations Store Relationship
+	StoreRelations(criteria []config.RelationCriteria) error
 }
 
 type Query struct {

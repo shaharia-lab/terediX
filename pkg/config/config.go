@@ -32,11 +32,22 @@ type Source struct {
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
 }
 
+type RelationCriteria struct {
+	Name                 string `yaml:"name"`
+	Kind                 string `yaml:"kind"`
+	MetadataKey          string `yaml:"metadata_key"`
+	MetadataValue        string `yaml:"metadata_value"`
+	RelatedKind          string `yaml:"related_kind"`
+	RelatedMetadataKey   string `yaml:"related_metadata_key"`
+	RelatedMetadataValue string `yaml:"related_metadata_value"`
+}
+
 type AppConfig struct {
-	Organization Organization      `yaml:"organization"`
-	Discovery    Discovery         `yaml:"discovery"`
-	Storage      Storage           `yaml:"storage"`
-	Sources      map[string]Source `yaml:"source"`
+	Organization     Organization       `yaml:"organization"`
+	Discovery        Discovery          `yaml:"discovery"`
+	Storage          Storage            `yaml:"storage"`
+	Sources          map[string]Source  `yaml:"source"`
+	RelationCriteria []RelationCriteria `yaml:"relations.criteria"`
 }
 
 func Load(path string) (*AppConfig, error) {
@@ -120,6 +131,44 @@ func Validate(c *AppConfig) error {
 			if _, ok := c.Sources[dependency]; !ok {
 				return fmt.Errorf("source '%s' depends_on contains invalid source key: '%s'", name, dependency)
 			}
+		}
+	}
+
+	if c.RelationCriteria == nil {
+		return fmt.Errorf("relations field must be defined")
+	}
+
+	if len(c.RelationCriteria) == 0 {
+		return fmt.Errorf("relations.criteria should be a list and all fields are required")
+	}
+
+	for _, criteria := range c.RelationCriteria {
+		if criteria.Name == "" {
+			return fmt.Errorf("relations.criteria.name is required")
+		}
+
+		if criteria.Kind == "" {
+			return fmt.Errorf("relations.criteria.kind is required")
+		}
+
+		if criteria.MetadataKey == "" {
+			return fmt.Errorf("relations.criteria.metadata_key is required")
+		}
+
+		if criteria.MetadataValue == "" {
+			return fmt.Errorf("relations.criteria.metadata_value is required")
+		}
+
+		if criteria.RelatedKind == "" {
+			return fmt.Errorf("relations.criteria.related_kind is required")
+		}
+
+		if criteria.RelatedMetadataKey == "" {
+			return fmt.Errorf("relations.criteria.related_metadata_key is required")
+		}
+
+		if criteria.RelatedMetadataValue == "" {
+			return fmt.Errorf("relations.criteria.related_metadata_value is required")
 		}
 	}
 
