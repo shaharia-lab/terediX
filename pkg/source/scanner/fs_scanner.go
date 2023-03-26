@@ -28,12 +28,21 @@ func (s *FsScanner) Scan() []resource.Resource {
 		return nil
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = ""
+	}
+
 	var r []resource.Resource
 
 	rootResource := resource.NewResource("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
 	for k, v := range s.metaData {
 		rootResource.AddMetaData(k, v)
 	}
+
+	rootResource.AddMetaData("Machine-Host", hostname)
+	rootResource.AddMetaData("Root-Directory", s.rootDirectory)
+	rootResource.AddMetaData("Scanner-Name", s.name)
 
 	r = append(r, rootResource)
 
@@ -43,6 +52,10 @@ func (s *FsScanner) Scan() []resource.Resource {
 		for k, v := range s.metaData {
 			nr.AddMetaData(k, v)
 		}
+
+		nr.AddMetaData("Machine-Host", hostname)
+		nr.AddMetaData("Root-Directory", s.rootDirectory)
+		nr.AddMetaData("Scanner-Name", s.name)
 
 		r = append(r, nr)
 	}
