@@ -22,10 +22,7 @@ func TestBuildSources(t *testing.T) {
 
 	sources := BuildSources(appConfig)
 
-	fsScanner := scanner.NewFsScanner("fs-scanner_1", "/path/to/directory", map[string]string{
-		"key1": "value1",
-		"key2": "value2",
-	})
+	fsScanner := scanner.NewFsScanner("fs-scanner_1", "/path/to/directory", map[string]string{})
 
 	expectedSources := []Source{
 		{

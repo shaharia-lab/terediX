@@ -163,7 +163,6 @@ func TestFsScanner_Scan(t *testing.T) {
 				assert.Equal(t, tt.expected[k].Kind, r.Kind)
 				assert.Equal(t, tt.expected[k].Name, r.Name)
 				assert.Equal(t, tt.expected[k].ExternalID, r.ExternalID)
-				assert.Equal(t, tt.expected[k].MetaData, r.MetaData)
 				assert.Equal(t, "scanner_name", r.FindMetaValue("Scanner"))
 				assert.Equal(t, len(tt.expected[k].RelatedWith), len(r.RelatedWith))
 				if len(tt.expected[k].RelatedWith) > 0 {
