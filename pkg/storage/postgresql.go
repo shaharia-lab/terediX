@@ -269,3 +269,55 @@ func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBu
 	}
 	return matrix
 }
+
+func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
+	resources := []resource.Resource{}
+
+	// Query all resources
+	rows, err := p.DB.Query("SELECT kind, uuid, name, external_id FROM resources")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Loop through the result set and create Resource objects
+	for rows.Next() {
+		r := resource.Resource{}
+		if err := rows.Scan(&r.Kind, &r.UUID, &r.Name, &r.ExternalID); err != nil {
+			return nil, err
+		}
+		resources = append(resources, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return resources, nil
+}
+
+func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
+	var relations []map[string]string
+
+	// Query all relations
+	rows, err := p.DB.Query("SELECT r.uuid as resource_uuid, r2.uuid as related_resource_uuid FROM relations left join resources r on r.id = relations.resource_id left join resources r2 on r2.id = relations.related_resource_id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Loop through the result set and create maps with resource_id and related_resource_id
+	for rows.Next() {
+		r := map[string]string{}
+		var resourceUUID, relatedResourceUUID string
+		if err := rows.Scan(&resourceUUID, &relatedResourceUUID); err != nil {
+			return nil, err
+		}
+		r[resourceUUID] = relatedResourceUUID
+		relations = append(relations, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return relations, nil
+}

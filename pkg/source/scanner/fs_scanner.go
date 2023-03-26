@@ -42,7 +42,7 @@ func (s *FsScanner) Scan() []resource.Resource {
 
 	rootResource.AddMetaData("Machine-Host", hostname)
 	rootResource.AddMetaData("Root-Directory", s.rootDirectory)
-	rootResource.AddMetaData("Scanner-Name", s.name)
+	rootResource.AddMetaData("Scanner-Label", s.name)
 
 	r = append(r, rootResource)
 
@@ -55,7 +55,7 @@ func (s *FsScanner) Scan() []resource.Resource {
 
 		nr.AddMetaData("Machine-Host", hostname)
 		nr.AddMetaData("Root-Directory", s.rootDirectory)
-		nr.AddMetaData("Scanner-Name", s.name)
+		nr.AddMetaData("Scanner-Label", s.name)
 
 		r = append(r, nr)
 	}

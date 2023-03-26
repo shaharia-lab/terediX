@@ -16,7 +16,7 @@ func TestProcessor_Process(t *testing.T) {
 		{
 			Kind:        "Test",
 			UUID:        "UUID",
-			Name:        "Name",
+			Name:        "Label",
 			ExternalID:  "ExternalID",
 			RelatedWith: nil,
 			MetaData:    nil,
@@ -35,7 +35,7 @@ func TestProcessor_Process(t *testing.T) {
 		{
 			Kind:        "Test",
 			UUID:        "UUID",
-			Name:        "Name",
+			Name:        "Label",
 			ExternalID:  "ExternalID",
 			RelatedWith: nil,
 			MetaData:    nil,
