@@ -139,7 +139,7 @@ func Validate(c *AppConfig) error {
 	}
 
 	if len(c.RelationCriteria) == 0 {
-		return fmt.Errorf("relations.criteria should be a list and all fields are required")
+		return fmt.Errorf("relations.criteria is empty")
 	}
 
 	for _, criteria := range c.RelationCriteria {

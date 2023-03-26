@@ -938,6 +938,309 @@ func TestValidate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "empty relation criteria",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: "file_system",
+						Configuration: map[string]string{
+							"root_directory": "/root/path",
+						},
+					},
+				},
+				RelationCriteria: []RelationCriteria{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing relations criteria name",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: "file_system",
+						Configuration: map[string]string{
+							"root_directory": "/root/path",
+						},
+					},
+				},
+				RelationCriteria: []RelationCriteria{
+					{
+						Kind:                 "kind",
+						MetadataKey:          "source-kind-key1",
+						MetadataValue:        "source-kind-value1",
+						RelatedKind:          "related-kind",
+						RelatedMetadataKey:   "related-metadata-key",
+						RelatedMetadataValue: "related-metadata-value",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing relation criteria kind",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: "file_system",
+						Configuration: map[string]string{
+							"root_directory": "/root/path",
+						},
+					},
+				},
+				RelationCriteria: []RelationCriteria{
+					{
+						Name:                 "name",
+						MetadataKey:          "source-kind-key1",
+						MetadataValue:        "source-kind-value1",
+						RelatedKind:          "related-kind",
+						RelatedMetadataKey:   "related-metadata-key",
+						RelatedMetadataValue: "related-metadata-value",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing relation criteria metadata key",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: "file_system",
+						Configuration: map[string]string{
+							"root_directory": "/root/path",
+						},
+					},
+				},
+				RelationCriteria: []RelationCriteria{
+					{
+						Name:                 "name",
+						Kind:                 "kind",
+						MetadataValue:        "source-kind-value1",
+						RelatedKind:          "related-kind",
+						RelatedMetadataKey:   "related-metadata-key",
+						RelatedMetadataValue: "related-metadata-value",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing relation criteria metadata value",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: "file_system",
+						Configuration: map[string]string{
+							"root_directory": "/root/path",
+						},
+					},
+				},
+				RelationCriteria: []RelationCriteria{
+					{
+						Name:                 "name",
+						Kind:                 "kind",
+						MetadataKey:          "source-kind-key1",
+						RelatedKind:          "related-kind",
+						RelatedMetadataKey:   "related-metadata-key",
+						RelatedMetadataValue: "related-metadata-value",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing relation criteria related kind",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: "file_system",
+						Configuration: map[string]string{
+							"root_directory": "/root/path",
+						},
+					},
+				},
+				RelationCriteria: []RelationCriteria{
+					{
+						Name:                 "name",
+						Kind:                 "kind",
+						MetadataKey:          "source-kind-key1",
+						MetadataValue:        "source-kind-value1",
+						RelatedMetadataKey:   "related-metadata-key",
+						RelatedMetadataValue: "related-metadata-value",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing relation criteria related metadata key",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: "file_system",
+						Configuration: map[string]string{
+							"root_directory": "/root/path",
+						},
+					},
+				},
+				RelationCriteria: []RelationCriteria{
+					{
+						Name:                 "name",
+						Kind:                 "kind",
+						MetadataKey:          "source-kind-key1",
+						MetadataValue:        "source-kind-value1",
+						RelatedKind:          "related-kind",
+						RelatedMetadataValue: "related-metadata-value",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing relation criteria related metadata value",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: "file_system",
+						Configuration: map[string]string{
+							"root_directory": "/root/path",
+						},
+					},
+				},
+				RelationCriteria: []RelationCriteria{
+					{
+						Name:               "name",
+						Kind:               "kind",
+						MetadataKey:        "source-kind-key1",
+						MetadataValue:      "source-kind-value1",
+						RelatedKind:        "related-kind",
+						RelatedMetadataKey: "related-metadata-key",
+					},
+				},
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range testCases {
