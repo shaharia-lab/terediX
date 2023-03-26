@@ -4,6 +4,7 @@ package storage
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
+	"strings"
 	"teredix/pkg/config"
 	"teredix/pkg/resource"
 	"time"
@@ -215,13 +216,27 @@ func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
 		err = tx.Commit()
 	}()
 
-	// Prepare the SQL statement to select resources based on the relation
-	selectStmt := `SELECT r1.id AS id1, r2.id AS id2 FROM resources r1, resources r2
-		WHERE r1.kind = $1 AND r1.external_id IN (
-			SELECT resource_id FROM metadata WHERE key = $2 AND value = $3
-		) AND r2.kind = $4 AND r2.external_id IN (
-			SELECT resource_id FROM metadata WHERE key = $5 AND value = $6
-		) AND r1.id != r2.id`
+	resourceStmt := `SELECT STRING_AGG(r.id::text, ',') AS resource_ids
+FROM resources r
+         LEFT JOIN metadata m ON r.id = m.resource_id
+WHERE m.key = $1 AND m.value = $2 AND r.kind = $3;`
+
+	var relateToIds string
+	err = p.DB.QueryRow(resourceStmt, relation.RelationCriteria[0].RelatedMetadataKey, relation.RelationCriteria[0].RelatedMetadataValue, relation.RelationCriteria[0].RelatedKind).Scan(&relateToIds)
+	if err != nil {
+		return err
+	}
+
+	var resourceForBuildRelations string
+	err = p.DB.QueryRow(resourceStmt, relation.RelationCriteria[0].MetadataKey, relation.RelationCriteria[0].MetadataValue, relation.RelationCriteria[0].Kind).Scan(&resourceForBuildRelations)
+	if err != nil {
+		return err
+	}
+
+	relationMatrix := p.generateRelationMatrix(
+		strings.Split(relateToIds, ","),
+		strings.Split(resourceForBuildRelations, ","),
+	)
 
 	// Prepare the SQL statement to insert relationships into the relations table
 	relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) VALUES ($1, $2)")
@@ -230,27 +245,27 @@ func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
 	}
 	defer relationsStmt.Close()
 
-	// Loop through each relation and find the resources that match it
-	for _, c := range relation.RelationCriteria {
-		rows, err := p.DB.Query(selectStmt, c.Kind, c.MetadataKey, c.MetadataValue, c.RelatedKind, c.RelatedMetadataKey, c.RelatedMetadataValue)
-		if err != nil {
-			return err
-		}
-
-		// Insert relationships for the matching resources
-		for rows.Next() {
-			var id1, id2 int
-			if err := rows.Scan(&id1, &id2); err != nil {
+	// Insert relationships for the matching resources
+	for _, c := range relationMatrix {
+		for k, v := range c {
+			if _, err := relationsStmt.Exec(k, v); err != nil {
 				return err
 			}
-			if _, err := relationsStmt.Exec(id1, id2); err != nil {
-				return err
-			}
-		}
-		if err := rows.Err(); err != nil {
-			return err
 		}
 	}
 
 	return nil
+}
+
+func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBuildRelations []string) []map[string]string {
+	var matrix []map[string]string
+	for _, val1 := range relatedToIds {
+		for _, val2 := range resourceForBuildRelations {
+			m := map[string]string{
+				val2: val1,
+			}
+			matrix = append(matrix, m)
+		}
+	}
+	return matrix
 }
