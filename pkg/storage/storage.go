@@ -27,7 +27,7 @@ type Storage interface {
 	Find(filter ResourceFilter) ([]resource.Resource, error)
 
 	// StoreRelations Store Relationship
-	StoreRelations(criteria []config.RelationCriteria) error
+	StoreRelations(relation config.Relation) error
 }
 
 type Query struct {

@@ -42,12 +42,16 @@ type RelationCriteria struct {
 	RelatedMetadataValue string `yaml:"related_metadata_value"`
 }
 
+type Relation struct {
+	RelationCriteria []RelationCriteria `yaml:"criteria"`
+}
+
 type AppConfig struct {
-	Organization     Organization       `yaml:"organization"`
-	Discovery        Discovery          `yaml:"discovery"`
-	Storage          Storage            `yaml:"storage"`
-	Sources          map[string]Source  `yaml:"source"`
-	RelationCriteria []RelationCriteria `yaml:"relations.criteria"`
+	Organization Organization      `yaml:"organization"`
+	Discovery    Discovery         `yaml:"discovery"`
+	Storage      Storage           `yaml:"storage"`
+	Sources      map[string]Source `yaml:"source"`
+	Relation     Relation          `yaml:"relations"`
 }
 
 func Load(path string) (*AppConfig, error) {
@@ -134,15 +138,15 @@ func Validate(c *AppConfig) error {
 		}
 	}
 
-	if c.RelationCriteria == nil {
+	if c.Relation.RelationCriteria == nil {
 		return fmt.Errorf("relations field must be defined")
 	}
 
-	if len(c.RelationCriteria) == 0 {
+	if len(c.Relation.RelationCriteria) == 0 {
 		return fmt.Errorf("relations.criteria is empty")
 	}
 
-	for _, criteria := range c.RelationCriteria {
+	for _, criteria := range c.Relation.RelationCriteria {
 		if criteria.Name == "" {
 			return fmt.Errorf("relations.criteria.name is required")
 		}

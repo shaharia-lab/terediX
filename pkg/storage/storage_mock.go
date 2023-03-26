@@ -67,12 +67,12 @@ func (_m *StorageMock) Prepare() error {
 }
 
 // StoreRelations provides a mock function with given fields: criteria
-func (_m *StorageMock) StoreRelations(criteria []config.RelationCriteria) error {
-	ret := _m.Called(criteria)
+func (_m *StorageMock) StoreRelations(relation config.Relation) error {
+	ret := _m.Called(relation)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func([]config.RelationCriteria) error); ok {
-		r0 = rf(criteria)
+	if rf, ok := ret.Get(0).(func(config.Relation) error); ok {
+		r0 = rf(relation)
 	} else {
 		r0 = ret.Error(0)
 	}

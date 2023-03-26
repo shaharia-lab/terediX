@@ -54,7 +54,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -64,7 +64,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: false,
 		},
@@ -93,7 +93,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -102,7 +102,7 @@ func TestValidate(t *testing.T) {
 						RelatedKind:          "related-kind",
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
-					},
+					}},
 				},
 			},
 			wantErr: true,
@@ -132,7 +132,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -142,7 +142,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -164,7 +164,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -174,7 +174,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 
 			wantErr: true,
@@ -205,7 +205,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -215,7 +215,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -243,7 +243,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -253,7 +253,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -283,7 +283,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -293,7 +293,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -323,7 +323,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -333,7 +333,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -362,7 +362,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -372,7 +372,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -414,7 +414,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -424,7 +424,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -454,7 +454,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -464,7 +464,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: false,
 		},
@@ -492,7 +492,7 @@ func TestValidate(t *testing.T) {
 						Configuration: map[string]string{},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -502,7 +502,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -532,7 +532,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -542,7 +542,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -571,7 +571,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -581,7 +581,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -607,7 +607,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -617,7 +617,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: false,
 		},
@@ -641,7 +641,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -651,7 +651,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -675,7 +675,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -685,7 +685,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -711,7 +711,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -720,7 +720,7 @@ func TestValidate(t *testing.T) {
 						RelatedKind:          "related-kind",
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
-					},
+					}},
 				},
 			},
 			wantErr: true,
@@ -744,7 +744,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 				Sources: map[string]Source{},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -753,7 +753,7 @@ func TestValidate(t *testing.T) {
 						RelatedKind:          "related-kind",
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
-					},
+					}},
 				},
 			},
 			wantErr: true,
@@ -784,7 +784,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -793,7 +793,7 @@ func TestValidate(t *testing.T) {
 						RelatedKind:          "related-kind",
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
-					},
+					}},
 				},
 			},
 			wantErr: true,
@@ -825,7 +825,7 @@ func TestValidate(t *testing.T) {
 						DependsOn: []string{"source2"},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -835,7 +835,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -866,7 +866,7 @@ func TestValidate(t *testing.T) {
 						DependsOn: []string{"source2", "source3"},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -876,7 +876,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -964,7 +964,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{},
+				Relation: Relation{RelationCriteria: []RelationCriteria{}},
 			},
 			wantErr: true,
 		},
@@ -994,7 +994,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Kind:                 "kind",
 						MetadataKey:          "source-kind-key1",
@@ -1003,7 +1003,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -1033,7 +1033,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						MetadataKey:          "source-kind-key1",
@@ -1042,7 +1042,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -1072,7 +1072,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -1081,7 +1081,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -1111,7 +1111,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -1120,7 +1120,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -1150,7 +1150,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -1159,7 +1159,7 @@ func TestValidate(t *testing.T) {
 						RelatedMetadataKey:   "related-metadata-key",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -1189,7 +1189,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:                 "name",
 						Kind:                 "kind",
@@ -1198,7 +1198,7 @@ func TestValidate(t *testing.T) {
 						RelatedKind:          "related-kind",
 						RelatedMetadataValue: "related-metadata-value",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},
@@ -1228,7 +1228,7 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
-				RelationCriteria: []RelationCriteria{
+				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name:               "name",
 						Kind:               "kind",
@@ -1237,7 +1237,7 @@ func TestValidate(t *testing.T) {
 						RelatedKind:        "related-kind",
 						RelatedMetadataKey: "related-metadata-key",
 					},
-				},
+				}},
 			},
 			wantErr: true,
 		},

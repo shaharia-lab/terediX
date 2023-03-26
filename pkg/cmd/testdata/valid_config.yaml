@@ -35,3 +35,12 @@ source:
   #    kube_config_file_path: "another_path"
   #  depends_on:
   #    - "one"
+relations:
+  criteria:
+    - name: "based-on-metadata"
+      kind: "app"
+      metadata_key: "environment"
+      metadata_value: "production"
+      related_kind: "database"
+      related_metadata_key: "environment"
+      related_metadata_value: "production"

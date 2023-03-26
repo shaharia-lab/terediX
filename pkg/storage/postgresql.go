@@ -197,6 +197,60 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	return resources, nil
 }
 
-func (p *PostgreSQL) StoreRelations(criteria []config.RelationCriteria) error {
+// StoreRelations will go through all resources in the database and based on criteria it will insert relationship to "relations" table
+func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
+	// Begin a transaction
+	tx, err := p.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			err := tx.Rollback()
+			if err != nil {
+				return
+			}
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	// Prepare the SQL statement to select resources based on the relation
+	selectStmt := `SELECT r1.id AS id1, r2.id AS id2 FROM resources r1, resources r2
+		WHERE r1.kind = $1 AND r1.external_id IN (
+			SELECT resource_id FROM metadata WHERE key = $2 AND value = $3
+		) AND r2.kind = $4 AND r2.external_id IN (
+			SELECT resource_id FROM metadata WHERE key = $5 AND value = $6
+		) AND r1.id != r2.id`
+
+	// Prepare the SQL statement to insert relationships into the relations table
+	relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) VALUES ($1, $2)")
+	if err != nil {
+		return err
+	}
+	defer relationsStmt.Close()
+
+	// Loop through each relation and find the resources that match it
+	for _, c := range relation.RelationCriteria {
+		rows, err := p.DB.Query(selectStmt, c.Kind, c.MetadataKey, c.MetadataValue, c.RelatedKind, c.RelatedMetadataKey, c.RelatedMetadataValue)
+		if err != nil {
+			return err
+		}
+
+		// Insert relationships for the matching resources
+		for rows.Next() {
+			var id1, id2 int
+			if err := rows.Scan(&id1, &id2); err != nil {
+				return err
+			}
+			if _, err := relationsStmt.Exec(id1, id2); err != nil {
+				return err
+			}
+		}
+		if err := rows.Err(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

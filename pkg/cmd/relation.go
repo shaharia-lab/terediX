@@ -25,7 +25,7 @@ func NewRelationCommand() *cobra.Command {
 			}
 
 			st := storage.BuildStorage(appConfig)
-			return st.StoreRelations(appConfig.RelationCriteria)
+			return st.StoreRelations(appConfig.Relation)
 		},
 	}
 
