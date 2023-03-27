@@ -1,0 +1,41 @@
+---
+organization:
+  name: Shaharia Lab
+  logo: http://example.com
+
+discovery:
+  name: Infrastructure Discovery
+  description: Some description text
+
+storage:
+  batch_size: 2
+  engines:
+    postgresql:
+      host: "localhost"
+      port: 5432
+      user: "app"
+      password: "pass"
+      db: "app"
+    neo4j:
+      config_key: "value"
+  default_engine: postgresql
+
+source:
+  fs_one:
+    type: file_system
+    configuration:
+      root_directory: "/home/shaharia/Projects/teredix/pkg"
+  fs_two:
+    type: file_system
+    configuration:
+      root_directory: "/home/shaharia/Projects/k8s-resource-explorer"
+
+relations:
+  criteria:
+    - name: "file-system-rule1"
+      kind: "FilePath"
+      metadata_key: "Root-Directory"
+      metadata_value: "/home/shaharia/Projects/teredix/pkg"
+      related_kind: "FileDirectory"
+      related_metadata_key: "Root-Directory"
+      related_metadata_value: "/home/shaharia/Projects/teredix/pkg"

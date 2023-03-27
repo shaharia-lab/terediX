@@ -1,0 +1,46 @@
+---
+organization:
+  name: Shaharia Lab
+  logo: http://example.com
+
+discovery:
+  name: Infrastructure Discovery
+  description: Some description text
+
+storage:
+  batch_size: 2
+  engines:
+    postgresql:
+      host: "localhost"
+      port: 5432
+      user: "app"
+      password: "pass"
+      db: "app"
+    neo4j:
+      config_key: "value"
+  default_engine: postgresql
+
+source:
+  fs_one:
+    type: file_system
+    configuration:
+      root_directory: "/some/path"
+  fs_two:
+    type: file_system
+    configuration:
+      root_directory: "/some/other/path"
+  #two:
+  #  type: kubernetes
+  #  configuration:
+  #    kube_config_file_path: "another_path"
+  #  depends_on:
+  #    - "one"
+relations:
+  criteria:
+    - name: "based-on-metadata"
+      kind: "app"
+      metadata_key: "environment"
+      metadata_value: "production"
+      related_kind: "database"
+      related_metadata_key: "environment"
+      related_metadata_value: "production"
