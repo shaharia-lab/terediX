@@ -6,3 +6,4 @@
 docker-compose.yml
 
 config.yaml
+coverage.out

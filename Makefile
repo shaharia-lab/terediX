@@ -7,3 +7,6 @@ build:
 
 test:
 	go test -v ./...
+
+testc:
+	go test -v ./... -coverprofile=coverage.out
