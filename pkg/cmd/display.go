@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"log"
 	"net/http"
 	"teredix/pkg/config"
 	"teredix/pkg/storage"
 	"teredix/pkg/visualize"
 	"teredix/pkg/visualize/cytoscape"
+
+	"github.com/spf13/cobra"
 )
 
 func NewDisplayCommand() *cobra.Command {
@@ -38,7 +39,7 @@ func NewDisplayCommand() *cobra.Command {
 			}
 
 			http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-				fmt.Fprintf(writer, html)
+				fmt.Fprint(writer, html)
 			})
 			log.Println("Displaying resource graph at http://localhost:8989")
 			err = http.ListenAndServe(":8989", nil)
