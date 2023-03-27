@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"teredix/pkg/config"
 	"teredix/pkg/processor"
@@ -43,15 +42,6 @@ func run(cfgFile string) error {
 	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
 	p := processor.NewProcessor(processConfig, st, sources)
 	p.Process()
-
-	find, err := st.Find(storage.ResourceFilter{})
-	if err != nil {
-		return err
-	}
-
-	for _, rr := range find {
-		fmt.Println(rr.ExternalID)
-	}
 
 	return nil
 }
