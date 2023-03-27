@@ -42,10 +42,25 @@ the resources as they become available.
 - Download the binary from latest release
 - Run `chmod +x ./teredix` to make it executable
 
-## Run Discovery
+## Usage
 
 ```shell
-teredix discovery --config config.yaml
+➜ teredix --help
+Discover and Explore your tech resources
+
+Usage:
+   [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  discover    Start discovering resources
+  display     Display resource graph
+  help        Help about any command
+  relation    Build resource relationships
+
+Flags:
+  -h, --help      help for this command
+  -v, --version   version for this command
 ```
 
 ## Config file

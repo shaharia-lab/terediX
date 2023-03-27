@@ -8,9 +8,9 @@ import (
 
 func NewRootCmd(version string) *cobra.Command {
 	cmd := cobra.Command{
-		Use:     "redisc",
 		Version: version,
-		Short:   "r",
+		Short:   "Discover and Explore your tech resources",
+		Long:    "Discover and Explore your tech resources",
 	}
 
 	cmd.AddCommand(
