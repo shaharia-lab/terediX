@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test Load method
 func TestLoad(t *testing.T) {
 	// Test with valid config file
 	path := "testdata/valid_config.yaml"
