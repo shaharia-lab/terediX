@@ -2,8 +2,10 @@ package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
+	"teredix/pkg"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Organization struct {
@@ -118,7 +120,7 @@ func Validate(c *AppConfig) error {
 		}
 
 		switch source.Type {
-		case "file_system":
+		case pkg.SourceTypeFileSystem:
 			if err := c.validateFileSystemSource(source); err != nil {
 				return fmt.Errorf("source '%s': %v", name, err)
 			}
@@ -209,7 +211,7 @@ func (c *AppConfig) validateNeo4jEngine(config interface{}) error {
 func (c *AppConfig) validateFileSystemSource(source Source) error {
 	rootDirectory, ok := source.Configuration["root_directory"]
 	if !ok || rootDirectory == "" {
-		return fmt.Errorf("file_system source requires 'configuration.root_directory'")
+		return fmt.Errorf("%s source requires 'configuration.root_directory'", pkg.SourceTypeFileSystem)
 	}
 	return nil
 }

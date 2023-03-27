@@ -1,8 +1,10 @@
 package config
 
 import (
-	"github.com/stretchr/testify/assert"
+	"teredix/pkg"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLoad(t *testing.T) {
@@ -48,7 +50,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -87,7 +89,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -126,7 +128,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -158,7 +160,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -199,7 +201,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -237,7 +239,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -277,7 +279,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -317,7 +319,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -488,7 +490,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type:          "file_system",
+						Type:          pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{},
 					},
 				},
@@ -526,7 +528,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "",
 						},
@@ -565,7 +567,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -601,7 +603,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -635,7 +637,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -669,7 +671,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -705,7 +707,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -818,7 +820,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -859,7 +861,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -900,7 +902,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -929,7 +931,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -958,7 +960,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -988,7 +990,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -1027,7 +1029,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -1066,7 +1068,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -1105,7 +1107,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -1144,7 +1146,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -1183,7 +1185,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},
@@ -1222,7 +1224,7 @@ func TestValidate(t *testing.T) {
 				},
 				Sources: map[string]Source{
 					"source1": {
-						Type: "file_system",
+						Type: pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{
 							"root_directory": "/root/path",
 						},

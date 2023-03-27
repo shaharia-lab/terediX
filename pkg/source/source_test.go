@@ -1,6 +1,7 @@
 package source
 
 import (
+	"teredix/pkg"
 	"teredix/pkg/config"
 	"teredix/pkg/source/scanner"
 	"testing"
@@ -12,7 +13,7 @@ func TestBuildSources(t *testing.T) {
 	appConfig := &config.AppConfig{
 		Sources: map[string]config.Source{
 			"source1": {
-				Type: "file_system",
+				Type: pkg.SourceTypeFileSystem,
 				Configuration: map[string]string{
 					"root_directory": "/path/to/directory",
 				},
