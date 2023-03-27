@@ -160,10 +160,8 @@ combined
 
 ### Contributing
 
-Contributions are welcome! Please follow the guidelines outlined in the [CONTRIBUTING.md](https://github.
-com/shahariaazam/teredix/blob/master/CONTRIBUTING.md) file.
+Contributions are welcome! Please follow the guidelines outlined in the [CONTRIBUTING](https://github.com/shahariaazam/teredix/blob/master/CONTRIBUTING.md) file.
 
 ### License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.
-com/shahariaazam/teredix/blob/master/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/shahariaazam/teredix/blob/master/LICENSE) file for details.
