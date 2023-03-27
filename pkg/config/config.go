@@ -119,18 +119,20 @@ func Validate(c *AppConfig) error {
 			return fmt.Errorf("source '%s' type is required", name)
 		}
 
+		const errorTextFormat = "source '%s': %v"
+
 		switch source.Type {
 		case pkg.SourceTypeFileSystem:
 			if err := c.validateFileSystemSource(source); err != nil {
-				return fmt.Errorf("source '%s': %v", name, err)
+				return fmt.Errorf(errorTextFormat, name, err)
 			}
 		case "kubernetes":
 			if err := c.validateKubernetesSource(source); err != nil {
-				return fmt.Errorf("source '%s': %v", name, err)
+				return fmt.Errorf(errorTextFormat, name, err)
 			}
 		case pkg.SourceTypeGitHubRepository:
 			if err := c.validateGitHubRepositorySource(source); err != nil {
-				return fmt.Errorf("source '%s': %v", name, err)
+				return fmt.Errorf(errorTextFormat, name, err)
 			}
 		default:
 			return fmt.Errorf("unknown source type: '%s'", source.Type)
