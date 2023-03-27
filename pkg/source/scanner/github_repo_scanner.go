@@ -3,7 +3,9 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"teredix/pkg"
 	"teredix/pkg/resource"
+	"teredix/pkg/util"
 
 	"github.com/google/go-github/v50/github"
 )
@@ -32,10 +34,11 @@ func (c *GitHubRepositoryClient) ListRepositories(ctx context.Context, user stri
 type GitHubRepositoryScanner struct {
 	ghClient GitHubClient
 	user     string
+	name     string
 }
 
-func NewGitHubRepositoryScanner(ghClient GitHubClient, user string) *GitHubRepositoryScanner {
-	return &GitHubRepositoryScanner{ghClient: ghClient, user: user}
+func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string) *GitHubRepositoryScanner {
+	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name}
 }
 
 func (r *GitHubRepositoryScanner) Scan() []resource.Resource {
@@ -48,9 +51,9 @@ func (r *GitHubRepositoryScanner) Scan() []resource.Resource {
 
 	for _, repo := range repos {
 		re := resource.Resource{
-			Kind:       "GitHubRepository",
-			UUID:       fmt.Sprintf("%v", repo.GetID()),
-			Name:       repo.GetName(),
+			Kind:       pkg.ResourceKindGitHubRepository,
+			UUID:       util.GenerateUUID(),
+			Name:       repo.GetFullName(),
 			ExternalID: repo.GetFullName(),
 			MetaData: []resource.MetaData{
 				{
@@ -60,6 +63,10 @@ func (r *GitHubRepositoryScanner) Scan() []resource.Resource {
 				{
 					Key:   "Stars",
 					Value: fmt.Sprintf("%d", repo.GetStargazersCount()),
+				},
+				{
+					Key:   pkg.MetaKeyScannerLabel,
+					Value: r.name,
 				},
 			},
 		}

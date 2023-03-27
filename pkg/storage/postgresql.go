@@ -216,34 +216,28 @@ func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
 		err = tx.Commit()
 	}()
 
-	resourceStmt := `SELECT STRING_AGG(r.id::text, ',') AS resource_ids
-FROM resources r
-         LEFT JOIN metadata m ON r.id = m.resource_id
-WHERE m.key = $1 AND m.value = $2 AND r.kind = $3;`
-
-	var relateToIds string
-	err = p.DB.QueryRow(resourceStmt, relation.RelationCriteria[0].RelatedMetadataKey, relation.RelationCriteria[0].RelatedMetadataValue, relation.RelationCriteria[0].RelatedKind).Scan(&relateToIds)
-	if err != nil {
-		return err
-	}
-
-	var resourceForBuildRelations string
-	err = p.DB.QueryRow(resourceStmt, relation.RelationCriteria[0].MetadataKey, relation.RelationCriteria[0].MetadataValue, relation.RelationCriteria[0].Kind).Scan(&resourceForBuildRelations)
-	if err != nil {
-		return err
-	}
-
-	relationMatrix := p.generateRelationMatrix(
-		strings.Split(relateToIds, ","),
-		strings.Split(resourceForBuildRelations, ","),
-	)
-
 	// Prepare the SQL statement to insert relationships into the relations table
 	relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) VALUES ($1, $2)")
 	if err != nil {
 		return err
 	}
 	defer relationsStmt.Close()
+
+	for _, rc := range relation.RelationCriteria {
+		err = p.storeRelationMatrix(rc, relationsStmt)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *PostgreSQL) storeRelationMatrix(rc config.RelationCriteria, relationsStmt *sql.Stmt) error {
+	relationMatrix, err := p.analyzeRelationMatrix(rc)
+	if err != nil {
+		return err
+	}
 
 	// Insert relationships for the matching resources
 	for _, c := range relationMatrix {
@@ -253,8 +247,32 @@ WHERE m.key = $1 AND m.value = $2 AND r.kind = $3;`
 			}
 		}
 	}
-
 	return nil
+}
+
+func (p *PostgreSQL) analyzeRelationMatrix(relCriteria config.RelationCriteria) ([]map[string]string, error) {
+	resourceStmt := `SELECT STRING_AGG(r.id::text, ',') AS resource_ids
+FROM resources r
+         LEFT JOIN metadata m ON r.id = m.resource_id
+WHERE m.key = $1 AND m.value = $2 AND r.kind = $3;`
+
+	var relateToIds string
+	err := p.DB.QueryRow(resourceStmt, relCriteria.RelatedMetadataKey, relCriteria.RelatedMetadataValue, relCriteria.RelatedKind).Scan(&relateToIds)
+	if err != nil {
+		return nil, err
+	}
+
+	var resourceForBuildRelations string
+	err = p.DB.QueryRow(resourceStmt, relCriteria.MetadataKey, relCriteria.MetadataValue, relCriteria.Kind).Scan(&resourceForBuildRelations)
+	if err != nil {
+		return nil, err
+	}
+
+	relationMatrix := p.generateRelationMatrix(
+		strings.Split(relateToIds, ","),
+		strings.Split(resourceForBuildRelations, ","),
+	)
+	return relationMatrix, nil
 }
 
 func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBuildRelations []string) []map[string]string {

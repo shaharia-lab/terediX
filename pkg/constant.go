@@ -1,6 +1,9 @@
 package pkg
 
 const (
-	SourceTypeFileSystem       = "file_system"
-	SourceTypeGitHubRepository = "github_repository"
+	ResourceKindGitHubRepository = "GitHubRepository"
+	SourceTypeFileSystem         = "file_system"
+	SourceTypeGitHubRepository   = "github_repository"
+
+	MetaKeyScannerLabel = "Scanner-Label"
 )

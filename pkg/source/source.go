@@ -19,7 +19,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 	var finalSources []Source
 	for sourceKey, s := range appConfig.Sources {
 		if s.Type == pkg.SourceTypeFileSystem {
-			fs := scanner.NewFsScanner("fs-scanner_1", s.Configuration["root_directory"], map[string]string{})
+			fs := scanner.NewFsScanner(sourceKey, s.Configuration["root_directory"], map[string]string{})
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: &fs,
@@ -36,7 +36,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 			client := github.NewClient(tc)
 			gc := scanner.NewGitHubRepositoryClient(client)
 
-			gh := scanner.NewGitHubRepositoryScanner(gc, s.Configuration["user_or_org"])
+			gh := scanner.NewGitHubRepositoryScanner(sourceKey, gc, s.Configuration["user_or_org"])
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: gh,

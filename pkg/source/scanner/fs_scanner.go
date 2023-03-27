@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"teredix/pkg"
 	"teredix/pkg/resource"
 	"teredix/pkg/util"
 )
@@ -42,7 +43,7 @@ func (s *FsScanner) Scan() []resource.Resource {
 
 	rootResource.AddMetaData("Machine-Host", hostname)
 	rootResource.AddMetaData("Root-Directory", s.rootDirectory)
-	rootResource.AddMetaData("Scanner-Label", s.name)
+	rootResource.AddMetaData(pkg.MetaKeyScannerLabel, s.name)
 
 	r = append(r, rootResource)
 
