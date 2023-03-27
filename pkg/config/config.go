@@ -84,7 +84,7 @@ func Validate(c *AppConfig) error {
 		return err
 	}
 
-	err = c.validateStorage(c.Storage, c.Sources)
+	err = c.validateStorage(c.Storage)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (c *AppConfig) validateDiscovery(discovery Discovery) error {
 	return nil
 }
 
-func (c *AppConfig) validateStorage(storage Storage, sources map[string]Source) error {
+func (c *AppConfig) validateStorage(storage Storage) error {
 	if storage.BatchSize <= 0 {
 		return fmt.Errorf("storage batch_size must be greater than 0")
 	}
@@ -145,10 +145,6 @@ func (c *AppConfig) validateStorage(storage Storage, sources map[string]Source) 
 		default:
 			return fmt.Errorf("unknown storage engine: '%s'", engine)
 		}
-	}
-
-	if len(sources) == 0 {
-		return fmt.Errorf("at least one source must be defined")
 	}
 
 	return nil
@@ -249,6 +245,7 @@ func (c *AppConfig) validateGitHubRepositorySourceConfiguration(name string, sou
 	if !ok || userOrOrg == "" {
 		return fmt.Errorf("source '%s' requires 'configuration.user_or_org'", name)
 	}
+
 	return nil
 }
 

@@ -55,6 +55,17 @@ func TestValidate(t *testing.T) {
 							"root_directory": "/root/path",
 						},
 					},
+					"source2": {
+						Type: pkg.SourceTypeGitHubRepository,
+						Configuration: map[string]string{
+							"token":         "mytoken",
+							"user_or_org":   "myuser",
+							"repository":    "myrepo",
+							"branch":        "mybranch",
+							"path":          "mypath",
+							"file_patterns": "*.yaml",
+						},
+					},
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1238,6 +1249,86 @@ func TestValidate(t *testing.T) {
 						MetadataValue:      "source-kind-value1",
 						RelatedKind:        "related-kind",
 						RelatedMetadataKey: "related-metadata-key",
+					},
+				}},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing GitHub token for GitHubRepository source",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeGitHubRepository,
+						Configuration: map[string]string{
+							"user_or_org": "myuser",
+						},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name:                 "name",
+						Kind:                 "kind",
+						MetadataKey:          "source-kind-key1",
+						MetadataValue:        "source-kind-value1",
+						RelatedKind:          "related-kind",
+						RelatedMetadataKey:   "related-metadata-key",
+						RelatedMetadataValue: "related-metadata-value",
+					}},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing GitHub repository user_or_org",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeGitHubRepository,
+						Configuration: map[string]string{
+							"token": "my-token",
+						},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name:                 "name",
+						Kind:                 "kind",
+						MetadataKey:          "source-kind-key1",
+						MetadataValue:        "source-kind-value1",
+						RelatedKind:          "related-kind",
+						RelatedMetadataKey:   "related-metadata-key",
+						RelatedMetadataValue: "related-metadata-value",
 					},
 				}},
 			},
