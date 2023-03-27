@@ -271,34 +271,42 @@ func (c *AppConfig) validateRelations(relations Relation) error {
 	}
 
 	for _, criteria := range relations.RelationCriteria {
-		if criteria.Name == "" {
-			return fmt.Errorf("relations.criteria.name is required")
-		}
-
-		if criteria.Kind == "" {
-			return fmt.Errorf("relations.criteria.kind is required")
-		}
-
-		if criteria.MetadataKey == "" {
-			return fmt.Errorf("relations.criteria.metadata_key is required")
-		}
-
-		if criteria.MetadataValue == "" {
-			return fmt.Errorf("relations.criteria.metadata_value is required")
-		}
-
-		if criteria.RelatedKind == "" {
-			return fmt.Errorf("relations.criteria.related_kind is required")
-		}
-
-		if criteria.RelatedMetadataKey == "" {
-			return fmt.Errorf("relations.criteria.related_metadata_key is required")
-		}
-
-		if criteria.RelatedMetadataValue == "" {
-			return fmt.Errorf("relations.criteria.related_metadata_value is required")
+		err := c.validateRelationCriteria(criteria)
+		if err != nil {
+			return err
 		}
 	}
 
+	return nil
+}
+
+func (c *AppConfig) validateRelationCriteria(criteria RelationCriteria) error {
+	if criteria.Name == "" {
+		return fmt.Errorf("relations.criteria.name is required")
+	}
+
+	if criteria.Kind == "" {
+		return fmt.Errorf("relations.criteria.kind is required")
+	}
+
+	if criteria.MetadataKey == "" {
+		return fmt.Errorf("relations.criteria.metadata_key is required")
+	}
+
+	if criteria.MetadataValue == "" {
+		return fmt.Errorf("relations.criteria.metadata_value is required")
+	}
+
+	if criteria.RelatedKind == "" {
+		return fmt.Errorf("relations.criteria.related_kind is required")
+	}
+
+	if criteria.RelatedMetadataKey == "" {
+		return fmt.Errorf("relations.criteria.related_metadata_key is required")
+	}
+
+	if criteria.RelatedMetadataValue == "" {
+		return fmt.Errorf("relations.criteria.related_metadata_value is required")
+	}
 	return nil
 }
