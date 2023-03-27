@@ -1,6 +1,9 @@
 package source
 
 import (
+	"context"
+	"github.com/google/go-github/v50/github"
+	"golang.org/x/oauth2"
 	"teredix/pkg"
 	"teredix/pkg/config"
 	"teredix/pkg/source/scanner"
@@ -18,6 +21,13 @@ func TestBuildSources(t *testing.T) {
 					"root_directory": "/path/to/directory",
 				},
 			},
+			"source2": {
+				Type: pkg.SourceTypeGitHubRepository,
+				Configuration: map[string]string{
+					"token":       "token",
+					"user_or_org": "user_or_org",
+				},
+			},
 		},
 	}
 
@@ -25,10 +35,20 @@ func TestBuildSources(t *testing.T) {
 
 	fsScanner := scanner.NewFsScanner("source1", "/path/to/directory", map[string]string{})
 
+	gc := scanner.NewGitHubRepositoryClient(github.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: "token"},
+	))))
+
+	gh := scanner.NewGitHubRepositoryScanner("source2", gc, "user_or_org")
+
 	expectedSources := []Source{
 		{
 			Name:    "source1",
 			Scanner: &fsScanner,
+		},
+		{
+			Name:    "source2",
+			Scanner: gh,
 		},
 	}
 
