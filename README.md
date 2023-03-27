@@ -1,6 +1,8 @@
 # teredix
 `TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and explore them as a resource graph
 
+![Technical Resource Graph](https://user-images.githubusercontent.com/1095008/227896903-ff4b916d-893e-489e-8ffe-1469fff0703a.jpg)
+
 ## Technical Architecture
 
 ```
