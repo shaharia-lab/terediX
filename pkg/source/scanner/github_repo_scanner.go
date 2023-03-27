@@ -23,7 +23,7 @@ func NewGitHubRepositoryClient(client *github.Client) *GitHubRepositoryClient {
 }
 
 func (c *GitHubRepositoryClient) ListRepositories(ctx context.Context, user string) ([]*github.Repository, error) {
-	repos, _, err := c.client.Repositories.List(context.Background(), user, nil)
+	repos, _, err := c.client.Repositories.List(ctx, user, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list repositories for user %s: %w", user, err)
 	}
