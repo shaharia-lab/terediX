@@ -128,6 +128,10 @@ func Validate(c *AppConfig) error {
 			if err := c.validateKubernetesSource(source); err != nil {
 				return fmt.Errorf("source '%s': %v", name, err)
 			}
+		case pkg.SourceTypeGitHubRepository:
+			if err := c.validateGitHubRepositorySource(source); err != nil {
+				return fmt.Errorf("source '%s': %v", name, err)
+			}
 		default:
 			return fmt.Errorf("unknown source type: '%s'", source.Type)
 		}
@@ -220,6 +224,19 @@ func (c *AppConfig) validateKubernetesSource(source Source) error {
 	kubeConfigFilePath, ok := source.Configuration["kube_config_file_path"]
 	if !ok || kubeConfigFilePath == "" {
 		return fmt.Errorf("kubernetes source requires 'configuration.kube_config_file_path'")
+	}
+	return nil
+}
+
+func (c *AppConfig) validateGitHubRepositorySource(source Source) error {
+	ghToken, ok := source.Configuration["token"]
+	if !ok || ghToken == "" {
+		return fmt.Errorf("%s source requires 'configuration.token'", pkg.SourceTypeGitHubRepository)
+	}
+
+	userOrOrg, ok := source.Configuration["user_or_org"]
+	if !ok || userOrOrg == "" {
+		return fmt.Errorf("%s source requires 'configuration.user_or_org'", pkg.SourceTypeGitHubRepository)
 	}
 	return nil
 }

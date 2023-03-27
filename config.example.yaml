@@ -29,6 +29,11 @@ source:
     type: file_system
     configuration:
       root_directory: "/home/shaharia/Projects/k8s-resource-explorer"
+  github_repo_sh:
+    type: github_repository
+    configuration:
+      token: "xxxx"
+      user_or_org: "xxxx"
 
 relations:
   criteria:
