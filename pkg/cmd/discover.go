@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"teredix/pkg/config"
 	"teredix/pkg/processor"
 	"teredix/pkg/source"
 	"teredix/pkg/storage"
+
+	"github.com/spf13/cobra"
 )
 
 func NewDiscoverCommand() *cobra.Command {
