@@ -40,7 +40,10 @@ func TestPostgreSQL_Persist(t *testing.T) {
 	defer db.Close()
 
 	pg := &PostgreSQL{DB: db}
-	pg.Prepare()
+	err = pg.Prepare()
+	if err != nil {
+		t.Fatalf("error preparing database: %s", err)
+	}
 
 	mock.ExpectBegin()
 
