@@ -3,6 +3,12 @@
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=bugs)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
 
 # teredix
 `TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and explore them as a resource graph
