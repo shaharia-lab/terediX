@@ -59,7 +59,7 @@ in a display type and renders the resources in that format.
 
 ## Installation
 
-- Download the binary from latest release
+- Download the binary from the [latest release](https://github.com/shahariaazam/terediX/releases)
 - Run `chmod +x ./teredix` to make it executable
 
 ## Usage
