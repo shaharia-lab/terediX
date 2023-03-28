@@ -51,10 +51,10 @@ func TestProcessor_Process(t *testing.T) {
 		},
 	}
 
-	firstScanner := new(scanner.ScannerMock)
+	firstScanner := new(scanner.Mock)
 	firstScanner.On("Scan").Return(firstScannerResources)
 
-	secondScanner := new(scanner.ScannerMock)
+	secondScanner := new(scanner.Mock)
 	secondScanner.On("Scan").Return(secondScannerResources)
 
 	mockStorage := new(storage.StorageMock)

@@ -7,7 +7,7 @@ import (
 	"teredix/pkg/config"
 	"teredix/pkg/resource"
 
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // postgresql driver
 )
 
 // PostgreSQL store storage configuration for PostgreSQL database
