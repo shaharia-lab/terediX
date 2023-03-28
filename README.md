@@ -11,7 +11,12 @@
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
 
 # teredix
-`TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and explore them as a resource graph
+`TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and 
+explore them as a resource graph. Users can use **teredix** to create resource graphs that depict the relationships and dependencies between different resources. 
+The tool also allows users to search for specific resources and view details about each resource, such as its name, type, description, and associated tags.
+
+**teredix** can be a useful tool for organizations looking to manage their technology resources more effectively 
+and gain a better understanding of how those resources are interconnected.
 
 ![Technical Resource Graph](https://user-images.githubusercontent.com/1095008/227896903-ff4b916d-893e-489e-8ffe-1469fff0703a.jpg)
 
