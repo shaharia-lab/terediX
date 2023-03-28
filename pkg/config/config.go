@@ -1,4 +1,4 @@
-// Package config
+// Package config read and validate config file
 package config
 
 import (

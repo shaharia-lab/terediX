@@ -1,3 +1,4 @@
+// Package source represent source
 package source
 
 import (
@@ -10,11 +11,13 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// Source represent source configuration
 type Source struct {
 	Name    string
 	Scanner scanner.Scanner
 }
 
+// BuildSources build source based on configuration
 func BuildSources(appConfig *config.AppConfig) []Source {
 	var finalSources []Source
 	for sourceKey, s := range appConfig.Sources {

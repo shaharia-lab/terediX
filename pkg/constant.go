@@ -1,3 +1,4 @@
+// Package pkg is the root package
 package pkg
 
 const (

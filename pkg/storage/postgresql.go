@@ -1,4 +1,4 @@
-//pkg/storage/postgresql/postgresql.go
+// Package storage store resource information
 package storage
 
 import (
@@ -74,19 +74,34 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 	if err != nil {
 		return err
 	}
-	defer resourcesStmt.Close()
+	defer func(resourcesStmt *sql.Stmt) {
+		err := resourcesStmt.Close()
+		if err != nil {
+			return
+		}
+	}(resourcesStmt)
 
 	metadataStmt, err := tx.Prepare("INSERT INTO metadata (resource_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (resource_id, key) DO UPDATE SET value = excluded.value")
 	if err != nil {
 		return err
 	}
-	defer metadataStmt.Close()
+	defer func(metadataStmt *sql.Stmt) {
+		err := metadataStmt.Close()
+		if err != nil {
+			return
+		}
+	}(metadataStmt)
 
 	relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) SELECT $1, r.id FROM resources r WHERE r.external_id = $2 ON CONFLICT DO NOTHING")
 	if err != nil {
 		return err
 	}
-	defer relationsStmt.Close()
+	defer func(relationsStmt *sql.Stmt) {
+		err := relationsStmt.Close()
+		if err != nil {
+			return
+		}
+	}(relationsStmt)
 
 	// Loop through the resources and insert or update them into the database
 	for _, res := range resources {
@@ -143,7 +158,12 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	if err != nil {
 		return resources, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			return
+		}
+	}(rows)
 
 	// Parse the results
 	for rows.Next() {
@@ -221,7 +241,12 @@ func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
 	if err != nil {
 		return err
 	}
-	defer relationsStmt.Close()
+	defer func(relationsStmt *sql.Stmt) {
+		err := relationsStmt.Close()
+		if err != nil {
+			return
+		}
+	}(relationsStmt)
 
 	for _, rc := range relation.RelationCriteria {
 		err = p.storeRelationMatrix(rc, relationsStmt)
@@ -296,7 +321,12 @@ func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			return
+		}
+	}(rows)
 
 	// Loop through the result set and create Resource objects
 	for rows.Next() {
@@ -321,7 +351,12 @@ func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			return
+		}
+	}(rows)
 
 	// Loop through the result set and create maps with resource_id and related_resource_id
 	for rows.Next() {

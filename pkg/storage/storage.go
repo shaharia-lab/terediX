@@ -1,3 +1,4 @@
+// Package storage store resource information
 package storage
 
 import (

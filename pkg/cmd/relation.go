@@ -1,4 +1,4 @@
-// Package main
+// Package cmd provides commands
 package cmd
 
 import (
