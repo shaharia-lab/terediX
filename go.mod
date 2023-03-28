@@ -3,7 +3,7 @@ module teredix
 go 1.18
 
 require (
-	github.com/google/go-github/v39 v39.2.0
+	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/google/go-github/v50 v50.2.0
 	github.com/google/uuid v1.3.0
 	github.com/kyokomi/emoji v2.2.4+incompatible

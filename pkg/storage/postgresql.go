@@ -7,7 +7,6 @@ import (
 	"strings"
 	"teredix/pkg/config"
 	"teredix/pkg/resource"
-	"time"
 )
 
 type PostgreSQL struct {
@@ -70,7 +69,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 	}()
 
 	// Prepare the SQL statements
-	resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id, discovered_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (external_id) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name RETURNING id")
+	resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id) VALUES ($1, $2, $3, $4) ON CONFLICT (external_id) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name RETURNING id")
 	if err != nil {
 		return err
 	}
@@ -92,7 +91,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 	for _, res := range resources {
 		// Insert or update the resource
 		var id int
-		err := resourcesStmt.QueryRow(res.Kind, res.UUID, res.Name, res.ExternalID, time.Now()).Scan(&id)
+		err := resourcesStmt.QueryRow(res.Kind, res.UUID, res.Name, res.ExternalID).Scan(&id)
 		if err != nil {
 			return err
 		}
