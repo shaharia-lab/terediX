@@ -34,18 +34,18 @@ func TestProcessor_Process(t *testing.T) {
 
 	secondScannerResources := []resource.Resource{
 		{
-			Kind:        "Test",
-			UUID:        "UUID",
-			Name:        "Label",
-			ExternalID:  "ExternalID",
+			Kind:        "Test YY",
+			UUID:        "UUID YY",
+			Name:        "Label YY",
+			ExternalID:  "ExternalID YY",
 			RelatedWith: nil,
 			MetaData:    nil,
 		},
 		{
-			Kind:        "Test2",
-			UUID:        "UUID2",
-			Name:        "Name2",
-			ExternalID:  "ExternalID2",
+			Kind:        "Test2 YY",
+			UUID:        "UUID2 YY",
+			Name:        "Name2 YY",
+			ExternalID:  "ExternalID2 YY",
 			RelatedWith: nil,
 			MetaData:    nil,
 		},
