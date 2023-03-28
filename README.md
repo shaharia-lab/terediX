@@ -13,37 +13,37 @@
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=bugs)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
 
-`TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and 
-explore them as a resource graph. Users can use **teredix** to create resource graphs that depict the relationships and dependencies between different resources. 
-The tool also allows users to search for specific resources and view details about each resource, such as its name, type, description, and associated tags.
+`TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and
+explore them as a resource graph. Users can use **teredix** to create resource graphs that depict the relationships 
+and dependencies between different resources. The tool also allows users to search for specific resources and view details about each resource, such as its name, type, description, and associated tags.
 
-**teredix** can be a useful tool for organizations looking to manage their technology resources more effectively 
-and gain a better understanding of how those resources are interconnected.
+**teredix** can be a useful tool for organizations looking to manage their technology resources more effectively and
+gain a better understanding of how those resources are interconnected.
 
 ![Technical Resource Graph](https://user-images.githubusercontent.com/1095008/227896903-ff4b916d-893e-489e-8ffe-1469fff0703a.jpg)
 
 ## Table of Contents
 - [Technical Architecture](#technical-architecture)
 - [Getting Started](#getting-started)
-    - [Run Discovery](#run-discovery)
-    - [Build the Resource Relationship](#build-the-resource-relationship)
-    - [Explore Resource Graph Visualization](#explore-resource-graph-visualization)
+  - [Run Discovery](#run-discovery)
+  - [Build the Resource Relationship](#build-the-resource-relationship)
+  - [Explore Resource Graph Visualization](#explore-resource-graph-visualization)
 - [Usage](#usage)
 - [Config File](#config-file)
 - [Supported Source](#supported-source)
-    - [GitHub Repository](#github-repository)
-    - [File System](#file-system)
+  - [GitHub Repository](#github-repository)
+  - [File System](#file-system)
 - [Supported Storage](#supported-storage)
-    - [PostgreSQL](#postgresql)
+  - [PostgreSQL](#postgresql)
 - [Supported Visualization](#supported-visualization)
-    - [Cytoscape JS](#cytoscape-js)
+  - [Cytoscape JS](#cytoscape-js)
 - [Contributing](#contributing)
 - [License](#license)
 
 
 ## Technical Architecture
 
-```
+```puml
 +-------------------+       +------------------------+        +------------------------+
 | Source 1          |       | Scanner 1              |        | Storage Engine         |
 | - Scanner         +------>+ - Scan()               |        | - Prepare()            |
@@ -74,14 +74,14 @@ The architecture consists of several components:
 
 **Scanners:** These are responsible for scanning a particular source and returning a list of resources.
 
-**Storage Engine:** This component stores the discovered resources. It is responsible for preparing the storage schema, 
-persisting resources, and finding resources based on a filter.
+**Storage Engine:** This component stores the discovered resources. It is responsible for preparing the storage 
+schema, persisting resources, and finding resources based on a filter.
 
-**Processor:** This component orchestrates the discovery process. It starts all the scanners in parallel and processes 
-the resources as they become available.
+**Processor:** This component orchestrates the discovery process. It starts all the scanners in parallel and 
+processes the resources as they become available.
 
-**Visualizer:** This component is responsible for displaying the discovered resources and their relationships. It takes 
-in a display type and renders the resources in that format.
+**Visualizer:** This component is responsible for displaying the discovered resources and their relationships. It 
+takes in a display type and renders the resources in that format.
 
 ## Getting Started
 
@@ -106,7 +106,7 @@ teredix discover --config {your_config.yaml file}
 
 ### Build the resource relationship
 
-If you want to build the relationship between resources based on your relation criteria defined in your config file, 
+If you want to build the relationship between resources based on your relation criteria defined in your config file,
 run -
 
 ```shell
@@ -220,7 +220,7 @@ source:
       user_or_org: "xxxx"
 ```
 
-#### Available metadata:
+#### Available metadata for github_repository source
 
 | Meta Key                 | Description                                       |
 |--------------------------|---------------------------------------------------|
@@ -245,7 +245,7 @@ source:
     configuration:
       root_directory: "/path/to/directory"
 ```
-#### Available metadata: 
+#### Available metadata for file_system source
 
 | Meta Key       | Description                                       |
 |----------------|---------------------------------------------------|
@@ -275,7 +275,7 @@ storage:
 
 `storage.batch_size` control how many resources should be inserted at once. Because all the scanner
 run as goroutine and provide the resources as a channel for further processing/storing. So it's recommended
-to use batch_size to avoid consuming heavy memory load if your organization has so many resources for all the source 
+to use batch_size to avoid consuming heavy memory load if your organization has so many resources for all the source
 combined
 
 ## Supported Visualization
