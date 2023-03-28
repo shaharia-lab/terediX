@@ -8,6 +8,7 @@ import (
 	"teredix/pkg/storage"
 	"teredix/pkg/visualize"
 	"teredix/pkg/visualize/cytoscape"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -41,8 +42,16 @@ func NewDisplayCommand() *cobra.Command {
 			http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 				fmt.Fprint(writer, html)
 			})
+
 			log.Println("Displaying resource graph at http://localhost:8989")
-			err = http.ListenAndServe(":8989", nil)
+
+			server := &http.Server{
+				Addr:         ":8989",
+				Handler:      nil,
+				ReadTimeout:  10 * time.Second,
+				WriteTimeout: 10 * time.Second,
+			}
+			err = server.ListenAndServe()
 			if err != nil {
 				return err
 			}
