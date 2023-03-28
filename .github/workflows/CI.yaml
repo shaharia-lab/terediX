@@ -13,8 +13,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up Go ^1.20
         uses: actions/setup-go@v3
@@ -32,14 +30,14 @@ jobs:
     steps:
 
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-go@v3
         with:
           go-version: '^1.20'
           check-latest: true
           cache: true
-
-      - uses: actions/checkout@v3
 
       - name: Lint Code Base
         uses: github/super-linter/slim@v4
@@ -53,8 +51,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up Go ^1.20
         uses: actions/setup-go@v3
@@ -66,3 +62,29 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
+
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage.out
+          path: coverage.out
+
+  sonarcloud-scan:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage.out
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
