@@ -12,12 +12,5 @@ linters:
 linters-settings:
   gofmt:
     simplify: false
-  jscpd:
-    severity: "warning"
-    threshold: 10
-    min-lines: 5
-    exclude:
-      - "**/*_test.go"
-      - "**/*_mock.go"
 issues:
   exclude-use-default: false
