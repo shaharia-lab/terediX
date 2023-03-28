@@ -57,16 +57,36 @@ func (r *GitHubRepositoryScanner) Scan() []resource.Resource {
 			ExternalID: repo.GetFullName(),
 			MetaData: []resource.MetaData{
 				{
-					Key:   "Language",
+					Key:   "GitHub-Repo-Language",
 					Value: repo.GetLanguage(),
 				},
 				{
-					Key:   "Stars",
+					Key:   "GitHub-Repo-Stars",
 					Value: fmt.Sprintf("%d", repo.GetStargazersCount()),
 				},
 				{
 					Key:   pkg.MetaKeyScannerLabel,
 					Value: r.name,
+				},
+				{
+					Key:   "GitHub-Repo-Git-URL",
+					Value: repo.GetGitURL(),
+				},
+				{
+					Key:   "GitHub-Repo-Homepage",
+					Value: repo.GetHomepage(),
+				},
+				{
+					Key:   "GitHub-Repo-Organization",
+					Value: repo.GetOrganization().GetLogin(),
+				},
+				{
+					Key:   "GitHub-Owner",
+					Value: repo.GetOwner().GetLogin(),
+				},
+				{
+					Key:   "GitHub-Company",
+					Value: repo.GetOwner().GetCompany(),
 				},
 			},
 		}
