@@ -4,7 +4,6 @@ package storage
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 	"teredix/pkg/config"
 	"teredix/pkg/resource"
@@ -78,10 +77,6 @@ func BuildStorage(appConfig *config.AppConfig) Storage {
 			}
 
 			st = &PostgreSQL{DB: db}
-			err = st.Prepare()
-			if err != nil {
-				log.Fatal(err)
-			}
 		}
 	}
 

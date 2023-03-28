@@ -41,6 +41,10 @@ func run(cfgFile string) error {
 
 	sources := source.BuildSources(appConfig)
 	st := storage.BuildStorage(appConfig)
+	err = st.Prepare()
+	if err != nil {
+		return err
+	}
 
 	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
 	p := processor.NewProcessor(processConfig, st, sources)
