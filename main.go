@@ -1,4 +1,4 @@
-//Main package
+//Main package of the tool
 package main
 
 import (
