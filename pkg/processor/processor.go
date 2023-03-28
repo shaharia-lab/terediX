@@ -3,10 +3,11 @@ package processor
 
 import (
 	"fmt"
-	"github.com/kyokomi/emoji"
 	"sync"
 	"teredix/pkg/source"
 	"teredix/pkg/storage"
+
+	"github.com/kyokomi/emoji"
 
 	"teredix/pkg/resource"
 )

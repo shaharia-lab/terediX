@@ -1,7 +1,6 @@
 package processor
 
 import (
-	"github.com/stretchr/testify/mock"
 	"math"
 	"sync"
 	"teredix/pkg/resource"
@@ -9,6 +8,8 @@ import (
 	"teredix/pkg/source/scanner"
 	"teredix/pkg/storage"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func TestProcessor_Process(t *testing.T) {

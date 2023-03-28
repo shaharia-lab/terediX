@@ -2,12 +2,13 @@ package source
 
 import (
 	"context"
-	"github.com/google/go-github/v50/github"
-	"golang.org/x/oauth2"
 	"teredix/pkg"
 	"teredix/pkg/config"
 	"teredix/pkg/source/scanner"
 	"testing"
+
+	"github.com/google/go-github/v50/github"
+	"golang.org/x/oauth2"
 
 	"github.com/stretchr/testify/assert"
 )

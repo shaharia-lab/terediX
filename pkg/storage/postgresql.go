@@ -3,10 +3,11 @@ package storage
 
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
 	"strings"
 	"teredix/pkg/config"
 	"teredix/pkg/resource"
+
+	_ "github.com/lib/pq"
 )
 
 type PostgreSQL struct {

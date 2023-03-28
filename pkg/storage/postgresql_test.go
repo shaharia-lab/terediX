@@ -1,10 +1,11 @@
 package storage
 
 import (
-	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	"reflect"
 	"teredix/pkg/resource"
 	"testing"
+
+	sqlmock "github.com/DATA-DOG/go-sqlmock"
 )
 
 func TestPostgreSQL_Prepare(t *testing.T) {

@@ -2,11 +2,12 @@ package scanner
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
 	"teredix/pkg/resource"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFsScanner_Scan(t *testing.T) {

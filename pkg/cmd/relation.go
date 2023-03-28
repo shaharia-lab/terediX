@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"teredix/pkg/config"
 	"teredix/pkg/storage"
+
+	"github.com/spf13/cobra"
 )
 
 func NewRelationCommand() *cobra.Command {
