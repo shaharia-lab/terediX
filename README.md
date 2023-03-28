@@ -20,6 +20,25 @@ and gain a better understanding of how those resources are interconnected.
 
 ![Technical Resource Graph](https://user-images.githubusercontent.com/1095008/227896903-ff4b916d-893e-489e-8ffe-1469fff0703a.jpg)
 
+## Table of Contents
+- [Technical Architecture](#technical-architecture)
+- [Getting Started](#getting-started)
+    - [Run Discovery](#run-discovery)
+    - [Build the Resource Relationship](#build-the-resource-relationship)
+    - [Explore Resource Graph Visualization](#explore-resource-graph-visualization)
+- [Usage](#usage)
+- [Config File](#config-file)
+- [Supported Source](#supported-source)
+    - [GitHub Repository](#github-repository)
+    - [File System](#file-system)
+- [Supported Storage](#supported-storage)
+    - [PostgreSQL](#postgresql)
+- [Supported Visualization](#supported-visualization)
+    - [Cytoscape JS](#cytoscape-js)
+- [Contributing](#contributing)
+- [License](#license)
+
+
 ## Technical Architecture
 
 ```
@@ -62,10 +81,44 @@ the resources as they become available.
 **Visualizer:** This component is responsible for displaying the discovered resources and their relationships. It takes 
 in a display type and renders the resources in that format.
 
-## Installation
+## Getting Started
 
-- Download the binary from the [latest release](https://github.com/shahariaazam/terediX/releases)
-- Run `chmod +x ./teredix` to make it executable
+- To get started, you just need to download the latest binary from [latest release](https://github.com/shahariaazam/terediX/releases).
+- Prepare your config file. Here is the [example config file](#config-file).
+
+**This tool has three major commands available**
+
+| Command                  | Description                                                                         |
+|--------------------------|-------------------------------------------------------------------------------------|
+| discover                 | It will go through each sources and discover resources and save it to your database |
+| relation                 | This command is responsible to build relationship between resources                 |
+| display                  | It will generate visualized resource graph that can be opened in your browser       |
+
+### Run Discovery
+
+To discover the resources, run the following command.
+
+```shell
+teredix discover --config {your_config.yaml file}
+```
+
+### Build the resource relationship
+
+If you want to build the relationship between resources based on your relation criteria defined in your config file, 
+run -
+
+```shell
+teredix relation --config {your_config.yaml file}
+```
+
+### Explore Resource Graph Visualization
+
+To display the resource graph in an interactive way, please run the following command.
+
+```shell
+teredix display --config {your_config.yaml file}
+```
+It will show `Displaying resource graph at http://localhost:8989`. Open your browser and visit http://localhost:8989
 
 ## Usage
 
@@ -165,6 +218,20 @@ source:
       user_or_org: "xxxx"
 ```
 
+#### Available metadata:
+
+| Meta Key                 | Description                                       |
+|--------------------------|---------------------------------------------------|
+| GitHub-Repo-Language     | Primary language detected for this repository     |
+| GitHub-Repo-Stars        | Total count of stars                              |
+| Scanner-Label            | Name of the source configured in config.yaml file |
+| GitHub-Repo-Git-URL      | Git URL for the repository                        |
+| GitHub-Repo-Homepage     | Homepage URL of GitHub repository                 |
+| GitHub-Repo-Organization | Name of the organization                          |
+| GitHub-Owner             | Owner of GitHub repository                        |
+| GitHub-Company           | Company name of the GitHub repository owner       |
+
+
 ### File System
 
 It will scan the file system and generate resource for each file. Required configuration:
@@ -176,6 +243,14 @@ source:
     configuration:
       root_directory: "/path/to/directory"
 ```
+#### Available metadata: 
+
+| Meta Key       | Description                                       |
+|----------------|---------------------------------------------------|
+| Machine-Host   | Hostname of the machine                           |
+| Root-Directory | Root directory to scan the recursive file list    |
+| Scanner-Label  | Name of the source configured in config.yaml file |
+
 
 ## Supported Storage
 
