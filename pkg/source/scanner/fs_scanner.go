@@ -1,3 +1,4 @@
+// Package scanner scans targets
 package scanner
 
 import (
@@ -9,20 +10,24 @@ import (
 	"teredix/pkg/util"
 )
 
+// FsScanner store configuration for file system scanner
 type FsScanner struct {
 	name          string
 	rootDirectory string
 	metaData      map[string]string
 }
 
+// File represent file information
 type File struct {
 	Path string
 }
 
+// NewFsScanner construct new file system scanner
 func NewFsScanner(name, rootDirectory string, metaData map[string]string) FsScanner {
 	return FsScanner{name: name, rootDirectory: rootDirectory, metaData: metaData}
 }
 
+// Scan scans the file system
 func (s *FsScanner) Scan() []resource.Resource {
 	files, err := s.listFilesRecursive(s.rootDirectory)
 	if err != nil {

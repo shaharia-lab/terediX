@@ -1,3 +1,4 @@
+// Package scanner scans targets
 package scanner
 
 import (
@@ -10,18 +11,22 @@ import (
 	"github.com/google/go-github/v50/github"
 )
 
+// GitHubClient present interface to build GitHub client
 type GitHubClient interface {
 	ListRepositories(ctx context.Context, user string) ([]*github.Repository, error)
 }
 
+// GitHubRepositoryClient github repository client
 type GitHubRepositoryClient struct {
 	client *github.Client
 }
 
+// NewGitHubRepositoryClient construct new GitHub repository client
 func NewGitHubRepositoryClient(client *github.Client) *GitHubRepositoryClient {
 	return &GitHubRepositoryClient{client: client}
 }
 
+// ListRepositories provide list of repositories from GitHub
 func (c *GitHubRepositoryClient) ListRepositories(ctx context.Context, user string) ([]*github.Repository, error) {
 	repos, _, err := c.client.Repositories.List(ctx, user, nil)
 	if err != nil {
@@ -31,16 +36,19 @@ func (c *GitHubRepositoryClient) ListRepositories(ctx context.Context, user stri
 	return repos, nil
 }
 
+// GitHubRepositoryScanner GitHub repository scanner
 type GitHubRepositoryScanner struct {
 	ghClient GitHubClient
 	user     string
 	name     string
 }
 
+// NewGitHubRepositoryScanner construct a new GitHub repository scanner
 func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string) *GitHubRepositoryScanner {
 	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name}
 }
 
+// Scan scans GitHub to get the list of repositories as resources
 func (r *GitHubRepositoryScanner) Scan() []resource.Resource {
 	var resources []resource.Resource
 
