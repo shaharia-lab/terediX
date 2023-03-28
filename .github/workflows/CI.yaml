@@ -22,7 +22,7 @@ jobs:
       - name: Build
         run: make build
 
-  Lint:
+  lint:
     permissions:
       contents: read  # for actions/checkout to fetch code
       pull-requests: write  # for golangci/golangci-lint-action to fetch pull requests
