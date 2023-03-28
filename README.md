@@ -14,7 +14,7 @@
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
 
 `TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and
-explore them as a resource graph. Users can use **teredix** to create resource graphs that depict the relationships 
+explore them as a resource graph. Users can use **teredix** to create resource graphs that depict the relationships
 and dependencies between different resources. The tool also allows users to search for specific resources and view details about each resource, such as its name, type, description, and associated tags.
 
 **teredix** can be a useful tool for organizations looking to manage their technology resources more effectively and
@@ -74,13 +74,13 @@ The architecture consists of several components:
 
 **Scanners:** These are responsible for scanning a particular source and returning a list of resources.
 
-**Storage Engine:** This component stores the discovered resources. It is responsible for preparing the storage 
+**Storage Engine:** This component stores the discovered resources. It is responsible for preparing the storage
 schema, persisting resources, and finding resources based on a filter.
 
-**Processor:** This component orchestrates the discovery process. It starts all the scanners in parallel and 
+**Processor:** This component orchestrates the discovery process. It starts all the scanners in parallel and
 processes the resources as they become available.
 
-**Visualizer:** This component is responsible for displaying the discovered resources and their relationships. It 
+**Visualizer:** This component is responsible for displaying the discovered resources and their relationships. It
 takes in a display type and renders the resources in that format.
 
 ## Getting Started
@@ -120,7 +120,7 @@ To display the resource graph in an interactive way, please run the following co
 ```shell
 teredix display --config {your_config.yaml file}
 ```
-It will show `Displaying resource graph at http://localhost:8989`. Open your browser and visit http://localhost:8989
+It will show `Displaying resource graph at http://localhost:8989`. Open your browser and visit the URL.
 
 ## Usage
 
