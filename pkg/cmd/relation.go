@@ -1,3 +1,4 @@
+// Package main
 package cmd
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewRelationCommand build "relation" command
 func NewRelationCommand() *cobra.Command {
 	var cfgFile string
 

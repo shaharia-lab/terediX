@@ -1,3 +1,4 @@
+// Package cmd provides commands
 package cmd
 
 import (
@@ -13,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewDisplayCommand build "display" name
 func NewDisplayCommand() *cobra.Command {
 	var cfgFile string
 

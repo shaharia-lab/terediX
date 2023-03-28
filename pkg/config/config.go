@@ -1,3 +1,4 @@
+// Package config
 package config
 
 import (
@@ -8,32 +9,38 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Organization store organization data
 type Organization struct {
 	Name string `yaml:"name"`
 	Logo string `yaml:"logo"`
 }
 
+// Discovery hold discovery configuration
 type Discovery struct {
 	Name        string `yaml:"name"`
 	Description string `yaml:"description"`
 }
 
+// Storage store storage configuration
 type Storage struct {
 	BatchSize     int                    `yaml:"batch_size"`
 	Engines       map[string]interface{} `yaml:"engines"`
 	DefaultEngine string                 `yaml:"default_engine"`
 }
 
+// SourceConfiguration store source configuration data
 type SourceConfiguration struct {
 	RootDirectory string `yaml:"root_directory"`
 }
 
+// Source holds source configuration
 type Source struct {
 	Type          string            `yaml:"type"`
 	Configuration map[string]string `yaml:"configuration"`
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
 }
 
+// RelationCriteria represents criteria for relation builder
 type RelationCriteria struct {
 	Name                 string `yaml:"name"`
 	Kind                 string `yaml:"kind"`
@@ -44,10 +51,12 @@ type RelationCriteria struct {
 	RelatedMetadataValue string `yaml:"related_metadata_value"`
 }
 
+// Relation represent relationship rules
 type Relation struct {
 	RelationCriteria []RelationCriteria `yaml:"criteria"`
 }
 
+// AppConfig provides configuration for the tools
 type AppConfig struct {
 	Organization Organization      `yaml:"organization"`
 	Discovery    Discovery         `yaml:"discovery"`
@@ -56,6 +65,7 @@ type AppConfig struct {
 	Relation     Relation          `yaml:"relations"`
 }
 
+// Load loads configuration file
 func Load(path string) (*AppConfig, error) {
 	var appConfig AppConfig
 

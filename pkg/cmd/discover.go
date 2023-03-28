@@ -1,3 +1,4 @@
+// Package cmd provides commands
 package cmd
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewDiscoverCommand build "discover" command
 func NewDiscoverCommand() *cobra.Command {
 	var cfgFile string
 
