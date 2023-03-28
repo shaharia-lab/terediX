@@ -57,7 +57,7 @@ func TestProcessor_Process(t *testing.T) {
 	secondScanner := new(scanner.Mock)
 	secondScanner.On("Scan").Return(secondScannerResources)
 
-	mockStorage := new(storage.StorageMock)
+	mockStorage := new(storage.Mock)
 	mockStorage.On("Persist", mock.Anything).Return(nil)
 
 	sources := []source.Source{
