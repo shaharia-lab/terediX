@@ -56,83 +56,69 @@ func (p *PostgreSQL) Prepare() error {
 
 // Persist store resources
 func (p *PostgreSQL) Persist(resources []resource.Resource) error {
-	// Begin a transaction
-	tx, err := p.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			err := tx.Rollback()
-			if err != nil {
-				return
-			}
-			return
-		}
-		err = tx.Commit()
-	}()
-
-	// Prepare the SQL statements
-	resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id) VALUES ($1, $2, $3, $4) ON CONFLICT (external_id) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name RETURNING id")
-	if err != nil {
-		return err
-	}
-	defer func(resourcesStmt *sql.Stmt) {
-		err := resourcesStmt.Close()
-		if err != nil {
-			return
-		}
-	}(resourcesStmt)
-
-	metadataStmt, err := tx.Prepare("INSERT INTO metadata (resource_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (resource_id, key) DO UPDATE SET value = excluded.value")
-	if err != nil {
-		return err
-	}
-	defer func(metadataStmt *sql.Stmt) {
-		err := metadataStmt.Close()
-		if err != nil {
-			return
-		}
-	}(metadataStmt)
-
-	relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) SELECT $1, r.id FROM resources r WHERE r.external_id = $2 ON CONFLICT DO NOTHING")
-	if err != nil {
-		return err
-	}
-	defer func(relationsStmt *sql.Stmt) {
-		err := relationsStmt.Close()
-		if err != nil {
-			return
-		}
-	}(relationsStmt)
-
-	// Loop through the resources and insert or update them into the database
-	for _, res := range resources {
-		// Insert or update the resource
-		var id int
-		err := resourcesStmt.QueryRow(res.Kind, res.UUID, res.Name, res.ExternalID).Scan(&id)
+	return p.runInTransaction(func(tx *sql.Tx) error {
+		// Prepare the SQL statements
+		resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id) VALUES ($1, $2, $3, $4) ON CONFLICT (external_id) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name RETURNING id")
 		if err != nil {
 			return err
 		}
+		defer func(resourcesStmt *sql.Stmt) {
+			err := resourcesStmt.Close()
+			if err != nil {
+				return
+			}
+		}(resourcesStmt)
 
-		// Insert or update the metadata
-		for _, meta := range res.MetaData {
-			_, err = metadataStmt.Exec(id, meta.Key, meta.Value)
+		metadataStmt, err := tx.Prepare("INSERT INTO metadata (resource_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (resource_id, key) DO UPDATE SET value = excluded.value")
+		if err != nil {
+			return err
+		}
+		defer func(metadataStmt *sql.Stmt) {
+			err := metadataStmt.Close()
+			if err != nil {
+				return
+			}
+		}(metadataStmt)
+
+		relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) SELECT $1, r.id FROM resources r WHERE r.external_id = $2 ON CONFLICT DO NOTHING")
+		if err != nil {
+			return err
+		}
+		defer func(relationsStmt *sql.Stmt) {
+			err := relationsStmt.Close()
+			if err != nil {
+				return
+			}
+		}(relationsStmt)
+
+		// Loop through the resources and insert or update them into the database
+		for _, res := range resources {
+			// Insert or update the resource
+			var id int
+			err := resourcesStmt.QueryRow(res.Kind, res.UUID, res.Name, res.ExternalID).Scan(&id)
 			if err != nil {
 				return err
 			}
-		}
 
-		// Insert or update the relations
-		for _, related := range res.RelatedWith {
-			_, err = relationsStmt.Exec(id, related.ExternalID)
-			if err != nil {
-				return err
+			// Insert or update the metadata
+			for _, meta := range res.MetaData {
+				_, err = metadataStmt.Exec(id, meta.Key, meta.Value)
+				if err != nil {
+					return err
+				}
+			}
+
+			// Insert or update the relations
+			for _, related := range res.RelatedWith {
+				_, err = relationsStmt.Exec(id, related.ExternalID)
+				if err != nil {
+					return err
+				}
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 // Find resources based on criteria
@@ -223,43 +209,30 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 }
 
 // StoreRelations will go through all resources in the database and based on criteria it will insert relationship to "relations" table
+// StoreRelations will go through all resources in the database and based on criteria it will insert relationship to "relations" table
 func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
-	// Begin a transaction
-	tx, err := p.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			err := tx.Rollback()
-			if err != nil {
-				return
-			}
-			return
-		}
-		err = tx.Commit()
-	}()
-
-	// Prepare the SQL statement to insert relationships into the relations table
-	relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) VALUES ($1, $2)")
-	if err != nil {
-		return err
-	}
-	defer func(relationsStmt *sql.Stmt) {
-		err := relationsStmt.Close()
-		if err != nil {
-			return
-		}
-	}(relationsStmt)
-
-	for _, rc := range relation.RelationCriteria {
-		err = p.storeRelationMatrix(rc, relationsStmt)
+	return p.runInTransaction(func(tx *sql.Tx) error {
+		// Prepare the SQL statement to insert relationships into the relations table
+		relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) VALUES ($1, $2)")
 		if err != nil {
 			return err
 		}
-	}
+		defer func(relationsStmt *sql.Stmt) {
+			err := relationsStmt.Close()
+			if err != nil {
+				return
+			}
+		}(relationsStmt)
 
-	return nil
+		for _, rc := range relation.RelationCriteria {
+			err = p.storeRelationMatrix(rc, relationsStmt)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }
 
 func (p *PostgreSQL) storeRelationMatrix(rc config.RelationCriteria, relationsStmt *sql.Stmt) error {
@@ -379,4 +352,23 @@ func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
 	}
 
 	return relations, nil
+}
+
+func (p *PostgreSQL) runInTransaction(f func(tx *sql.Tx) error) error {
+	tx, err := p.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			err := tx.Rollback()
+			if err != nil {
+				return
+			}
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	return f(tx)
 }
