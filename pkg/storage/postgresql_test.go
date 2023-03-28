@@ -89,3 +89,42 @@ func TestPostgreSQL_Persist(t *testing.T) {
 		t.Errorf("unfulfilled mock expectations: %s", err)
 	}
 }
+
+func TestPostgreSQL_Find(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to create mock database connection: %v", err)
+	}
+	defer db.Close()
+
+	p := &PostgreSQL{DB: db}
+
+	// expected rows returned by the mock database query
+	expectedRows := sqlmock.NewRows([]string{"kind", "uuid", "name", "external_id", "meta_key", "meta_value", "related_kind", "related_uuid", "related_name", "related_external_id"}).
+		AddRow("kind1", "uuid1", "name1", "external_id1", "meta_key1", "meta_value1", "related_kind1", "related_uuid1", "related_name1", "related_external_id1").
+		AddRow("kind2", "uuid2", "name2", "external_id2", "meta_key2", "meta_value2", "related_kind2", "related_uuid2", "related_name2", "related_external_id2")
+
+	// set up mock database query expectations
+	mock.ExpectQuery("SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id").
+		WillReturnRows(expectedRows)
+
+	// set up filter
+	filter := ResourceFilter{}
+
+	// call the method being tested
+	resources, err := p.Find(filter)
+	if err != nil {
+		t.Fatalf("unexpected error from Find: %v", err)
+	}
+
+	// verify the result
+	if len(resources) != 2 {
+		t.Fatalf("unexpected number of resources: got %d, want 2", len(resources))
+	}
+	if resources[0].Kind != "kind1" || resources[0].UUID != "uuid1" || resources[0].Name != "name1" || resources[0].ExternalID != "external_id1" {
+		t.Errorf("unexpected resource 0: %+v", resources[0])
+	}
+	if resources[1].Kind != "kind2" || resources[1].UUID != "uuid2" || resources[1].Name != "name2" || resources[1].ExternalID != "external_id2" {
+		t.Errorf("unexpected resource 1: %+v", resources[1])
+	}
+}
