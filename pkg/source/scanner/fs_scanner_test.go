@@ -22,7 +22,7 @@ func TestFsScanner_Scan(t *testing.T) {
 		{
 			name: "single file",
 			files: map[string]string{
-				"file1.txt": "file1 content",
+				"filex.txt": "file1 content",
 			},
 			attachMetaData: map[string]string{"key1": "value1", "key2": "value2"},
 			expected: []resource.Resource{
@@ -50,8 +50,8 @@ func TestFsScanner_Scan(t *testing.T) {
 				{
 					Kind:       "FilePath",
 					UUID:       "xxxx",
-					Name:       fmt.Sprintf("%s/%s", tmpDir, "file1.txt"),
-					ExternalID: fmt.Sprintf("%s/%s", tmpDir, "file1.txt"),
+					Name:       fmt.Sprintf("%s/%s", tmpDir, "filex.txt"),
+					ExternalID: fmt.Sprintf("%s/%s", tmpDir, "filex.txt"),
 					RelatedWith: []resource.Resource{
 						{
 							Kind: "FileDirectory",
@@ -80,7 +80,7 @@ func TestFsScanner_Scan(t *testing.T) {
 			name: "nested directories",
 			files: map[string]string{
 				"dir1/nested1.txt": "content",
-				"file1.txt":        "file1 content",
+				"filex.txt":        "file1 content",
 			},
 			attachMetaData: map[string]string{},
 			expected: []resource.Resource{
@@ -119,8 +119,8 @@ func TestFsScanner_Scan(t *testing.T) {
 				{
 					Kind:       "FilePath",
 					UUID:       "xxxx",
-					Name:       fmt.Sprintf("%s/%s", tmpDir, "file1.txt"),
-					ExternalID: fmt.Sprintf("%s/%s", tmpDir, "file1.txt"),
+					Name:       fmt.Sprintf("%s/%s", tmpDir, "filex.txt"),
+					ExternalID: fmt.Sprintf("%s/%s", tmpDir, "filex.txt"),
 					RelatedWith: []resource.Resource{
 						{
 							Kind: "FileDirectory",
