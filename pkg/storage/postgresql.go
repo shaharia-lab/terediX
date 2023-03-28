@@ -10,10 +10,12 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// PostgreSQL store storage configuration for PostgreSQL database
 type PostgreSQL struct {
 	DB *sql.DB
 }
 
+// Prepare to prepare the database
 func (p *PostgreSQL) Prepare() error {
 	// Create the resources table if it doesn't exist
 	_, err := p.DB.Exec(`CREATE TABLE IF NOT EXISTS resources (
@@ -52,6 +54,7 @@ func (p *PostgreSQL) Prepare() error {
 	return nil
 }
 
+// Persist store resources
 func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 	// Begin a transaction
 	tx, err := p.DB.Begin()
@@ -132,6 +135,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 	return nil
 }
 
+// Find resources based on criteria
 func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	var resources []resource.Resource
 
@@ -313,6 +317,7 @@ func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBu
 	return matrix
 }
 
+// GetResources fetch all resources from storage
 func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 	resources := []resource.Resource{}
 
@@ -343,6 +348,7 @@ func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 	return resources, nil
 }
 
+// GetRelations fetch all the relations between resources
 func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
 	var relations []map[string]string
 

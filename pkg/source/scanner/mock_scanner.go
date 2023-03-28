@@ -1,3 +1,4 @@
+// Package scanner scans targets
 package scanner
 
 import (
