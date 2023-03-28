@@ -2,6 +2,7 @@ package storage
 
 import (
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
+	"reflect"
 	"teredix/pkg/resource"
 	"testing"
 )
@@ -126,5 +127,50 @@ func TestPostgreSQL_Find(t *testing.T) {
 	}
 	if resources[1].Kind != "kind2" || resources[1].UUID != "uuid2" || resources[1].Name != "name2" || resources[1].ExternalID != "external_id2" {
 		t.Errorf("unexpected resource 1: %+v", resources[1])
+	}
+}
+
+func TestGetRelations(t *testing.T) {
+	// Create a new sqlmock database connection
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Error creating mock database connection: %s", err)
+	}
+	defer db.Close()
+
+	// Create a new PostgreSQL object using the mock database connection
+	p := &PostgreSQL{DB: db}
+
+	// Set up expected results from the mock database
+	expected := []map[string]string{
+		{"resource1": "related_resource1"},
+		{"resource2": "related_resource2"},
+	}
+
+	// Set up mock database rows and columns
+	rows := sqlmock.NewRows([]string{"resource_uuid", "related_resource_uuid"}).
+		AddRow("resource1", "related_resource1").
+		AddRow("resource2", "related_resource2")
+
+	// Expect a query to the "relations" table and return the mock rows
+	mock.ExpectQuery("SELECT r.uuid as resource_uuid, r2.uuid as related_resource_uuid FROM relations left join resources r on r.id = relations.resource_id left join resources r2 on r2.id = relations.related_resource_id").
+		WillReturnRows(rows)
+
+	// Call the GetRelations method
+	relations, err := p.GetRelations()
+
+	// Check for errors
+	if err != nil {
+		t.Fatalf("Error calling GetRelations: %s", err)
+	}
+
+	// Compare expected and actual results
+	if !reflect.DeepEqual(expected, relations) {
+		t.Fatalf("Expected %v, but got %v", expected, relations)
+	}
+
+	// Verify that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("Unfulfilled expectations: %s", err)
 	}
 }
