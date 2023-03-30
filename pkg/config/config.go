@@ -41,9 +41,9 @@ type Source struct {
 }
 
 type RelationCriteriaNode struct {
-	Kind      string
-	MetaKey   string
-	MetaValue string
+	Kind      string `yaml:"kind"`
+	MetaKey   string `yaml:"meta_key"`
+	MetaValue string `yaml:"meta_value"`
 }
 
 // RelationCriteria represents criteria for relation builder
@@ -281,48 +281,24 @@ func (c *AppConfig) validateRelationCriteria(criteria RelationCriteria) error {
 		return fmt.Errorf("relations.criteria.name is required")
 	}
 
-	if criteria.Kind == "" {
-		return fmt.Errorf("relations.criteria.kind is required")
-	}
-
 	if criteria.Source.Kind == "" {
 		return fmt.Errorf("relations.criteria.source.kind is required")
-	}
-
-	if criteria.MetadataKey == "" {
-		return fmt.Errorf("relations.criteria.metadata_key is required")
 	}
 
 	if criteria.Source.MetaKey == "" {
 		return fmt.Errorf("relations.criteria.source.meta_key is required")
 	}
 
-	if criteria.MetadataValue == "" {
-		return fmt.Errorf("relations.criteria.metadata_value is required")
-	}
-
 	if criteria.Source.MetaValue == "" {
 		return fmt.Errorf("relations.criteria.source.meta_value is required")
-	}
-
-	if criteria.RelatedKind == "" {
-		return fmt.Errorf("relations.criteria.related_kind is required")
 	}
 
 	if criteria.Target.Kind == "" {
 		return fmt.Errorf("relations.criteria.target.kind is required")
 	}
 
-	if criteria.RelatedMetadataKey == "" {
-		return fmt.Errorf("relations.criteria.related_metadata_key is required")
-	}
-
 	if criteria.Target.MetaKey == "" {
 		return fmt.Errorf("relations.criteria.target.meta_key is required")
-	}
-
-	if criteria.RelatedMetadataValue == "" {
-		return fmt.Errorf("relations.criteria.related_metadata_value is required")
 	}
 
 	if criteria.Target.MetaValue == "" {

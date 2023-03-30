@@ -69,13 +69,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -118,13 +112,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -167,13 +155,8 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
+						Kind: "kind",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -209,13 +192,8 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
+						Kind: "kind",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -260,13 +238,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -308,13 +280,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -358,13 +324,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -408,13 +368,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -457,13 +411,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -519,13 +467,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -569,13 +511,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -617,13 +553,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -667,13 +597,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -716,13 +640,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -762,13 +680,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -806,13 +718,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -850,13 +756,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -896,13 +796,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -939,13 +833,7 @@ func TestValidate(t *testing.T) {
 				Sources: map[string]Source{},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -989,13 +877,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -1040,13 +922,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -1091,13 +967,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -1229,12 +1099,6 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -1251,7 +1115,7 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "missing relation criteria kind",
+			name: "missing relation criteria source.kind",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
 				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
@@ -1278,14 +1142,9 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
-							Kind:      "kind",
+							Kind:      "",
 							MetaKey:   "source_kind-key1",
 							MetaValue: "source-kind-value1",
 						},
@@ -1300,7 +1159,7 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "missing relation criteria metadata key",
+			name: "missing relation criteria source.meta_key",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
 				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
@@ -1327,15 +1186,9 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
-							MetaKey:   "source_kind-key1",
 							MetaValue: "source-kind-value1",
 						},
 						Target: RelationCriteriaNode{
@@ -1349,7 +1202,7 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "missing relation criteria metadata value",
+			name: "missing relation criteria source.meta_value",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
 				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
@@ -1376,16 +1229,10 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
-							Kind:      "kind",
-							MetaKey:   "source_kind-key1",
-							MetaValue: "source-kind-value1",
+							Kind:    "kind",
+							MetaKey: "source_kind-key1",
 						},
 						Target: RelationCriteriaNode{
 							Kind:      "related-kind",
@@ -1398,7 +1245,7 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "missing relation criteria related kind",
+			name: "missing relation criteria target.kind",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
 				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
@@ -1425,19 +1272,13 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
 							MetaValue: "source-kind-value1",
 						},
 						Target: RelationCriteriaNode{
-							Kind:      "related-kind",
 							MetaKey:   "related-metadata-key",
 							MetaValue: "related-metadata-value",
 						},
@@ -1447,7 +1288,7 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "missing relation criteria related metadata key",
+			name: "missing relation criteria target.meta_key",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
 				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
@@ -1474,12 +1315,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -1487,7 +1323,6 @@ func TestValidate(t *testing.T) {
 						},
 						Target: RelationCriteriaNode{
 							Kind:      "related-kind",
-							MetaKey:   "related-metadata-key",
 							MetaValue: "related-metadata-value",
 						},
 					},
@@ -1496,7 +1331,7 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "missing relation criteria related metadata value",
+			name: "missing relation criteria target.meta_value",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
 				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
@@ -1523,21 +1358,15 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:               "name",
-						Kind:               "kind",
-						MetadataKey:        "source-kind-key1",
-						MetadataValue:      "source-kind-value1",
-						RelatedKind:        "related-kind",
-						RelatedMetadataKey: "related-metadata-key",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
 							MetaValue: "source-kind-value1",
 						},
 						Target: RelationCriteriaNode{
-							Kind:      "related-kind",
-							MetaKey:   "related-metadata-key",
-							MetaValue: "related-metadata-value",
+							Kind:    "related-kind",
+							MetaKey: "related-metadata-key",
 						},
 					},
 				}},
@@ -1572,13 +1401,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",
@@ -1622,13 +1445,7 @@ func TestValidate(t *testing.T) {
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
-						Name:                 "name",
-						Kind:                 "kind",
-						MetadataKey:          "source-kind-key1",
-						MetadataValue:        "source-kind-value1",
-						RelatedKind:          "related-kind",
-						RelatedMetadataKey:   "related-metadata-key",
-						RelatedMetadataValue: "related-metadata-value",
+						Name: "name",
 						Source: RelationCriteriaNode{
 							Kind:      "kind",
 							MetaKey:   "source_kind-key1",

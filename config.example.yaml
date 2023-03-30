@@ -38,12 +38,6 @@ source:
 relations:
   criteria:
     - name: "file-system-rule1"
-      kind: "FilePath"
-      metadata_key: "Root-Directory"
-      metadata_value: "/home/shaharia/Projects/teredix/pkg"
-      related_kind: "FileDirectory"
-      related_metadata_key: "Root-Directory"
-      related_metadata_value: "/home/shaharia/Projects/teredix/pkg"
       source:
         kind: "FilePath"
         meta_key: "Root-Directory"
