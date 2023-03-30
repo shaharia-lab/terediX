@@ -212,15 +212,15 @@ func (c *AppConfig) validateSources(sources map[string]Source) error {
 func (c *AppConfig) validateSourceConfiguration(name string, source Source) error {
 	switch source.Type {
 	case pkg.SourceTypeFileSystem:
-		if err := c.validateFileSystemSourceConfiguration(name, source); err != nil {
+		if err := c.validateConfigurationKeys(name, source, "root_directory"); err != nil {
 			return err
 		}
 	case "kubernetes":
-		if err := c.validateKubernetesSourceConfiguration(name, source); err != nil {
+		if err := c.validateConfigurationKeys(name, source, "kube_config_file_path"); err != nil {
 			return err
 		}
 	case pkg.SourceTypeGitHubRepository:
-		if err := c.validateGitHubRepositorySourceConfiguration(name, source); err != nil {
+		if err := c.validateConfigurationKeys(name, source, "token", "user_or_org"); err != nil {
 			return err
 		}
 	default:
@@ -229,31 +229,12 @@ func (c *AppConfig) validateSourceConfiguration(name string, source Source) erro
 	return nil
 }
 
-func (c *AppConfig) validateFileSystemSourceConfiguration(name string, source Source) error {
-	rootDirectory, ok := source.Configuration["root_directory"]
-	if !ok || rootDirectory == "" {
-		return fmt.Errorf("source '%s' requires 'configuration.root_directory'", name)
-	}
-	return nil
-}
-
-func (c *AppConfig) validateKubernetesSourceConfiguration(name string, source Source) error {
-	kubeConfigFilePath, ok := source.Configuration["kube_config_file_path"]
-	if !ok || kubeConfigFilePath == "" {
-		return fmt.Errorf("source '%s' requires 'configuration.kube_config_file_path'", name)
-	}
-	return nil
-}
-
-func (c *AppConfig) validateGitHubRepositorySourceConfiguration(name string, source Source) error {
-	ghToken, ok := source.Configuration["token"]
-	if !ok || ghToken == "" {
-		return fmt.Errorf("source '%s' requires 'configuration.token'", name)
-	}
-
-	userOrOrg, ok := source.Configuration["user_or_org"]
-	if !ok || userOrOrg == "" {
-		return fmt.Errorf("source '%s' requires 'configuration.user_or_org'", name)
+func (c *AppConfig) validateConfigurationKeys(sourceName string, source Source, requiredKeys ...string) error {
+	for _, k := range requiredKeys {
+		keyNotEmpty, ok := source.Configuration[k]
+		if !ok || keyNotEmpty == "" {
+			return fmt.Errorf("source '%s' requires 'configuration.%s'", k, sourceName)
+		}
 	}
 
 	return nil
