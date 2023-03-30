@@ -2,6 +2,7 @@ package storage
 
 import (
 	"reflect"
+	"teredix/pkg/config"
 	"teredix/pkg/resource"
 	"testing"
 
@@ -172,5 +173,58 @@ func TestGetRelations(t *testing.T) {
 	// Verify that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Fatalf("Unfulfilled expectations: %s", err)
+	}
+}
+
+func TestAnalyzeRelationMatrix(t *testing.T) {
+	// Create a new mock database and get a handle for the mock database
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	// Create a new instance of the PostgreSQL struct with the mock database
+	p := &PostgreSQL{DB: db}
+
+	// Define expected rows for the first query
+	rows1 := sqlmock.NewRows([]string{"resource_ids"}).
+		AddRow("1,2,3")
+
+	// Define expected rows for the second query
+	rows2 := sqlmock.NewRows([]string{"resource_ids"}).
+		AddRow("4,5,6")
+
+	// Set up the mock expectations for the first query
+	mock.ExpectQuery("SELECT STRING_AGG").
+		WithArgs("related_key", "related_value", "related").
+		WillReturnRows(rows1)
+
+	// Set up the mock expectations for the second query
+	mock.ExpectQuery("SELECT STRING_AGG").
+		WithArgs("metadata_key", "metadata_value", "kind").
+		WillReturnRows(rows2)
+
+	// Call the function with the mock PostgreSQL instance
+	matrix, err := p.analyzeRelationMatrix(config.RelationCriteria{
+		RelatedMetadataKey:   "related_key",
+		RelatedMetadataValue: "related_value",
+		RelatedKind:          "related",
+		MetadataKey:          "metadata_key",
+		MetadataValue:        "metadata_value",
+		Kind:                 "kind",
+	})
+
+	// Check the results
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if len(matrix) != 9 {
+		t.Errorf("Unexpected number of rows returned: %d", len(matrix))
+	}
+
+	// Ensure all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
 	}
 }
