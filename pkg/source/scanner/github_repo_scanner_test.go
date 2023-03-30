@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"teredix/pkg/resource"
 	"testing"
 
@@ -19,13 +20,13 @@ type GitHubClientMock struct {
 	mock.Mock
 }
 
-// ListRepositories provides a mock function with given fields: ctx, user
-func (_m *GitHubClientMock) ListRepositories(ctx context.Context, user string) ([]*github.Repository, error) {
-	ret := _m.Called(ctx, user)
+// ListRepositories provides a mock function with given fields: ctx, user, opts
+func (_m *GitHubClientMock) ListRepositories(ctx context.Context, user string, opts *github.RepositoryListOptions) ([]*github.Repository, error) {
+	ret := _m.Called(ctx, user, opts)
 
 	var r0 []*github.Repository
-	if rf, ok := ret.Get(0).(func(context.Context, string) []*github.Repository); ok {
-		r0 = rf(ctx, user)
+	if rf, ok := ret.Get(0).(func(context.Context, string, *github.RepositoryListOptions) []*github.Repository); ok {
+		r0 = rf(ctx, user, opts)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*github.Repository)
@@ -33,8 +34,8 @@ func (_m *GitHubClientMock) ListRepositories(ctx context.Context, user string) (
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, user)
+	if rf, ok := ret.Get(1).(func(context.Context, string, *github.RepositoryListOptions) error); ok {
+		r1 = rf(ctx, user, opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -44,10 +45,11 @@ func (_m *GitHubClientMock) ListRepositories(ctx context.Context, user string) (
 
 func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 	testCases := []struct {
-		name           string
-		user           string
-		ghRepositories []*github.Repository
-		want           []resource.Resource
+		name                 string
+		user                 string
+		ghRepositories       []*github.Repository
+		want                 []resource.Resource
+		expectedMetaDataKeys []string
 	}{
 		{
 			name: "returns resources",
@@ -59,6 +61,7 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 					FullName:        github.String("testuser/testrepo"),
 					Language:        github.String("Go"),
 					StargazersCount: github.Int(42),
+					GitURL:          github.String("https://git_url"),
 				},
 			},
 			want: []resource.Resource{
@@ -73,22 +76,40 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 					},
 				},
 			},
+			expectedMetaDataKeys: []string{
+				"GitHub-Repo-Language",
+				"GitHub-Repo-Stars",
+				"GitHub-Repo-Homepage",
+				"GitHub-Repo-Organization",
+				"GitHub-Owner",
+				"GitHub-Company",
+				"GitHub-Repo-Topic",
+				"Scanner-Label",
+				"GitHub-Repo-Git-URL",
+			},
 		},
 		{
-			name:           "returns empty resource list on error",
-			user:           "testuser",
-			ghRepositories: []*github.Repository{},
-			want:           []resource.Resource{},
+			name:                 "returns empty resource list on error",
+			user:                 "testuser",
+			ghRepositories:       []*github.Repository{},
+			want:                 []resource.Resource{},
+			expectedMetaDataKeys: []string{},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			mockClient := new(GitHubClientMock)
-			mockClient.On("ListRepositories", mock.Anything, mock.Anything).Return(tc.ghRepositories, nil)
+			mockClient.On("ListRepositories", mock.Anything, mock.Anything, mock.Anything).Return(tc.ghRepositories, nil)
 
 			s := NewGitHubRepositoryScanner("test", mockClient, tc.user)
 			got := s.Scan()
+
+			for _, r := range got {
+				for _, md := range r.MetaData {
+					assert.True(t, containsValue(tc.expectedMetaDataKeys, md.Key))
+				}
+			}
 
 			assert.Equal(t, len(tc.ghRepositories), len(got))
 		})
@@ -111,7 +132,7 @@ func TestNewGitHubRepositoryClient_ListRepositories_Return_Data(t *testing.T) {
 
 	client, _ := github.NewEnterpriseClient(ts.URL, "", ts.Client())
 	gc := NewGitHubRepositoryClient(client)
-	repositories, err := gc.ListRepositories(ctx, "HI")
+	repositories, err := gc.ListRepositories(ctx, "HI", &github.RepositoryListOptions{})
 
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(repositories))
@@ -126,8 +147,17 @@ func TestNewGitHubRepositoryClient_ListRepositories_Bad_Response_Code(t *testing
 
 	client, _ := github.NewEnterpriseClient(ts.URL, "", ts.Client())
 	gc := NewGitHubRepositoryClient(client)
-	_, err := gc.ListRepositories(ctx, "HI")
+	_, err := gc.ListRepositories(ctx, "HI", &github.RepositoryListOptions{})
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to list repositories for user HI")
+}
+
+func containsValue(values []string, value string) bool {
+	for _, v := range values {
+		if strings.Contains(v, value) {
+			return true
+		}
+	}
+	return false
 }
