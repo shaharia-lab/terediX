@@ -213,6 +213,16 @@ func TestAnalyzeRelationMatrix(t *testing.T) {
 		MetadataKey:          "metadata_key",
 		MetadataValue:        "metadata_value",
 		Kind:                 "kind",
+		Source: config.RelationCriteriaNode{
+			Kind:      "kind",
+			MetaKey:   "metadata_key",
+			MetaValue: "metadata_value",
+		},
+		Target: config.RelationCriteriaNode{
+			Kind:      "related",
+			MetaKey:   "related_key",
+			MetaValue: "related_value",
+		},
 	})
 
 	// Check the results

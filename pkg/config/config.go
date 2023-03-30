@@ -40,15 +40,23 @@ type Source struct {
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
 }
 
+type RelationCriteriaNode struct {
+	Kind      string
+	MetaKey   string
+	MetaValue string
+}
+
 // RelationCriteria represents criteria for relation builder
 type RelationCriteria struct {
-	Name                 string `yaml:"name"`
-	Kind                 string `yaml:"kind"`
-	MetadataKey          string `yaml:"metadata_key"`
-	MetadataValue        string `yaml:"metadata_value"`
-	RelatedKind          string `yaml:"related_kind"`
-	RelatedMetadataKey   string `yaml:"related_metadata_key"`
-	RelatedMetadataValue string `yaml:"related_metadata_value"`
+	Name                 string               `yaml:"name"`
+	Kind                 string               `yaml:"kind"`
+	MetadataKey          string               `yaml:"metadata_key"`
+	MetadataValue        string               `yaml:"metadata_value"`
+	RelatedKind          string               `yaml:"related_kind"`
+	RelatedMetadataKey   string               `yaml:"related_metadata_key"`
+	RelatedMetadataValue string               `yaml:"related_metadata_value"`
+	Source               RelationCriteriaNode `yaml:"source"`
+	Target               RelationCriteriaNode `yaml:"target"`
 }
 
 // Relation represent relationship rules
@@ -277,24 +285,48 @@ func (c *AppConfig) validateRelationCriteria(criteria RelationCriteria) error {
 		return fmt.Errorf("relations.criteria.kind is required")
 	}
 
+	if criteria.Source.Kind == "" {
+		return fmt.Errorf("relations.criteria.source.kind is required")
+	}
+
 	if criteria.MetadataKey == "" {
 		return fmt.Errorf("relations.criteria.metadata_key is required")
+	}
+
+	if criteria.Source.MetaKey == "" {
+		return fmt.Errorf("relations.criteria.source.meta_key is required")
 	}
 
 	if criteria.MetadataValue == "" {
 		return fmt.Errorf("relations.criteria.metadata_value is required")
 	}
 
+	if criteria.Source.MetaValue == "" {
+		return fmt.Errorf("relations.criteria.source.meta_value is required")
+	}
+
 	if criteria.RelatedKind == "" {
 		return fmt.Errorf("relations.criteria.related_kind is required")
+	}
+
+	if criteria.Target.Kind == "" {
+		return fmt.Errorf("relations.criteria.target.kind is required")
 	}
 
 	if criteria.RelatedMetadataKey == "" {
 		return fmt.Errorf("relations.criteria.related_metadata_key is required")
 	}
 
+	if criteria.Target.MetaKey == "" {
+		return fmt.Errorf("relations.criteria.target.meta_key is required")
+	}
+
 	if criteria.RelatedMetadataValue == "" {
 		return fmt.Errorf("relations.criteria.related_metadata_value is required")
+	}
+
+	if criteria.Target.MetaValue == "" {
+		return fmt.Errorf("relations.criteria.target.meta_value is required")
 	}
 	return nil
 }

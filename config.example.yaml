@@ -44,3 +44,11 @@ relations:
       related_kind: "FileDirectory"
       related_metadata_key: "Root-Directory"
       related_metadata_value: "/home/shaharia/Projects/teredix/pkg"
+      source:
+        kind: "FilePath"
+        meta_key: "Root-Directory"
+        meta_value: "/home/shaharia/Projects/teredix/pkg"
+      target:
+        kind: "FilePath"
+        meta_key: "Root-Directory"
+        meta_value: "/home/shaharia/Projects/teredix/pkg"
