@@ -232,6 +232,7 @@ source:
 | GitHub-Repo-Organization | Name of the organization                          |
 | GitHub-Owner             | Owner of GitHub repository                        |
 | GitHub-Company           | Company name of the GitHub repository owner       |
+| GitHub-Repo-Topic        | Topics of GitHub repository                       |
 
 
 ### File System

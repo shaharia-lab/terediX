@@ -35,7 +35,7 @@ func (p *PostgreSQL) Prepare() error {
 		resource_id INTEGER REFERENCES resources(id),
 		key TEXT NOT NULL,
 		value TEXT NOT NULL,
-		PRIMARY KEY(resource_id, key)
+		PRIMARY KEY(resource_id, key, value)
 	)`)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 			}
 		}(resourcesStmt)
 
-		metadataStmt, err := tx.Prepare("INSERT INTO metadata (resource_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (resource_id, key) DO UPDATE SET value = excluded.value")
+		metadataStmt, err := tx.Prepare("INSERT INTO metadata (resource_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (resource_id, key, value) DO UPDATE SET value = excluded.value")
 		if err != nil {
 			return err
 		}
