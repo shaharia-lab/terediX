@@ -1,37 +1,46 @@
+// Package config read and validate config file
 package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
+	"teredix/pkg"
+
+	"gopkg.in/yaml.v3"
 )
 
+// Organization store organization data
 type Organization struct {
 	Name string `yaml:"name"`
 	Logo string `yaml:"logo"`
 }
 
+// Discovery hold discovery configuration
 type Discovery struct {
 	Name        string `yaml:"name"`
 	Description string `yaml:"description"`
 }
 
+// Storage store storage configuration
 type Storage struct {
 	BatchSize     int                    `yaml:"batch_size"`
 	Engines       map[string]interface{} `yaml:"engines"`
 	DefaultEngine string                 `yaml:"default_engine"`
 }
 
+// SourceConfiguration store source configuration data
 type SourceConfiguration struct {
 	RootDirectory string `yaml:"root_directory"`
 }
 
+// Source holds source configuration
 type Source struct {
 	Type          string            `yaml:"type"`
 	Configuration map[string]string `yaml:"configuration"`
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
 }
 
+// RelationCriteria represents criteria for relation builder
 type RelationCriteria struct {
 	Name                 string `yaml:"name"`
 	Kind                 string `yaml:"kind"`
@@ -42,10 +51,12 @@ type RelationCriteria struct {
 	RelatedMetadataValue string `yaml:"related_metadata_value"`
 }
 
+// Relation represent relationship rules
 type Relation struct {
 	RelationCriteria []RelationCriteria `yaml:"criteria"`
 }
 
+// AppConfig provides configuration for the tools
 type AppConfig struct {
 	Organization Organization      `yaml:"organization"`
 	Discovery    Discovery         `yaml:"discovery"`
@@ -54,6 +65,7 @@ type AppConfig struct {
 	Relation     Relation          `yaml:"relations"`
 }
 
+// Load loads configuration file
 func Load(path string) (*AppConfig, error) {
 	var appConfig AppConfig
 
@@ -72,107 +84,76 @@ func Load(path string) (*AppConfig, error) {
 
 // Validate Add this method to your AppConfig struct
 func Validate(c *AppConfig) error {
-	if c.Organization.Name == "" {
+	err := c.validateOrganization(c.Organization)
+	if err != nil {
+		return err
+	}
+
+	err = c.validateDiscovery(c.Discovery)
+	if err != nil {
+		return err
+	}
+
+	err = c.validateStorage(c.Storage)
+	if err != nil {
+		return err
+	}
+
+	err = c.validateSources(c.Sources)
+	if err != nil {
+		return err
+	}
+
+	err = c.validateRelations(c.Relation)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *AppConfig) validateOrganization(org Organization) error {
+	if org.Name == "" {
 		return fmt.Errorf("organization name is required")
 	}
 
-	if c.Discovery.Name == "" {
+	return nil
+}
+
+func (c *AppConfig) validateDiscovery(discovery Discovery) error {
+	if discovery.Name == "" {
 		return fmt.Errorf("discovery name is required")
 	}
 
-	if c.Storage.BatchSize <= 0 {
+	return nil
+}
+
+func (c *AppConfig) validateStorage(storage Storage) error {
+	if storage.BatchSize <= 0 {
 		return fmt.Errorf("storage batch_size must be greater than 0")
 	}
 
-	if len(c.Storage.Engines) == 0 {
+	if len(storage.Engines) == 0 {
 		return fmt.Errorf("at least one storage engine must be defined")
 	}
 
-	if _, ok := c.Storage.Engines[c.Storage.DefaultEngine]; !ok {
+	if _, ok := storage.Engines[storage.DefaultEngine]; !ok {
 		return fmt.Errorf("default storage engine must be one of the defined engines")
 	}
 
 	// Validate storage engines
-	for engine, config := range c.Storage.Engines {
+	for engine, config := range storage.Engines {
 		switch engine {
 		case "postgresql":
 			if err := c.validatePostgresqlEngine(config); err != nil {
 				return err
 			}
 		case "neo4j":
-			if err := c.validateNeo4jEngine(config); err != nil {
+			if err := validateNeo4jEngine(config); err != nil {
 				return err
 			}
 		default:
 			return fmt.Errorf("unknown storage engine: '%s'", engine)
-		}
-	}
-
-	if len(c.Sources) == 0 {
-		return fmt.Errorf("at least one source must be defined")
-	}
-
-	for name, source := range c.Sources {
-		if source.Type == "" {
-			return fmt.Errorf("source '%s' type is required", name)
-		}
-
-		switch source.Type {
-		case "file_system":
-			if err := c.validateFileSystemSource(source); err != nil {
-				return fmt.Errorf("source '%s': %v", name, err)
-			}
-		case "kubernetes":
-			if err := c.validateKubernetesSource(source); err != nil {
-				return fmt.Errorf("source '%s': %v", name, err)
-			}
-		default:
-			return fmt.Errorf("unknown source type: '%s'", source.Type)
-		}
-
-		// Validate depends_on field
-		for _, dependency := range source.DependsOn {
-			if _, ok := c.Sources[dependency]; !ok {
-				return fmt.Errorf("source '%s' depends_on contains invalid source key: '%s'", name, dependency)
-			}
-		}
-	}
-
-	if c.Relation.RelationCriteria == nil {
-		return fmt.Errorf("relations field must be defined")
-	}
-
-	if len(c.Relation.RelationCriteria) == 0 {
-		return fmt.Errorf("relations.criteria is empty")
-	}
-
-	for _, criteria := range c.Relation.RelationCriteria {
-		if criteria.Name == "" {
-			return fmt.Errorf("relations.criteria.name is required")
-		}
-
-		if criteria.Kind == "" {
-			return fmt.Errorf("relations.criteria.kind is required")
-		}
-
-		if criteria.MetadataKey == "" {
-			return fmt.Errorf("relations.criteria.metadata_key is required")
-		}
-
-		if criteria.MetadataValue == "" {
-			return fmt.Errorf("relations.criteria.metadata_value is required")
-		}
-
-		if criteria.RelatedKind == "" {
-			return fmt.Errorf("relations.criteria.related_kind is required")
-		}
-
-		if criteria.RelatedMetadataKey == "" {
-			return fmt.Errorf("relations.criteria.related_metadata_key is required")
-		}
-
-		if criteria.RelatedMetadataValue == "" {
-			return fmt.Errorf("relations.criteria.related_metadata_value is required")
 		}
 	}
 
@@ -194,7 +175,7 @@ func (c *AppConfig) validatePostgresqlEngine(config interface{}) error {
 	return nil
 }
 
-func (c *AppConfig) validateNeo4jEngine(config interface{}) error {
+func validateNeo4jEngine(config interface{}) error {
 	configMap, ok := config.(map[string]interface{})
 	if !ok {
 		return fmt.Errorf("neo4j engine configuration must be a map")
@@ -206,18 +187,133 @@ func (c *AppConfig) validateNeo4jEngine(config interface{}) error {
 	return nil
 }
 
-func (c *AppConfig) validateFileSystemSource(source Source) error {
-	rootDirectory, ok := source.Configuration["root_directory"]
-	if !ok || rootDirectory == "" {
-		return fmt.Errorf("file_system source requires 'configuration.root_directory'")
+func (c *AppConfig) validateSources(sources map[string]Source) error {
+	if len(sources) == 0 {
+		return fmt.Errorf("at least one source must be defined")
+	}
+
+	for name, source := range sources {
+		if source.Type == "" {
+			return fmt.Errorf("source '%s' type is required", name)
+		}
+
+		if err := c.validateSourceConfiguration(source.Type, source); err != nil {
+			return fmt.Errorf("source '%s': %v", name, err)
+		}
+
+		if err := c.validateDependsOn(name, source); err != nil {
+			return fmt.Errorf("source '%s': %v", name, err)
+		}
+	}
+
+	return nil
+}
+
+func (c *AppConfig) validateSourceConfiguration(name string, source Source) error {
+	switch source.Type {
+	case pkg.SourceTypeFileSystem:
+		if err := c.validateFileSystemSourceConfiguration(name, source); err != nil {
+			return err
+		}
+	case "kubernetes":
+		if err := c.validateKubernetesSourceConfiguration(name, source); err != nil {
+			return err
+		}
+	case pkg.SourceTypeGitHubRepository:
+		if err := c.validateGitHubRepositorySourceConfiguration(name, source); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unknown source type: '%s'", source.Type)
 	}
 	return nil
 }
 
-func (c *AppConfig) validateKubernetesSource(source Source) error {
+func (c *AppConfig) validateFileSystemSourceConfiguration(name string, source Source) error {
+	rootDirectory, ok := source.Configuration["root_directory"]
+	if !ok || rootDirectory == "" {
+		return fmt.Errorf("source '%s' requires 'configuration.root_directory'", name)
+	}
+	return nil
+}
+
+func (c *AppConfig) validateKubernetesSourceConfiguration(name string, source Source) error {
 	kubeConfigFilePath, ok := source.Configuration["kube_config_file_path"]
 	if !ok || kubeConfigFilePath == "" {
-		return fmt.Errorf("kubernetes source requires 'configuration.kube_config_file_path'")
+		return fmt.Errorf("source '%s' requires 'configuration.kube_config_file_path'", name)
+	}
+	return nil
+}
+
+func (c *AppConfig) validateGitHubRepositorySourceConfiguration(name string, source Source) error {
+	ghToken, ok := source.Configuration["token"]
+	if !ok || ghToken == "" {
+		return fmt.Errorf("source '%s' requires 'configuration.token'", name)
+	}
+
+	userOrOrg, ok := source.Configuration["user_or_org"]
+	if !ok || userOrOrg == "" {
+		return fmt.Errorf("source '%s' requires 'configuration.user_or_org'", name)
+	}
+
+	return nil
+}
+
+func (c *AppConfig) validateDependsOn(name string, source Source) error {
+	for _, dependency := range source.DependsOn {
+		if _, ok := c.Sources[dependency]; !ok {
+			return fmt.Errorf("source '%s' depends_on contains invalid source key: '%s'", name, dependency)
+		}
+	}
+	return nil
+}
+
+func (c *AppConfig) validateRelations(relations Relation) error {
+	if relations.RelationCriteria == nil {
+		return fmt.Errorf("relations field must be defined")
+	}
+
+	if len(relations.RelationCriteria) == 0 {
+		return fmt.Errorf("relations.criteria is empty")
+	}
+
+	for _, criteria := range relations.RelationCriteria {
+		err := c.validateRelationCriteria(criteria)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *AppConfig) validateRelationCriteria(criteria RelationCriteria) error {
+	if criteria.Name == "" {
+		return fmt.Errorf("relations.criteria.name is required")
+	}
+
+	if criteria.Kind == "" {
+		return fmt.Errorf("relations.criteria.kind is required")
+	}
+
+	if criteria.MetadataKey == "" {
+		return fmt.Errorf("relations.criteria.metadata_key is required")
+	}
+
+	if criteria.MetadataValue == "" {
+		return fmt.Errorf("relations.criteria.metadata_value is required")
+	}
+
+	if criteria.RelatedKind == "" {
+		return fmt.Errorf("relations.criteria.related_kind is required")
+	}
+
+	if criteria.RelatedMetadataKey == "" {
+		return fmt.Errorf("relations.criteria.related_metadata_key is required")
+	}
+
+	if criteria.RelatedMetadataValue == "" {
+		return fmt.Errorf("relations.criteria.related_metadata_value is required")
 	}
 	return nil
 }

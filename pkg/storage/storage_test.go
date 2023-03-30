@@ -1,15 +1,15 @@
-package storage_test
+package storage
 
 import (
+	"reflect"
+	"teredix/pkg/config"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"teredix/pkg/storage"
 )
 
 func TestAddFilter(t *testing.T) {
-	q := &storage.Query{}
+	q := &Query{}
 
 	q.AddFilter("kind", "=", "vm")
 	q.AddFilter("name", "LIKE", "%web%")
@@ -24,7 +24,7 @@ func TestAddFilter(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	q := &storage.Query{}
+	q := &Query{}
 
 	// Test an empty query
 	query, params := q.Build()
@@ -44,4 +44,37 @@ func TestBuild(t *testing.T) {
 	query, params = q.Build()
 	assert.Equal(t, "SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE kind = $1 AND name = $2 AND uuid != $3 AND external_id like $4", query)
 	assert.Equal(t, []interface{}{"test", "test-resource", "1234", "%abc%"}, params)
+}
+
+func TestBuildStorage(t *testing.T) {
+	// Set up test configuration
+	appConfig := &config.AppConfig{
+		Storage: config.Storage{
+			Engines: map[string]interface{}{
+				"postgresql": map[string]interface{}{
+					"host":     "localhost",
+					"port":     5432,
+					"user":     "testuser",
+					"password": "testpassword",
+					"db":       "testdb",
+				},
+			},
+		},
+	}
+
+	// Call BuildStorage
+	st := BuildStorage(appConfig)
+
+	// Verify that the correct type of storage was created
+	expectedType := reflect.TypeOf(&PostgreSQL{})
+	actualType := reflect.TypeOf(st)
+	if expectedType != actualType {
+		t.Errorf("Expected type %v but got %v", expectedType, actualType)
+	}
+
+	// Verify that the storage was properly initialized
+	_, ok := st.(*PostgreSQL)
+	if !ok {
+		t.Errorf("Expected storage to be of type PostgreSQL")
+	}
 }

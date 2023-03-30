@@ -1,11 +1,14 @@
+// Package cmd provides commands
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"teredix/pkg/config"
 	"teredix/pkg/storage"
+
+	"github.com/spf13/cobra"
 )
 
+// NewRelationCommand build "relation" command
 func NewRelationCommand() *cobra.Command {
 	var cfgFile string
 

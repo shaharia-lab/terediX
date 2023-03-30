@@ -1,19 +1,21 @@
-//pkg/storage/postgresql/postgresql.go
+// Package storage store resource information
 package storage
 
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
 	"strings"
 	"teredix/pkg/config"
 	"teredix/pkg/resource"
-	"time"
+
+	_ "github.com/lib/pq" // postgresql driver
 )
 
+// PostgreSQL store storage configuration for PostgreSQL database
 type PostgreSQL struct {
 	DB *sql.DB
 }
 
+// Prepare to prepare the database
 func (p *PostgreSQL) Prepare() error {
 	// Create the resources table if it doesn't exist
 	_, err := p.DB.Exec(`CREATE TABLE IF NOT EXISTS resources (
@@ -52,71 +54,74 @@ func (p *PostgreSQL) Prepare() error {
 	return nil
 }
 
+// Persist store resources
 func (p *PostgreSQL) Persist(resources []resource.Resource) error {
-	// Begin a transaction
-	tx, err := p.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			err := tx.Rollback()
-			if err != nil {
-				return
-			}
-			return
-		}
-		err = tx.Commit()
-	}()
-
-	// Prepare the SQL statements
-	resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id, discovered_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (external_id) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name RETURNING id")
-	if err != nil {
-		return err
-	}
-	defer resourcesStmt.Close()
-
-	metadataStmt, err := tx.Prepare("INSERT INTO metadata (resource_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (resource_id, key) DO UPDATE SET value = excluded.value")
-	if err != nil {
-		return err
-	}
-	defer metadataStmt.Close()
-
-	relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) SELECT $1, r.id FROM resources r WHERE r.external_id = $2 ON CONFLICT DO NOTHING")
-	if err != nil {
-		return err
-	}
-	defer relationsStmt.Close()
-
-	// Loop through the resources and insert or update them into the database
-	for _, res := range resources {
-		// Insert or update the resource
-		var id int
-		err := resourcesStmt.QueryRow(res.Kind, res.UUID, res.Name, res.ExternalID, time.Now()).Scan(&id)
+	return p.runInTransaction(func(tx *sql.Tx) error {
+		// Prepare the SQL statements
+		resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id) VALUES ($1, $2, $3, $4) ON CONFLICT (external_id) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name RETURNING id")
 		if err != nil {
 			return err
 		}
+		defer func(resourcesStmt *sql.Stmt) {
+			err := resourcesStmt.Close()
+			if err != nil {
+				return
+			}
+		}(resourcesStmt)
 
-		// Insert or update the metadata
-		for _, meta := range res.MetaData {
-			_, err = metadataStmt.Exec(id, meta.Key, meta.Value)
+		metadataStmt, err := tx.Prepare("INSERT INTO metadata (resource_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (resource_id, key) DO UPDATE SET value = excluded.value")
+		if err != nil {
+			return err
+		}
+		defer func(metadataStmt *sql.Stmt) {
+			err := metadataStmt.Close()
+			if err != nil {
+				return
+			}
+		}(metadataStmt)
+
+		relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) SELECT $1, r.id FROM resources r WHERE r.external_id = $2 ON CONFLICT DO NOTHING")
+		if err != nil {
+			return err
+		}
+		defer func(relationsStmt *sql.Stmt) {
+			err := relationsStmt.Close()
+			if err != nil {
+				return
+			}
+		}(relationsStmt)
+
+		// Loop through the resources and insert or update them into the database
+		for _, res := range resources {
+			// Insert or update the resource
+			var id int
+			err := resourcesStmt.QueryRow(res.Kind, res.UUID, res.Name, res.ExternalID).Scan(&id)
 			if err != nil {
 				return err
 			}
-		}
 
-		// Insert or update the relations
-		for _, related := range res.RelatedWith {
-			_, err = relationsStmt.Exec(id, related.ExternalID)
-			if err != nil {
-				return err
+			// Insert or update the metadata
+			for _, meta := range res.MetaData {
+				_, err = metadataStmt.Exec(id, meta.Key, meta.Value)
+				if err != nil {
+					return err
+				}
+			}
+
+			// Insert or update the relations
+			for _, related := range res.RelatedWith {
+				_, err = relationsStmt.Exec(id, related.ExternalID)
+				if err != nil {
+					return err
+				}
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
+// Find resources based on criteria
 func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	var resources []resource.Resource
 
@@ -143,7 +148,12 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	if err != nil {
 		return resources, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			return
+		}
+	}(rows)
 
 	// Parse the results
 	for rows.Next() {
@@ -199,51 +209,37 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 }
 
 // StoreRelations will go through all resources in the database and based on criteria it will insert relationship to "relations" table
+// StoreRelations will go through all resources in the database and based on criteria it will insert relationship to "relations" table
 func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
-	// Begin a transaction
-	tx, err := p.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer func() {
+	return p.runInTransaction(func(tx *sql.Tx) error {
+		// Prepare the SQL statement to insert relationships into the relations table
+		relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) VALUES ($1, $2)")
 		if err != nil {
-			err := tx.Rollback()
+			return err
+		}
+		defer func(relationsStmt *sql.Stmt) {
+			err := relationsStmt.Close()
 			if err != nil {
 				return
 			}
-			return
+		}(relationsStmt)
+
+		for _, rc := range relation.RelationCriteria {
+			err = p.storeRelationMatrix(rc, relationsStmt)
+			if err != nil {
+				return err
+			}
 		}
-		err = tx.Commit()
-	}()
 
-	resourceStmt := `SELECT STRING_AGG(r.id::text, ',') AS resource_ids
-FROM resources r
-         LEFT JOIN metadata m ON r.id = m.resource_id
-WHERE m.key = $1 AND m.value = $2 AND r.kind = $3;`
+		return nil
+	})
+}
 
-	var relateToIds string
-	err = p.DB.QueryRow(resourceStmt, relation.RelationCriteria[0].RelatedMetadataKey, relation.RelationCriteria[0].RelatedMetadataValue, relation.RelationCriteria[0].RelatedKind).Scan(&relateToIds)
+func (p *PostgreSQL) storeRelationMatrix(rc config.RelationCriteria, relationsStmt *sql.Stmt) error {
+	relationMatrix, err := p.analyzeRelationMatrix(rc)
 	if err != nil {
 		return err
 	}
-
-	var resourceForBuildRelations string
-	err = p.DB.QueryRow(resourceStmt, relation.RelationCriteria[0].MetadataKey, relation.RelationCriteria[0].MetadataValue, relation.RelationCriteria[0].Kind).Scan(&resourceForBuildRelations)
-	if err != nil {
-		return err
-	}
-
-	relationMatrix := p.generateRelationMatrix(
-		strings.Split(relateToIds, ","),
-		strings.Split(resourceForBuildRelations, ","),
-	)
-
-	// Prepare the SQL statement to insert relationships into the relations table
-	relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) VALUES ($1, $2)")
-	if err != nil {
-		return err
-	}
-	defer relationsStmt.Close()
 
 	// Insert relationships for the matching resources
 	for _, c := range relationMatrix {
@@ -253,8 +249,32 @@ WHERE m.key = $1 AND m.value = $2 AND r.kind = $3;`
 			}
 		}
 	}
-
 	return nil
+}
+
+func (p *PostgreSQL) analyzeRelationMatrix(relCriteria config.RelationCriteria) ([]map[string]string, error) {
+	resourceStmt := `SELECT STRING_AGG(r.id::text, ',') AS resource_ids
+FROM resources r
+         LEFT JOIN metadata m ON r.id = m.resource_id
+WHERE m.key = $1 AND m.value = $2 AND r.kind = $3;`
+
+	var relateToIds string
+	err := p.DB.QueryRow(resourceStmt, relCriteria.RelatedMetadataKey, relCriteria.RelatedMetadataValue, relCriteria.RelatedKind).Scan(&relateToIds)
+	if err != nil {
+		return nil, err
+	}
+
+	var resourceForBuildRelations string
+	err = p.DB.QueryRow(resourceStmt, relCriteria.MetadataKey, relCriteria.MetadataValue, relCriteria.Kind).Scan(&resourceForBuildRelations)
+	if err != nil {
+		return nil, err
+	}
+
+	relationMatrix := p.generateRelationMatrix(
+		strings.Split(relateToIds, ","),
+		strings.Split(resourceForBuildRelations, ","),
+	)
+	return relationMatrix, nil
 }
 
 func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBuildRelations []string) []map[string]string {
@@ -270,6 +290,7 @@ func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBu
 	return matrix
 }
 
+// GetResources fetch all resources from storage
 func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 	resources := []resource.Resource{}
 
@@ -278,7 +299,12 @@ func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			return
+		}
+	}(rows)
 
 	// Loop through the result set and create Resource objects
 	for rows.Next() {
@@ -295,6 +321,7 @@ func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 	return resources, nil
 }
 
+// GetRelations fetch all the relations between resources
 func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
 	var relations []map[string]string
 
@@ -303,7 +330,12 @@ func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			return
+		}
+	}(rows)
 
 	// Loop through the result set and create maps with resource_id and related_resource_id
 	for rows.Next() {
@@ -320,4 +352,23 @@ func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
 	}
 
 	return relations, nil
+}
+
+func (p *PostgreSQL) runInTransaction(f func(tx *sql.Tx) error) error {
+	tx, err := p.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			err := tx.Rollback()
+			if err != nil {
+				return
+			}
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	return f(tx)
 }

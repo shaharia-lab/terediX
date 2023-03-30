@@ -1,30 +1,35 @@
-//pkg/processor/processor.go
+// Package processor process resources
 package processor
 
 import (
 	"fmt"
-	"github.com/kyokomi/emoji"
 	"sync"
 	"teredix/pkg/source"
 	"teredix/pkg/storage"
 
+	"github.com/kyokomi/emoji"
+
 	"teredix/pkg/resource"
 )
 
+// Processor represent resource processor
 type Processor struct {
 	Sources []source.Source
 	Config  Config
 	Storage storage.Storage
 }
 
+// Config represent configuration for processor
 type Config struct {
 	BatchSize int
 }
 
+// NewProcessor construct new processor
 func NewProcessor(config Config, storage storage.Storage, sources []source.Source) Processor {
 	return Processor{Sources: sources, Config: config, Storage: storage}
 }
 
+// Process start processing resources
 func (p *Processor) Process() {
 	// Create a channel to receive resources from scanners
 	resourceChan := make(chan resource.Resource)

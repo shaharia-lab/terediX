@@ -1,14 +1,16 @@
+// Package cmd provides commands
 package cmd
 
 import (
-	"fmt"
-	"github.com/spf13/cobra"
 	"teredix/pkg/config"
 	"teredix/pkg/processor"
 	"teredix/pkg/source"
 	"teredix/pkg/storage"
+
+	"github.com/spf13/cobra"
 )
 
+// NewDiscoverCommand build "discover" command
 func NewDiscoverCommand() *cobra.Command {
 	var cfgFile string
 
@@ -39,19 +41,14 @@ func run(cfgFile string) error {
 
 	sources := source.BuildSources(appConfig)
 	st := storage.BuildStorage(appConfig)
-
-	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
-	p := processor.NewProcessor(processConfig, st, sources)
-	p.Process()
-
-	find, err := st.Find(storage.ResourceFilter{})
+	err = st.Prepare()
 	if err != nil {
 		return err
 	}
 
-	for _, rr := range find {
-		fmt.Println(rr.ExternalID)
-	}
+	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
+	p := processor.NewProcessor(processConfig, st, sources)
+	p.Process()
 
 	return nil
 }

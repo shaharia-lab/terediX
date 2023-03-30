@@ -1,5 +1,7 @@
+// Package resource represents resources
 package resource
 
+// Resource represent resource
 type Resource struct {
 	Kind        string
 	UUID        string
@@ -9,16 +11,13 @@ type Resource struct {
 	MetaData    []MetaData
 }
 
+// MetaData resource metadata
 type MetaData struct {
 	Key   string
 	Value string
 }
 
-type ChildOf struct {
-	Kind         string
-	ResourceUUID string
-}
-
+// NewResource construct new resource
 func NewResource(kind, uuid, name, externalID string, scanner string) Resource {
 	return Resource{
 		Kind:       kind,
@@ -35,10 +34,12 @@ func NewResource(kind, uuid, name, externalID string, scanner string) Resource {
 	}
 }
 
+// AddRelation build relation between resources
 func (r *Resource) AddRelation(relatedResource Resource) {
 	r.RelatedWith = append(r.RelatedWith, relatedResource)
 }
 
+// AddMetaData adds meta data for each resource
 func (r *Resource) AddMetaData(key, value string) {
 	r.MetaData = append(r.MetaData, MetaData{
 		Key:   key,
@@ -46,6 +47,7 @@ func (r *Resource) AddMetaData(key, value string) {
 	})
 }
 
+// FindMetaValue finds meta value by key
 func (r *Resource) FindMetaValue(key string) string {
 	for _, v := range r.MetaData {
 		if v.Key == key {

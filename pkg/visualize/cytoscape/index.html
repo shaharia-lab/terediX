@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Cytoscape.js with JSON data</title>
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
     <style>
         #cy {
             width: 1200px;
@@ -15,7 +14,7 @@
 </head>
 <body>
 <div id="cy"></div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js" integrity="sha512-gEWKnYYa1/1c3jOuT9PR7NxiVI1bwn02DeJGsl+lMVQ1fWMNvtjkjxIApTdbJ/wcDjQmbf+McWahXwipdC9bGA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
     // JSON data for the elements
     const elements = {{ .Elements }};

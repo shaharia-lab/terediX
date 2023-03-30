@@ -1,14 +1,15 @@
+// Package storage store resource information
 package storage
 
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 	"teredix/pkg/config"
 	"teredix/pkg/resource"
 )
 
+// ResourceFilter configure the filter
 type ResourceFilter struct {
 	Kind       string
 	UUID       string
@@ -16,6 +17,7 @@ type ResourceFilter struct {
 	ExternalID string
 }
 
+// Storage interface helps to build different storage
 type Storage interface {
 	// Prepare to prepare the Storage schema
 	Prepare() error
@@ -33,16 +35,19 @@ type Storage interface {
 	StoreRelations(relation config.Relation) error
 }
 
+// Query build query based on filters
 type Query struct {
 	filters []string
 	params  []interface{}
 }
 
+// AddFilter adds filter
 func (q *Query) AddFilter(field, operator string, value interface{}) {
 	q.filters = append(q.filters, fmt.Sprintf("%s %s $%d", field, operator, len(q.params)+1))
 	q.params = append(q.params, value)
 }
 
+// Build builds query
 func (q *Query) Build() (string, []interface{}) {
 	var whereClause string
 	if len(q.filters) > 0 {
@@ -51,6 +56,7 @@ func (q *Query) Build() (string, []interface{}) {
 	return fmt.Sprintf("SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id %s", whereClause), q.params
 }
 
+// BuildStorage build storage based on configuration
 func BuildStorage(appConfig *config.AppConfig) Storage {
 	var st Storage
 
@@ -71,10 +77,6 @@ func BuildStorage(appConfig *config.AppConfig) Storage {
 			}
 
 			st = &PostgreSQL{DB: db}
-			err = st.Prepare()
-			if err != nil {
-				log.Fatal(err)
-			}
 		}
 	}
 
