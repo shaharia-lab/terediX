@@ -107,9 +107,6 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 
 			for _, r := range got {
 				for _, md := range r.MetaData {
-					if !containsValue(tc.expectedMetaDataKeys, md.Key) {
-						fmt.Println(md.Key + " not found")
-					}
 					assert.True(t, containsValue(tc.expectedMetaDataKeys, md.Key))
 				}
 			}
