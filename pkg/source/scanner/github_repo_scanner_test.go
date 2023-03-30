@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"teredix/pkg/resource"
 	"testing"
 
@@ -44,10 +45,11 @@ func (_m *GitHubClientMock) ListRepositories(ctx context.Context, user string, o
 
 func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 	testCases := []struct {
-		name           string
-		user           string
-		ghRepositories []*github.Repository
-		want           []resource.Resource
+		name                 string
+		user                 string
+		ghRepositories       []*github.Repository
+		want                 []resource.Resource
+		expectedMetaDataKeys []string
 	}{
 		{
 			name: "returns resources",
@@ -59,6 +61,7 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 					FullName:        github.String("testuser/testrepo"),
 					Language:        github.String("Go"),
 					StargazersCount: github.Int(42),
+					GitURL:          github.String("https://git_url"),
 				},
 			},
 			want: []resource.Resource{
@@ -73,12 +76,24 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 					},
 				},
 			},
+			expectedMetaDataKeys: []string{
+				"GitHub-Repo-Language",
+				"GitHub-Repo-Stars",
+				"GitHub-Repo-Homepage",
+				"GitHub-Repo-Organization",
+				"GitHub-Owner",
+				"GitHub-Company",
+				"GitHub-Repo-Topic",
+				"Scanner-Label",
+				"GitHub-Repo-Git-URL",
+			},
 		},
 		{
-			name:           "returns empty resource list on error",
-			user:           "testuser",
-			ghRepositories: []*github.Repository{},
-			want:           []resource.Resource{},
+			name:                 "returns empty resource list on error",
+			user:                 "testuser",
+			ghRepositories:       []*github.Repository{},
+			want:                 []resource.Resource{},
+			expectedMetaDataKeys: []string{},
 		},
 	}
 
@@ -89,6 +104,15 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 
 			s := NewGitHubRepositoryScanner("test", mockClient, tc.user)
 			got := s.Scan()
+
+			for _, r := range got {
+				for _, md := range r.MetaData {
+					if !containsValue(tc.expectedMetaDataKeys, md.Key) {
+						fmt.Println(md.Key + " not found")
+					}
+					assert.True(t, containsValue(tc.expectedMetaDataKeys, md.Key))
+				}
+			}
 
 			assert.Equal(t, len(tc.ghRepositories), len(got))
 		})
@@ -130,4 +154,13 @@ func TestNewGitHubRepositoryClient_ListRepositories_Bad_Response_Code(t *testing
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to list repositories for user HI")
+}
+
+func containsValue(values []string, value string) bool {
+	for _, v := range values {
+		if strings.Contains(v, value) {
+			return true
+		}
+	}
+	return false
 }
