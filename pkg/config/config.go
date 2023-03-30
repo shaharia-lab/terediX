@@ -40,7 +40,7 @@ type Source struct {
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
 }
 
-// RelationCriteriaNode represent source and target to build relation
+// RelationCriteriaNode represent source and target
 type RelationCriteriaNode struct {
 	Kind      string `yaml:"kind"`
 	MetaKey   string `yaml:"meta_key"`
