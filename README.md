@@ -249,13 +249,13 @@ source:
 
 #### Available metadata for AWS S3 Source
 
-| Meta Key            | Description                                                                                          |
-|---------------------|------------------------------------------------------------------------------------------------------|
-| AWS-S3-Bucket-Name  | Name of the bucket name                                                                              |
-| Scanner-Label       | Name of the source configured in config.yaml file                                                    |
-| AWS-S3-Region       | Region name of AWS S3 source                                                                         |
-| AWS-ARN             | AWS ARN for the bucket                                                                               |
-| AWS-S3-Tag-{tagKey} | Every tag key associated with the source will be added as meta data. {tagKey} is the tag key from S3 |
+| Meta Key            | Description                                                                                         |
+|---------------------|-----------------------------------------------------------------------------------------------------|
+| AWS-S3-Bucket-Name  | Name of the bucket name                                                                             |
+| Scanner-Label       | Name of the source configured in config.yaml file                                                   |
+| AWS-S3-Region       | Region name of AWS S3 source                                                                        |
+| AWS-ARN             | AWS ARN for the bucket                                                                              |
+| AWS-S3-Tag-{tagKey} | Every tag key associated with the source will be added as metadata. {tagKey} is the tag key from S3 |
 
 
 ### GitHub Repository
