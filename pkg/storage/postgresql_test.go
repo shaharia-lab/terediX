@@ -1,10 +1,13 @@
 package storage
 
 import (
+	"errors"
 	"reflect"
 	"teredix/pkg/config"
 	"teredix/pkg/resource"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 )
@@ -118,6 +121,12 @@ func TestPostgreSQL_Find(t *testing.T) {
 			expectedResourceCount: 0,
 		},
 		{
+			name:                  "find by resource ExternalID",
+			resourceFilter:        ResourceFilter{ExternalID: "external_id1"},
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.external_id`,
+			expectedResourceCount: 0,
+		},
+		{
 			name:                  "find by resource kind, uuid, name",
 			resourceFilter:        ResourceFilter{Kind: "kind1", UUID: "uuid1", Name: "name1"},
 			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r\.kind = .+? AND r\.uuid = .+? AND r\.name = `,
@@ -156,6 +165,26 @@ func TestPostgreSQL_Find(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPostgreSQL_Find_For_Error(t *testing.T) {
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to create mock database connection: %v", err)
+	}
+	defer db.Close()
+
+	p := &PostgreSQL{DB: db}
+
+	mock.ExpectQuery("SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id").
+		WillReturnError(errors.New("query failed"))
+
+	// call the method being tested
+	resources, err := p.Find(ResourceFilter{})
+	assert.Error(t, err)
+
+	assert.Equal(t, 0, len(resources))
 }
 
 func TestGetRelations(t *testing.T) {
