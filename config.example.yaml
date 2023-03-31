@@ -41,6 +41,14 @@ source:
       secret_key: "xxxx"
       session_token: "xxxx"
       region: "x"
+  aws_rds_one:
+    type: aws_rds
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
+      account_id: "xxx"
 
 relations:
   criteria:

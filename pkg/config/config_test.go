@@ -1598,6 +1598,193 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "missing access key for AWS S3 source",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeAWSRDS,
+						Configuration: map[string]string{
+							"session_token": "session",
+							"account_id":    "xxx",
+							"region":        "xxxx",
+							"secret_key":    "xxxx",
+						},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name: "name",
+						Source: RelationCriteriaNode{
+							Kind:      "kind",
+							MetaKey:   "source_kind-key1",
+							MetaValue: "source-kind-value1",
+						},
+						Target: RelationCriteriaNode{
+							Kind:      "related-kind",
+							MetaKey:   "related-metadata-key",
+							MetaValue: "related-metadata-value",
+						},
+					}},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing secret key for AWS RDS source",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeAWSRDS,
+						Configuration: map[string]string{
+							"access_key":    "access",
+							"session_token": "session",
+							"account_id":    "xxx",
+							"region":        "xxxx",
+						},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name: "name",
+						Source: RelationCriteriaNode{
+							Kind:      "kind",
+							MetaKey:   "source_kind-key1",
+							MetaValue: "source-kind-value1",
+						},
+						Target: RelationCriteriaNode{
+							Kind:      "related-kind",
+							MetaKey:   "related-metadata-key",
+							MetaValue: "related-metadata-value",
+						},
+					}},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing session token for AWS RDS source",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeAWSRDS,
+						Configuration: map[string]string{
+							"access_key": "access",
+							"secret_key": "secret",
+							"account_id": "xxx",
+						},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name: "name",
+						Source: RelationCriteriaNode{
+							Kind:      "kind",
+							MetaKey:   "source_kind-key1",
+							MetaValue: "source-kind-value1",
+						},
+						Target: RelationCriteriaNode{
+							Kind:      "related-kind",
+							MetaKey:   "related-metadata-key",
+							MetaValue: "related-metadata-value",
+						},
+					}},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing region for AWS RDS source",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeAWSRDS,
+						Configuration: map[string]string{
+							"access_key":    "access",
+							"secret_key":    "secret",
+							"session_token": "session",
+							"account_id":    "xxx",
+						},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name: "name",
+						Source: RelationCriteriaNode{
+							Kind:      "kind",
+							MetaKey:   "source_kind-key1",
+							MetaValue: "source-kind-value1",
+						},
+						Target: RelationCriteriaNode{
+							Kind:      "related-kind",
+							MetaKey:   "related-metadata-key",
+							MetaValue: "related-metadata-value",
+						},
+					}},
+				},
+			},
+			wantErr: true,
+		},
+		{
 			name: "missing GitHub repository user_or_org",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
