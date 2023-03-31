@@ -29,6 +29,13 @@ source:
     type: file_system
     configuration:
       root_directory: "/some/other/path"
+  aws_s3_one:
+    type: aws_s3
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
 relations:
   criteria:
     - name: "file-system-rule1"

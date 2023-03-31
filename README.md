@@ -232,6 +232,32 @@ The following fields can be specified for each criteria:
 
 ## Supported Source
 
+### AWS S3
+
+Discover all the S3 buckets from AWS
+
+```yaml
+source:
+  my_org_s3_bucket_eu:
+    type: aws_s3
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
+```
+
+#### Available metadata for AWS S3 Source
+
+| Meta Key            | Description                                                                                         |
+|---------------------|-----------------------------------------------------------------------------------------------------|
+| AWS-S3-Bucket-Name  | Name of the bucket name                                                                             |
+| Scanner-Label       | Name of the source configured in config.yaml file                                                   |
+| AWS-S3-Region       | Region name of AWS S3 source                                                                        |
+| AWS-ARN             | AWS ARN for the bucket                                                                              |
+| AWS-S3-Tag-{tagKey} | Every tag key associated with the source will be added as metadata. {tagKey} is the tag key from S3 |
+
+
 ### GitHub Repository
 
 It will fetch all GitHub repositories with metadata
