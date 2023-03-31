@@ -11,6 +11,9 @@ const (
 	// SourceTypeGitHubRepository github_repository source type
 	SourceTypeGitHubRepository = "github_repository"
 
+	// SourceTypeAWSS3 source type
+	SourceTypeAWSS3 = "aws_s3"
+
 	// MetaKeyScannerLabel Scanner-Label meta key
 	MetaKeyScannerLabel = "Scanner-Label"
 )

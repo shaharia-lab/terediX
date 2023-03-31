@@ -232,6 +232,10 @@ func (c *AppConfig) validateSourceConfiguration(name string, source Source) erro
 		if err := c.validateConfigurationKeys(name, source, "token", "user_or_org"); err != nil {
 			return err
 		}
+	case pkg.SourceTypeAWSS3:
+		if err := c.validateConfigurationKeys(name, source, "access_key", "secret_key", "session_token"); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unknown source type: '%s'", source.Type)
 	}
