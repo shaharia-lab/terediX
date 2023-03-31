@@ -1552,7 +1552,7 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "missing zone for AWS S3 source",
+			name: "missing region for AWS S3 source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
 				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},

@@ -233,7 +233,7 @@ func (c *AppConfig) validateSourceConfiguration(name string, source Source) erro
 			return err
 		}
 	case pkg.SourceTypeAWSS3:
-		if err := c.validateConfigurationKeys(name, source, "access_key", "secret_key", "session_token", "zone"); err != nil {
+		if err := c.validateConfigurationKeys(name, source, "access_key", "secret_key", "session_token", "region"); err != nil {
 			return err
 		}
 	default:

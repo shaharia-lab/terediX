@@ -5,6 +5,9 @@ const (
 	// ResourceKindGitHubRepository GitHubRepository kind
 	ResourceKindGitHubRepository = "GitHubRepository"
 
+	// ResourceKindAWSS3 resource kind
+	ResourceKindAWSS3 = "AWS_S3"
+
 	// SourceTypeFileSystem file_system source type
 	SourceTypeFileSystem = "file_system"
 
