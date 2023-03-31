@@ -11,21 +11,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestProcessor_Process2(t *testing.T) {
+func TestProcessor_Process(t *testing.T) {
 
 	resourceChan := make(chan resource.Resource, 10)
 
-	var firstScannerResources []resource.Resource
-
-	var secondScannerResources []resource.Resource
-
 	firstScanner := new(scanner.Mock)
-	firstScanner.On("Scan").Return(firstScannerResources)
-	firstScanner.On("ScanSource", resourceChan).Return(nil)
+	firstScanner.On("Scan", resourceChan).Return(nil)
 
 	secondScanner := new(scanner.Mock)
-	secondScanner.On("Scan").Return(secondScannerResources)
-	secondScanner.On("ScanSource", resourceChan).Return(nil)
+	secondScanner.On("Scan", resourceChan).Return(nil)
 
 	mockStorage := new(storage.Mock)
 	mockStorage.On("Persist").Return(nil)

@@ -28,48 +28,7 @@ func NewFsScanner(name, rootDirectory string, metaData map[string]string) FsScan
 }
 
 // Scan scans the file system
-func (s *FsScanner) Scan() []resource.Resource {
-	files, err := s.listFilesRecursive(s.rootDirectory)
-	if err != nil {
-		return nil
-	}
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = ""
-	}
-
-	var r []resource.Resource
-
-	rootResource := resource.NewResource("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
-	for k, v := range s.metaData {
-		rootResource.AddMetaData(k, v)
-	}
-
-	rootResource.AddMetaData("Machine-Host", hostname)
-	rootResource.AddMetaData("Root-Directory", s.rootDirectory)
-	rootResource.AddMetaData(pkg.MetaKeyScannerLabel, s.name)
-
-	r = append(r, rootResource)
-
-	for _, f := range files {
-		nr := resource.NewResource("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
-		nr.AddRelation(rootResource)
-		for k, v := range s.metaData {
-			nr.AddMetaData(k, v)
-		}
-
-		nr.AddMetaData("Machine-Host", hostname)
-		nr.AddMetaData("Root-Directory", s.rootDirectory)
-		nr.AddMetaData("Scanner-Label", s.name)
-
-		r = append(r, nr)
-	}
-
-	return r
-}
-
-func (s *FsScanner) ScanSource(resourceChannel chan resource.Resource) error {
+func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	files, err := s.listFilesRecursive(s.rootDirectory)
 	if err != nil {
 		return nil

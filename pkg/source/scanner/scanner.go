@@ -7,6 +7,5 @@ import (
 
 // Scanner interface to build different scanner
 type Scanner interface {
-	Scan() []resource.Resource
-	ScanSource(resourceChannel chan resource.Resource) error
+	Scan(resourceChannel chan resource.Resource) error
 }

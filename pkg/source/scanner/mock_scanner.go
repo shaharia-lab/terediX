@@ -12,24 +12,8 @@ type Mock struct {
 	mock.Mock
 }
 
-// Scan provides a mock function with given fields:
-func (_m *Mock) Scan() []resource.Resource {
-	ret := _m.Called()
-
-	var r0 []resource.Resource
-	if rf, ok := ret.Get(0).(func() []resource.Resource); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]resource.Resource)
-		}
-	}
-
-	return r0
-}
-
-// ScanSource provides a mock function with given fields: resourceChannel
-func (_m *Mock) ScanSource(resourceChannel chan resource.Resource) error {
+// Scan provides a mock function with given fields: resourceChannel
+func (_m *Mock) Scan(resourceChannel chan resource.Resource) error {
 	ret := _m.Called(resourceChannel)
 
 	var r0 error

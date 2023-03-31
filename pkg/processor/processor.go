@@ -42,7 +42,7 @@ func (p *Processor) Process(resourceChan chan resource.Resource) {
 		wg.Add(1)
 		go func(s source.Source) {
 			defer wg.Done()
-			err := s.Scanner.ScanSource(resourceChan)
+			err := s.Scanner.Scan(resourceChan)
 			if err != nil {
 				log.Printf("failed to start the scanner. scanner: %s. Error: %s", s.Name, err)
 			}

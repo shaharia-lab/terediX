@@ -102,85 +102,12 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			mockClient := new(GitHubClientMock)
 			mockClient.On("ListRepositories", mock.Anything, mock.Anything, mock.Anything).Return(tc.ghRepositories, nil)
 
-			s := NewGitHubRepositoryScanner("test", mockClient, tc.user)
-			got := s.Scan()
-
-			for _, r := range got {
-				for _, md := range r.MetaData {
-					assert.True(t, containsValue(tc.expectedMetaDataKeys, md.Key))
-				}
-			}
-
-			assert.Equal(t, len(tc.ghRepositories), len(got))
-		})
-	}
-}
-
-func TestGitHubRepositoryScanner_ScanSource(t *testing.T) {
-	testCases := []struct {
-		name                 string
-		user                 string
-		ghRepositories       []*github.Repository
-		want                 []resource.Resource
-		expectedMetaDataKeys []string
-	}{
-		{
-			name: "returns resources",
-			user: "testuser",
-			ghRepositories: []*github.Repository{
-				{
-					ID:              github.Int64(123),
-					Name:            github.String("testrepo"),
-					FullName:        github.String("testuser/testrepo"),
-					Language:        github.String("Go"),
-					StargazersCount: github.Int(42),
-					GitURL:          github.String("https://git_url"),
-				},
-			},
-			want: []resource.Resource{
-				{
-					Kind:       "GitHubRepository",
-					UUID:       "123",
-					Name:       "testrepo",
-					ExternalID: "testuser/testrepo",
-					MetaData: []resource.MetaData{
-						{Key: "Language", Value: "Go"},
-						{Key: "Stars", Value: "42"},
-					},
-				},
-			},
-			expectedMetaDataKeys: []string{
-				"GitHub-Repo-Language",
-				"GitHub-Repo-Stars",
-				"GitHub-Repo-Homepage",
-				"GitHub-Repo-Organization",
-				"GitHub-Owner",
-				"GitHub-Company",
-				"GitHub-Repo-Topic",
-				"Scanner-Label",
-				"GitHub-Repo-Git-URL",
-			},
-		},
-		{
-			name:                 "returns empty resource list on error",
-			user:                 "testuser",
-			ghRepositories:       []*github.Repository{},
-			want:                 []resource.Resource{},
-			expectedMetaDataKeys: []string{},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			mockClient := new(GitHubClientMock)
-			mockClient.On("ListRepositories", mock.Anything, mock.Anything, mock.Anything).Return(tc.ghRepositories, nil)
-
 			resourceChannel := make(chan resource.Resource, len(tc.ghRepositories))
 			var res []resource.Resource
 
 			go func() {
 				s := NewGitHubRepositoryScanner("test", mockClient, tc.user)
-				s.ScanSource(resourceChannel)
+				s.Scan(resourceChannel)
 				close(resourceChannel)
 			}()
 

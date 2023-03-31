@@ -63,27 +63,7 @@ func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string)
 }
 
 // Scan scans GitHub to get the list of repositories as resources
-func (r *GitHubRepositoryScanner) Scan() []resource.Resource {
-	var resources []resource.Resource
-
-	opt := &github.RepositoryListOptions{
-		ListOptions: github.ListOptions{PerPage: 100},
-	}
-
-	repos, err := r.ghClient.ListRepositories(context.Background(), r.user, opt)
-	if err != nil {
-		return resources
-	}
-
-	for _, repo := range repos {
-		re := r.mapToResource(repo)
-		resources = append(resources, re)
-	}
-
-	return resources
-}
-
-func (r *GitHubRepositoryScanner) ScanSource(resourceChannel chan resource.Resource) error {
+func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) error {
 	opt := &github.RepositoryListOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
 	}
