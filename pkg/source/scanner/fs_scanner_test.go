@@ -156,11 +156,21 @@ func TestFsScanner_Scan(t *testing.T) {
 				}
 			}
 
-			// Create an FsScanner for the temporary directory and scan it
-			scanner := NewFsScanner("scanner_name", tmpDir, tt.attachMetaData)
-			resources := scanner.Scan()
-			assert.Equal(t, len(tt.expected), len(resources))
-			for k, r := range resources {
+			resourceChannel := make(chan resource.Resource, len(tt.expected))
+			var res []resource.Resource
+
+			go func() {
+				// Create an FsScanner for the temporary directory and scan it
+				scanner := NewFsScanner("scanner_name", tmpDir, tt.attachMetaData)
+				scanner.Scan(resourceChannel)
+				close(resourceChannel)
+			}()
+
+			for r := range resourceChannel {
+				res = append(res, r)
+			}
+
+			for k, r := range res {
 				assert.Equal(t, tt.expected[k].Kind, r.Kind)
 				assert.Equal(t, tt.expected[k].Name, r.Name)
 				assert.Equal(t, tt.expected[k].ExternalID, r.ExternalID)

@@ -28,7 +28,7 @@ func NewFsScanner(name, rootDirectory string, metaData map[string]string) FsScan
 }
 
 // Scan scans the file system
-func (s *FsScanner) Scan() []resource.Resource {
+func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	files, err := s.listFilesRecursive(s.rootDirectory)
 	if err != nil {
 		return nil
@@ -39,8 +39,6 @@ func (s *FsScanner) Scan() []resource.Resource {
 		hostname = ""
 	}
 
-	var r []resource.Resource
-
 	rootResource := resource.NewResource("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
 	for k, v := range s.metaData {
 		rootResource.AddMetaData(k, v)
@@ -50,7 +48,7 @@ func (s *FsScanner) Scan() []resource.Resource {
 	rootResource.AddMetaData("Root-Directory", s.rootDirectory)
 	rootResource.AddMetaData(pkg.MetaKeyScannerLabel, s.name)
 
-	r = append(r, rootResource)
+	resourceChannel <- rootResource
 
 	for _, f := range files {
 		nr := resource.NewResource("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
@@ -63,10 +61,10 @@ func (s *FsScanner) Scan() []resource.Resource {
 		nr.AddMetaData("Root-Directory", s.rootDirectory)
 		nr.AddMetaData("Scanner-Label", s.name)
 
-		r = append(r, nr)
+		resourceChannel <- nr
 	}
 
-	return r
+	return nil
 }
 
 func (s *FsScanner) listFilesRecursive(path string) ([]File, error) {
