@@ -1,10 +1,13 @@
 package storage
 
 import (
+	"errors"
 	"reflect"
 	"teredix/pkg/config"
 	"teredix/pkg/resource"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 )
@@ -93,6 +96,44 @@ func TestPostgreSQL_Persist(t *testing.T) {
 }
 
 func TestPostgreSQL_Find(t *testing.T) {
+	testCases := []struct {
+		name                  string
+		resourceFilter        ResourceFilter
+		expectedQuery         string
+		expectedResourceCount int
+	}{
+		{
+			name:                  "find without any filtering parameter",
+			resourceFilter:        ResourceFilter{},
+			expectedQuery:         "SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id",
+			expectedResourceCount: 2,
+		},
+		{
+			name:                  "find by resource name",
+			resourceFilter:        ResourceFilter{Name: "name1"},
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.name = \$1`,
+			expectedResourceCount: 0,
+		},
+		{
+			name:                  "find by resource uuid",
+			resourceFilter:        ResourceFilter{UUID: "uuid1"},
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.uuid = \$1`,
+			expectedResourceCount: 0,
+		},
+		{
+			name:                  "find by resource ExternalID",
+			resourceFilter:        ResourceFilter{ExternalID: "external_id1"},
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.external_id`,
+			expectedResourceCount: 0,
+		},
+		{
+			name:                  "find by resource kind, uuid, name",
+			resourceFilter:        ResourceFilter{Kind: "kind1", UUID: "uuid1", Name: "name1"},
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r\.kind = .+? AND r\.uuid = .+? AND r\.name = `,
+			expectedResourceCount: 0,
+		},
+	}
+
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("failed to create mock database connection: %v", err)
@@ -106,29 +147,44 @@ func TestPostgreSQL_Find(t *testing.T) {
 		AddRow("kind1", "uuid1", "name1", "external_id1", "meta_key1", "meta_value1", "related_kind1", "related_uuid1", "related_name1", "related_external_id1").
 		AddRow("kind2", "uuid2", "name2", "external_id2", "meta_key2", "meta_value2", "related_kind2", "related_uuid2", "related_name2", "related_external_id2")
 
-	// set up mock database query expectations
-	mock.ExpectQuery("SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id").
-		WillReturnRows(expectedRows)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// set up mock database query expectations
+			mock.ExpectQuery(tc.expectedQuery).
+				WillReturnRows(expectedRows)
 
-	// set up filter
-	filter := ResourceFilter{}
+			// call the method being tested
+			resources, err := p.Find(tc.resourceFilter)
+			if err != nil {
+				t.Fatalf("unexpected error from Find: %v", err)
+			}
+
+			// verify the result
+			if len(resources) != tc.expectedResourceCount {
+				t.Fatalf("unexpected number of resources: got %d, want %d", len(resources), tc.expectedResourceCount)
+			}
+		})
+	}
+}
+
+func TestPostgreSQL_Find_For_Error(t *testing.T) {
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to create mock database connection: %v", err)
+	}
+	defer db.Close()
+
+	p := &PostgreSQL{DB: db}
+
+	mock.ExpectQuery("SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id").
+		WillReturnError(errors.New("query failed"))
 
 	// call the method being tested
-	resources, err := p.Find(filter)
-	if err != nil {
-		t.Fatalf("unexpected error from Find: %v", err)
-	}
+	resources, err := p.Find(ResourceFilter{})
+	assert.Error(t, err)
 
-	// verify the result
-	if len(resources) != 2 {
-		t.Fatalf("unexpected number of resources: got %d, want 2", len(resources))
-	}
-	if resources[0].Kind != "kind1" || resources[0].UUID != "uuid1" || resources[0].Name != "name1" || resources[0].ExternalID != "external_id1" {
-		t.Errorf("unexpected resource 0: %+v", resources[0])
-	}
-	if resources[1].Kind != "kind2" || resources[1].UUID != "uuid2" || resources[1].Name != "name2" || resources[1].ExternalID != "external_id2" {
-		t.Errorf("unexpected resource 1: %+v", resources[1])
-	}
+	assert.Equal(t, 0, len(resources))
 }
 
 func TestGetRelations(t *testing.T) {
@@ -213,6 +269,16 @@ func TestAnalyzeRelationMatrix(t *testing.T) {
 		MetadataKey:          "metadata_key",
 		MetadataValue:        "metadata_value",
 		Kind:                 "kind",
+		Source: config.RelationCriteriaNode{
+			Kind:      "kind",
+			MetaKey:   "metadata_key",
+			MetaValue: "metadata_value",
+		},
+		Target: config.RelationCriteriaNode{
+			Kind:      "related",
+			MetaKey:   "related_key",
+			MetaValue: "related_value",
+		},
 	})
 
 	// Check the results

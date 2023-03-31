@@ -40,15 +40,24 @@ type Source struct {
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
 }
 
+// RelationCriteriaNode represent source and target
+type RelationCriteriaNode struct {
+	Kind      string `yaml:"kind"`
+	MetaKey   string `yaml:"meta_key"`
+	MetaValue string `yaml:"meta_value"`
+}
+
 // RelationCriteria represents criteria for relation builder
 type RelationCriteria struct {
-	Name                 string `yaml:"name"`
-	Kind                 string `yaml:"kind"`
-	MetadataKey          string `yaml:"metadata_key"`
-	MetadataValue        string `yaml:"metadata_value"`
-	RelatedKind          string `yaml:"related_kind"`
-	RelatedMetadataKey   string `yaml:"related_metadata_key"`
-	RelatedMetadataValue string `yaml:"related_metadata_value"`
+	Name                 string               `yaml:"name"`
+	Kind                 string               `yaml:"kind"`
+	MetadataKey          string               `yaml:"metadata_key"`
+	MetadataValue        string               `yaml:"metadata_value"`
+	RelatedKind          string               `yaml:"related_kind"`
+	RelatedMetadataKey   string               `yaml:"related_metadata_key"`
+	RelatedMetadataValue string               `yaml:"related_metadata_value"`
+	Source               RelationCriteriaNode `yaml:"source"`
+	Target               RelationCriteriaNode `yaml:"target"`
 }
 
 // Relation represent relationship rules
@@ -212,15 +221,15 @@ func (c *AppConfig) validateSources(sources map[string]Source) error {
 func (c *AppConfig) validateSourceConfiguration(name string, source Source) error {
 	switch source.Type {
 	case pkg.SourceTypeFileSystem:
-		if err := c.validateFileSystemSourceConfiguration(name, source); err != nil {
+		if err := c.validateConfigurationKeys(name, source, "root_directory"); err != nil {
 			return err
 		}
 	case "kubernetes":
-		if err := c.validateKubernetesSourceConfiguration(name, source); err != nil {
+		if err := c.validateConfigurationKeys(name, source, "kube_config_file_path"); err != nil {
 			return err
 		}
 	case pkg.SourceTypeGitHubRepository:
-		if err := c.validateGitHubRepositorySourceConfiguration(name, source); err != nil {
+		if err := c.validateConfigurationKeys(name, source, "token", "user_or_org"); err != nil {
 			return err
 		}
 	default:
@@ -229,31 +238,12 @@ func (c *AppConfig) validateSourceConfiguration(name string, source Source) erro
 	return nil
 }
 
-func (c *AppConfig) validateFileSystemSourceConfiguration(name string, source Source) error {
-	rootDirectory, ok := source.Configuration["root_directory"]
-	if !ok || rootDirectory == "" {
-		return fmt.Errorf("source '%s' requires 'configuration.root_directory'", name)
-	}
-	return nil
-}
-
-func (c *AppConfig) validateKubernetesSourceConfiguration(name string, source Source) error {
-	kubeConfigFilePath, ok := source.Configuration["kube_config_file_path"]
-	if !ok || kubeConfigFilePath == "" {
-		return fmt.Errorf("source '%s' requires 'configuration.kube_config_file_path'", name)
-	}
-	return nil
-}
-
-func (c *AppConfig) validateGitHubRepositorySourceConfiguration(name string, source Source) error {
-	ghToken, ok := source.Configuration["token"]
-	if !ok || ghToken == "" {
-		return fmt.Errorf("source '%s' requires 'configuration.token'", name)
-	}
-
-	userOrOrg, ok := source.Configuration["user_or_org"]
-	if !ok || userOrOrg == "" {
-		return fmt.Errorf("source '%s' requires 'configuration.user_or_org'", name)
+func (c *AppConfig) validateConfigurationKeys(sourceName string, source Source, requiredKeys ...string) error {
+	for _, k := range requiredKeys {
+		keyNotEmpty, ok := source.Configuration[k]
+		if !ok || keyNotEmpty == "" {
+			return fmt.Errorf("source '%s' requires 'configuration.%s'", k, sourceName)
+		}
 	}
 
 	return nil
@@ -292,28 +282,28 @@ func (c *AppConfig) validateRelationCriteria(criteria RelationCriteria) error {
 		return fmt.Errorf("relations.criteria.name is required")
 	}
 
-	if criteria.Kind == "" {
-		return fmt.Errorf("relations.criteria.kind is required")
+	if criteria.Source.Kind == "" {
+		return fmt.Errorf("relations.criteria.source.kind is required")
 	}
 
-	if criteria.MetadataKey == "" {
-		return fmt.Errorf("relations.criteria.metadata_key is required")
+	if criteria.Source.MetaKey == "" {
+		return fmt.Errorf("relations.criteria.source.meta_key is required")
 	}
 
-	if criteria.MetadataValue == "" {
-		return fmt.Errorf("relations.criteria.metadata_value is required")
+	if criteria.Source.MetaValue == "" {
+		return fmt.Errorf("relations.criteria.source.meta_value is required")
 	}
 
-	if criteria.RelatedKind == "" {
-		return fmt.Errorf("relations.criteria.related_kind is required")
+	if criteria.Target.Kind == "" {
+		return fmt.Errorf("relations.criteria.target.kind is required")
 	}
 
-	if criteria.RelatedMetadataKey == "" {
-		return fmt.Errorf("relations.criteria.related_metadata_key is required")
+	if criteria.Target.MetaKey == "" {
+		return fmt.Errorf("relations.criteria.target.meta_key is required")
 	}
 
-	if criteria.RelatedMetadataValue == "" {
-		return fmt.Errorf("relations.criteria.related_metadata_value is required")
+	if criteria.Target.MetaValue == "" {
+		return fmt.Errorf("relations.criteria.target.meta_value is required")
 	}
 	return nil
 }

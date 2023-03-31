@@ -29,18 +29,14 @@ source:
     type: file_system
     configuration:
       root_directory: "/some/other/path"
-  #two:
-  #  type: kubernetes
-  #  configuration:
-  #    kube_config_file_path: "another_path"
-  #  depends_on:
-  #    - "one"
 relations:
   criteria:
-    - name: "based-on-metadata"
-      kind: "app"
-      metadata_key: "environment"
-      metadata_value: "production"
-      related_kind: "database"
-      related_metadata_key: "environment"
-      related_metadata_value: "production"
+    - name: "file-system-rule1"
+      source:
+        kind: "FilePath"
+        meta_key: "Root-Directory"
+        meta_value: "/some/path"
+      target:
+        kind: "FilePath"
+        meta_key: "Root-Directory"
+        meta_value: "/some/path"

@@ -172,16 +172,27 @@ source:
   fs_one:
     type: file_system
     configuration:
-      root_directory: "/home/shaharia/Projects/teredix/pkg"
+      root_directory: "/some/path"
   fs_two:
     type: file_system
     configuration:
-      root_directory: "/home/shaharia/Projects/k8s-resource-explorer"
+      root_directory: "/some/other/path"
   github_repo_sh:
     type: github_repository
     configuration:
       token: "xxxx"
       user_or_org: "xxxx"
+relations:
+  criteria:
+    - name: "file-system-rule1"
+      source:
+        kind: "FilePath"
+        meta_key: "Root-Directory"
+        meta_value: "/some/path"
+      target:
+        kind: "FilePath"
+        meta_key: "Root-Directory"
+        meta_value: "/some/other/path"
 ```
 
 | Field                                 | Type   | Required | Description                                                                                                                                                          |
@@ -204,6 +215,20 @@ source:
 | `log.level`                           | string | no       | The logging level to use. Valid values are `debug`, `info`, `warn`, and `error`. If not specified, the default logging level is `info`.                              |
 | `log.format`                          | string | no       | The logging format to use. Valid values are `text` and `json`. If not specified, the default logging format is `text`.                                               |
 
+
+The following fields can be specified for each criteria:
+
+| Field               | Type   | Required | Description                                       |
+|---------------------|--------|----------|---------------------------------------------------|
+| `name`              | string | yes      | A descriptive name for the criteria.              |
+| `source`            | object | yes      | Configuration for the source of the relationship. |
+| `source.kind`       | string | yes      | The kind of resource to analyze.                  |
+| `source.meta_key`   | string | yes      | The metadata key used to identify the resource.   |
+| `source.meta_value` | string | yes      | The metadata value used to identify the resource. |
+| `target`            | object | yes      | Configuration for the target of the relationship. |
+| `target.kind`       | string | yes      | The kind of resource to analyze.                  |
+| `target.meta_key`   | string | yes      | The metadata key used to identify the resource.   |
+| `target.meta_value` | string | yes      | The metadata value used to identify the resource. |
 
 ## Supported Source
 

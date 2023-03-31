@@ -259,13 +259,13 @@ FROM resources r
 WHERE m.key = $1 AND m.value = $2 AND r.kind = $3;`
 
 	var relateToIds string
-	err := p.DB.QueryRow(resourceStmt, relCriteria.RelatedMetadataKey, relCriteria.RelatedMetadataValue, relCriteria.RelatedKind).Scan(&relateToIds)
+	err := p.DB.QueryRow(resourceStmt, relCriteria.Target.MetaKey, relCriteria.Target.MetaValue, relCriteria.Target.Kind).Scan(&relateToIds)
 	if err != nil {
 		return nil, err
 	}
 
 	var resourceForBuildRelations string
-	err = p.DB.QueryRow(resourceStmt, relCriteria.MetadataKey, relCriteria.MetadataValue, relCriteria.Kind).Scan(&resourceForBuildRelations)
+	err = p.DB.QueryRow(resourceStmt, relCriteria.Source.MetaKey, relCriteria.Source.MetaValue, relCriteria.Source.Kind).Scan(&resourceForBuildRelations)
 	if err != nil {
 		return nil, err
 	}
