@@ -80,17 +80,6 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 			}
 		}(metadataStmt)
 
-		relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) SELECT $1, r.id FROM resources r WHERE r.external_id = $2 ON CONFLICT DO NOTHING")
-		if err != nil {
-			return err
-		}
-		defer func(relationsStmt *sql.Stmt) {
-			err := relationsStmt.Close()
-			if err != nil {
-				return
-			}
-		}(relationsStmt)
-
 		// Loop through the resources and insert or update them into the database
 		for _, res := range resources {
 			// Insert or update the resource
@@ -103,14 +92,6 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 			// Insert or update the metadata
 			for _, meta := range res.MetaData {
 				_, err = metadataStmt.Exec(id, meta.Key, meta.Value)
-				if err != nil {
-					return err
-				}
-			}
-
-			// Insert or update the relations
-			for _, related := range res.RelatedWith {
-				_, err = relationsStmt.Exec(id, related.ExternalID)
 				if err != nil {
 					return err
 				}

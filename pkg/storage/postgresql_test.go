@@ -51,10 +51,7 @@ func TestPostgreSQL_Persist(t *testing.T) {
 	// mock Persist statements
 	resourcesStmt := mock.ExpectPrepare(`INSERT INTO resources`)
 	metadataStmt := mock.ExpectPrepare(`INSERT INTO metadata`)
-	relationsStmt := mock.ExpectPrepare(`INSERT INTO relations`)
 
-	// define resources to be persisted
-	//now := time.Now()
 	resources := []resource.Resource{
 		{
 			Kind:       "resource1",
@@ -81,7 +78,6 @@ func TestPostgreSQL_Persist(t *testing.T) {
 	// mock Persist statement results
 	resourcesStmt.ExpectQuery().WithArgs("resource1", "uuid1", "name1", "external_id1").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 	metadataStmt.ExpectExec().WithArgs(1, "key1", "value1").WillReturnResult(sqlmock.NewResult(0, 0))
-	relationsStmt.ExpectExec().WithArgs(1, "external_id2").WillReturnResult(sqlmock.NewResult(0, 0))
 
 	// call the method being tested
 	err = pg.Persist(resources)
