@@ -3,6 +3,7 @@ package processor
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"teredix/pkg/source"
 	"teredix/pkg/storage"
@@ -30,9 +31,7 @@ func NewProcessor(config Config, storage storage.Storage, sources []source.Sourc
 }
 
 // Process start processing resources
-func (p *Processor) Process() {
-	// Create a channel to receive resources from scanners
-	resourceChan := make(chan resource.Resource)
+func (p *Processor) Process(resourceChan chan resource.Resource) {
 
 	// Start a goroutine to process resources as they become available
 	go p.processResources(resourceChan)
@@ -43,10 +42,9 @@ func (p *Processor) Process() {
 		wg.Add(1)
 		go func(s source.Source) {
 			defer wg.Done()
-			resources := s.Scanner.Scan()
-			// Send resources to the shared channel
-			for _, res := range resources {
-				resourceChan <- res
+			err := s.Scanner.ScanSource(resourceChan)
+			if err != nil {
+				log.Printf("failed to start the scanner. scanner: %s. Error: %s", s.Name, err)
 			}
 		}(s)
 	}

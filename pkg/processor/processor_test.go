@@ -1,64 +1,34 @@
 package processor
 
 import (
-	"math"
-	"sync"
 	"teredix/pkg/resource"
 	"teredix/pkg/source"
 	"teredix/pkg/source/scanner"
 	"teredix/pkg/storage"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/mock"
 )
 
-func TestProcessor_Process(t *testing.T) {
-	firstScannerResources := []resource.Resource{
-		{
-			Kind:        "Test",
-			UUID:        "UUID",
-			Name:        "Label",
-			ExternalID:  "ExternalID",
-			RelatedWith: nil,
-			MetaData:    nil,
-		},
-		{
-			Kind:        "Test2",
-			UUID:        "UUID2",
-			Name:        "Name2",
-			ExternalID:  "ExternalID2",
-			RelatedWith: nil,
-			MetaData:    nil,
-		},
-	}
+func TestProcessor_Process2(t *testing.T) {
 
-	secondScannerResources := []resource.Resource{
-		{
-			Kind:        "Test YY",
-			UUID:        "UUID YY",
-			Name:        "Label YY",
-			ExternalID:  "ExternalID YY",
-			RelatedWith: nil,
-			MetaData:    nil,
-		},
-		{
-			Kind:        "Test2 YY",
-			UUID:        "UUID2 YY",
-			Name:        "Name2 YY",
-			ExternalID:  "ExternalID2 YY",
-			RelatedWith: nil,
-			MetaData:    nil,
-		},
-	}
+	resourceChan := make(chan resource.Resource, 10)
+
+	var firstScannerResources []resource.Resource
+
+	var secondScannerResources []resource.Resource
 
 	firstScanner := new(scanner.Mock)
 	firstScanner.On("Scan").Return(firstScannerResources)
+	firstScanner.On("ScanSource", resourceChan).Return(nil)
 
 	secondScanner := new(scanner.Mock)
 	secondScanner.On("Scan").Return(secondScannerResources)
+	secondScanner.On("ScanSource", resourceChan).Return(nil)
 
 	mockStorage := new(storage.Mock)
-	mockStorage.On("Persist", mock.Anything).Return(nil)
+	mockStorage.On("Persist").Return(nil)
 
 	sources := []source.Source{
 		{
@@ -71,26 +41,33 @@ func TestProcessor_Process(t *testing.T) {
 		},
 	}
 
-	processBatchSize := 2
-	pr := NewProcessor(Config{BatchSize: processBatchSize}, mockStorage, sources)
-	pr.Process()
+	// Set up test data
+	config := Config{BatchSize: 2}
 
-	// Ensure all goroutines have completed before proceeding with assertion
-	var wg sync.WaitGroup
-	wg.Add(len(firstScannerResources) + len(secondScannerResources))
-	for i := 0; i < len(firstScannerResources); i++ {
-		wg.Done()
-	}
-	for i := 0; i < len(secondScannerResources); i++ {
-		wg.Done()
-	}
-	wg.Wait()
+	processor := NewProcessor(config, mockStorage, sources)
 
-	firstScanner.AssertNumberOfCalls(t, "Scan", 1)
-	secondScanner.AssertNumberOfCalls(t, "Scan", 1)
+	// Set up mock storage to return nil error when Persist is called
+	mockStorage.On("Persist", mock.Anything).Return(nil)
 
-	// Determine how many times Persist should be called
-	expectedPersistCalls := int(math.Ceil(float64(len(firstScannerResources)+len(secondScannerResources)) / float64(processBatchSize)))
+	// Call the Process method
+	go func() {
+		processor.Process(resourceChan)
+	}()
 
-	mockStorage.AssertNumberOfCalls(t, "Persist", expectedPersistCalls)
+	// Send some test resources on the channel
+	res1 := resource.Resource{Kind: "test1", Name: "resource1"}
+	res2 := resource.Resource{Kind: "test2", Name: "resource2"}
+	res3 := resource.Resource{Kind: "test3", Name: "resource3"}
+
+	resourceChan <- res1
+	resourceChan <- res2
+	resourceChan <- res3
+
+	// Wait for the processing to finish
+	time.Sleep(500 * time.Millisecond)
+
+	// Check that the expected resources were processed
+	mockStorage.AssertNumberOfCalls(t, "Persist", 2)
+	mockStorage.AssertCalled(t, "Persist", []resource.Resource{res1, res2})
+	mockStorage.AssertCalled(t, "Persist", []resource.Resource{res3})
 }
