@@ -182,6 +182,21 @@ source:
     configuration:
       token: "xxxx"
       user_or_org: "xxxx"
+  aws_s3_one:
+    type: aws_s3
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
+  aws_rds_one:
+    type: aws_rds
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
+      account_id: "xxx
 relations:
   criteria:
     - name: "file-system-rule1"
@@ -231,6 +246,33 @@ The following fields can be specified for each criteria:
 | `target.meta_value` | string | yes      | The metadata value used to identify the resource. |
 
 ## Supported Source
+
+### AWS RDS
+
+Discover all RDS instances and it's tags
+
+```yaml
+source:
+  aws_rds_one:
+    type: aws_rds
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
+      account_id: "xxx
+```
+
+#### Available metadata for AWS RDS Instance
+
+| Meta Key             | Description                                                                                          |
+|----------------------|------------------------------------------------------------------------------------------------------|
+| AWS-RDS-Instance-ID  | Name of the RDS instance                                                                             |
+| Scanner-Label        | Name of the source configured in config.yaml file                                                    |
+| AWS-RDS-Region       | Region name of AWS RDS source                                                                        |
+| AWS-ARN              | AWS ARN for the RDS instance                                                                         |
+| AWS-RDS-Tag-{tagKey} | Every tag key associated with the source will be added as metadata. {tagKey} is the tag key from RDS |
+
 
 ### AWS S3
 
