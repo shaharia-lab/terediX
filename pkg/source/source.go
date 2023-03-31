@@ -45,6 +45,14 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 				Scanner: gh,
 			})
 		}
+
+		if s.Type == pkg.SourceTypeGitHubRepository {
+			awsS3 := scanner.NewAWSS3(sourceKey, s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"], s.Configuration["zone"])
+			finalSources = append(finalSources, Source{
+				Name:    sourceKey,
+				Scanner: awsS3,
+			})
+		}
 	}
 	return finalSources
 }
