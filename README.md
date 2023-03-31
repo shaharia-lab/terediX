@@ -263,7 +263,7 @@ source:
       account_id: "xxx
 ```
 
-#### Available metadata for AWS S3 Source
+#### Available metadata for AWS RDS Instance
 
 | Meta Key             | Description                                                                                          |
 |----------------------|------------------------------------------------------------------------------------------------------|
