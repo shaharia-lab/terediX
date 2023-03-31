@@ -4,6 +4,7 @@ package cmd
 import (
 	"teredix/pkg/config"
 	"teredix/pkg/processor"
+	"teredix/pkg/resource"
 	"teredix/pkg/source"
 	"teredix/pkg/storage"
 
@@ -48,7 +49,9 @@ func run(cfgFile string) error {
 
 	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
 	p := processor.NewProcessor(processConfig, st, sources)
-	p.Process()
+
+	resourceChan := make(chan resource.Resource)
+	p.Process(resourceChan)
 
 	return nil
 }

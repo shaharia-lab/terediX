@@ -1,64 +1,33 @@
 package processor
 
 import (
-	"math"
-	"sync"
+	"bytes"
+	"errors"
+	"io"
+	"os"
+	"strings"
 	"teredix/pkg/resource"
 	"teredix/pkg/source"
 	"teredix/pkg/source/scanner"
 	"teredix/pkg/storage"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/mock"
 )
 
 func TestProcessor_Process(t *testing.T) {
-	firstScannerResources := []resource.Resource{
-		{
-			Kind:        "Test",
-			UUID:        "UUID",
-			Name:        "Label",
-			ExternalID:  "ExternalID",
-			RelatedWith: nil,
-			MetaData:    nil,
-		},
-		{
-			Kind:        "Test2",
-			UUID:        "UUID2",
-			Name:        "Name2",
-			ExternalID:  "ExternalID2",
-			RelatedWith: nil,
-			MetaData:    nil,
-		},
-	}
 
-	secondScannerResources := []resource.Resource{
-		{
-			Kind:        "Test YY",
-			UUID:        "UUID YY",
-			Name:        "Label YY",
-			ExternalID:  "ExternalID YY",
-			RelatedWith: nil,
-			MetaData:    nil,
-		},
-		{
-			Kind:        "Test2 YY",
-			UUID:        "UUID2 YY",
-			Name:        "Name2 YY",
-			ExternalID:  "ExternalID2 YY",
-			RelatedWith: nil,
-			MetaData:    nil,
-		},
-	}
+	resourceChan := make(chan resource.Resource, 10)
 
 	firstScanner := new(scanner.Mock)
-	firstScanner.On("Scan").Return(firstScannerResources)
+	firstScanner.On("Scan", resourceChan).Return(nil)
 
 	secondScanner := new(scanner.Mock)
-	secondScanner.On("Scan").Return(secondScannerResources)
+	secondScanner.On("Scan", resourceChan).Return(nil)
 
 	mockStorage := new(storage.Mock)
-	mockStorage.On("Persist", mock.Anything).Return(nil)
+	mockStorage.On("Persist").Return(nil)
 
 	sources := []source.Source{
 		{
@@ -71,26 +40,145 @@ func TestProcessor_Process(t *testing.T) {
 		},
 	}
 
-	processBatchSize := 2
-	pr := NewProcessor(Config{BatchSize: processBatchSize}, mockStorage, sources)
-	pr.Process()
+	// Set up test data
+	config := Config{BatchSize: 2}
 
-	// Ensure all goroutines have completed before proceeding with assertion
-	var wg sync.WaitGroup
-	wg.Add(len(firstScannerResources) + len(secondScannerResources))
-	for i := 0; i < len(firstScannerResources); i++ {
-		wg.Done()
+	processor := NewProcessor(config, mockStorage, sources)
+
+	// Set up mock storage to return nil error when Persist is called
+	mockStorage.On("Persist", mock.Anything).Return(nil)
+
+	// Call the Process method
+	go func() {
+		processor.Process(resourceChan)
+	}()
+
+	// Send some test resources on the channel
+	res1 := resource.Resource{Kind: "test1", Name: "resource1"}
+	res2 := resource.Resource{Kind: "test2", Name: "resource2"}
+	res3 := resource.Resource{Kind: "test3", Name: "resource3"}
+
+	resourceChan <- res1
+	resourceChan <- res2
+	resourceChan <- res3
+
+	// Wait for the processing to finish
+	time.Sleep(500 * time.Millisecond)
+
+	// Check that the expected resources were processed
+	mockStorage.AssertNumberOfCalls(t, "Persist", 2)
+	mockStorage.AssertCalled(t, "Persist", []resource.Resource{res1, res2})
+	mockStorage.AssertCalled(t, "Persist", []resource.Resource{res3})
+}
+
+func TestProcessor_Process_Handle_Error_From_Scanner(t *testing.T) {
+
+	resourceChan := make(chan resource.Resource, 10)
+
+	sc := new(scanner.Mock)
+	sc.On("Scan", resourceChan).Return(errors.New("failed scanner"))
+
+	mockStorage := new(storage.Mock)
+	mockStorage.On("Persist").Return(nil)
+
+	sources := []source.Source{
+		{
+			Name:    "test",
+			Scanner: sc,
+		},
 	}
-	for i := 0; i < len(secondScannerResources); i++ {
-		wg.Done()
+
+	// Set up test data
+	config := Config{BatchSize: 2}
+
+	processor := NewProcessor(config, mockStorage, sources)
+
+	// Capture stdout
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	// Call the Process method
+	go func() {
+		processor.Process(resourceChan)
+	}()
+
+	// Wait for the processing to finish
+	time.Sleep(500 * time.Millisecond)
+
+	// Restore stdout
+	w.Close()
+	os.Stdout = old
+
+	// Read the output from Process method
+	var buf bytes.Buffer
+	io.Copy(&buf, r)
+	r.Close()
+
+	// Check that the output contains the expected text
+	expected := "failed to start the scanner. scanner: test. Error: failed scanner"
+	actual := buf.String()
+	if actual != expected {
+		t.Errorf("Process output = %q, expected %q", actual, expected)
 	}
-	wg.Wait()
+}
 
-	firstScanner.AssertNumberOfCalls(t, "Scan", 1)
-	secondScanner.AssertNumberOfCalls(t, "Scan", 1)
+func TestProcessor_Process_Handle_Error_From_Storage_During_Persist(t *testing.T) {
 
-	// Determine how many times Persist should be called
-	expectedPersistCalls := int(math.Ceil(float64(len(firstScannerResources)+len(secondScannerResources)) / float64(processBatchSize)))
+	resourceChan := make(chan resource.Resource, 10)
 
-	mockStorage.AssertNumberOfCalls(t, "Persist", expectedPersistCalls)
+	// Send some test resources on the channel
+	res1 := resource.Resource{Kind: "test1", Name: "resource1"}
+	res2 := resource.Resource{Kind: "test2", Name: "resource2"}
+
+	sc := new(scanner.Mock)
+	sc.On("Scan", resourceChan).Return(nil)
+
+	mockStorage := new(storage.Mock)
+	mockStorage.On("Persist", []resource.Resource{res1, res2}).Return(errors.New("error from persist call"))
+
+	sources := []source.Source{
+		{
+			Name:    "test",
+			Scanner: sc,
+		},
+	}
+
+	// Set up test data
+	config := Config{BatchSize: 2}
+
+	processor := NewProcessor(config, mockStorage, sources)
+
+	// Capture stdout
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	// Call the Process method
+	go func() {
+		processor.Process(resourceChan)
+	}()
+
+	resourceChan <- res1
+	resourceChan <- res2
+
+	// Wait for the processing to finish
+	time.Sleep(500 * time.Millisecond)
+
+	// Restore stdout
+	w.Close()
+	os.Stdout = old
+
+	// Read the output from Process method
+	var buf bytes.Buffer
+	io.Copy(&buf, r)
+	r.Close()
+
+	// Check that the output contains the expected text
+	expected := "error from persist call"
+	actual := buf.String()
+
+	if !strings.Contains(actual, expected) {
+		t.Errorf("Process output = %q, expected %q", actual, expected)
+	}
 }

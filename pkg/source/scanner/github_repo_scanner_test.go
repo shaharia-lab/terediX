@@ -102,16 +102,26 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			mockClient := new(GitHubClientMock)
 			mockClient.On("ListRepositories", mock.Anything, mock.Anything, mock.Anything).Return(tc.ghRepositories, nil)
 
-			s := NewGitHubRepositoryScanner("test", mockClient, tc.user)
-			got := s.Scan()
+			resourceChannel := make(chan resource.Resource, len(tc.ghRepositories))
+			var res []resource.Resource
 
-			for _, r := range got {
+			go func() {
+				s := NewGitHubRepositoryScanner("test", mockClient, tc.user)
+				s.Scan(resourceChannel)
+				close(resourceChannel)
+			}()
+
+			for r := range resourceChannel {
+				res = append(res, r)
+			}
+
+			for _, r := range res {
 				for _, md := range r.MetaData {
 					assert.True(t, containsValue(tc.expectedMetaDataKeys, md.Key))
 				}
 			}
 
-			assert.Equal(t, len(tc.ghRepositories), len(got))
+			assert.Equal(t, len(tc.ghRepositories), len(res))
 		})
 	}
 }
