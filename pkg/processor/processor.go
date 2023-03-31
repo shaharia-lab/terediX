@@ -3,7 +3,6 @@ package processor
 
 import (
 	"fmt"
-	"log"
 	"sync"
 	"teredix/pkg/source"
 	"teredix/pkg/storage"
@@ -44,7 +43,7 @@ func (p *Processor) Process(resourceChan chan resource.Resource) {
 			defer wg.Done()
 			err := s.Scanner.Scan(resourceChan)
 			if err != nil {
-				log.Printf("failed to start the scanner. scanner: %s. Error: %s", s.Name, err)
+				fmt.Printf("failed to start the scanner. scanner: %s. Error: %s", s.Name, err)
 			}
 		}(s)
 	}
