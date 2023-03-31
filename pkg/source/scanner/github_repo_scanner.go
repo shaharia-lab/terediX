@@ -83,6 +83,23 @@ func (r *GitHubRepositoryScanner) Scan() []resource.Resource {
 	return resources
 }
 
+func (r *GitHubRepositoryScanner) ScanSource(resourceChannel chan resource.Resource) error {
+	opt := &github.RepositoryListOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
+
+	repos, err := r.ghClient.ListRepositories(context.Background(), r.user, opt)
+	if err != nil {
+		return err
+	}
+
+	for _, repo := range repos {
+		resourceChannel <- r.mapToResource(repo)
+	}
+
+	return nil
+}
+
 func (r *GitHubRepositoryScanner) mapToResource(repo *github.Repository) resource.Resource {
 	repoMeta := []resource.MetaData{
 		{

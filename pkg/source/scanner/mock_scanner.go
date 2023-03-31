@@ -27,3 +27,17 @@ func (_m *Mock) Scan() []resource.Resource {
 
 	return r0
 }
+
+// ScanSource provides a mock function with given fields: resourceChannel
+func (_m *Mock) ScanSource(resourceChannel chan resource.Resource) error {
+	ret := _m.Called(resourceChannel)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(chan resource.Resource) error); ok {
+		r0 = rf(resourceChannel)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
