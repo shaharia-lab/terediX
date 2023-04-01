@@ -3,20 +3,17 @@ package scanner
 
 import (
 	"fmt"
-	"log"
 	"teredix/pkg"
 	"teredix/pkg/resource"
 	"teredix/pkg/util"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
 )
 
 const (
-	apiCallInitialBackoff = time.Second * 5
+	apiCallInitialBackoff = 5
 	apiCallMaxRetries     = 5
-	subsequentBackoff     = 2
 )
 
 // RdsClient build aws client
@@ -61,7 +58,7 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 
 		// Retry request with exponential backoff if it fails due to rate limiting
 		var tagResult *rds.ListTagsForResourceOutput
-		err := a.RetryWithExponentialBackoff(func() error {
+		err := util.RetryWithExponentialBackoff(func() error {
 			var err error
 			tagResult, err = a.RdsClient.ListTagsForResource(&rds.ListTagsForResourceInput{
 				ResourceName: aws.String(fmt.Sprintf("arn:aws:rds:%s:%s:db:%s", a.Region, a.AccountID, instanceID)),
@@ -106,25 +103,4 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	return nil
-}
-
-// RetryWithExponentialBackoff retries a function with exponential backoff in case of errors
-func (a *AWSRDS) RetryWithExponentialBackoff(fn func() error, maxRetries int, initialBackoff time.Duration) error {
-	backoff := initialBackoff
-	for i := 0; ; i++ {
-		fmt.Println("Retrying....")
-		err := fn()
-		if err == nil {
-			return nil
-		}
-
-		if i == maxRetries {
-			return fmt.Errorf("maximum number of retries exceeded: %w", err)
-		}
-
-		log.Printf("Error occurred: %v. Retrying in %v", err, backoff)
-		time.Sleep(backoff)
-
-		backoff *= subsequentBackoff
-	}
 }

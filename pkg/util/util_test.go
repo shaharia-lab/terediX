@@ -1,6 +1,8 @@
 package util
 
 import (
+	"errors"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -11,5 +13,26 @@ func TestGenerateUUID(t *testing.T) {
 	// Verify that the UUID is in the correct format
 	if len(uuid) != 36 {
 		t.Errorf("UUID is not in the correct format: %s", uuid)
+	}
+}
+
+func TestRetryWithExponentialBackoff(t *testing.T) {
+	// Define the function to retry
+	fn := func() error {
+		return errors.New("error")
+	}
+
+	// Define the maximum number of retries and the backoff intervals
+	maxRetries := 1
+	initialBackoff := 1
+
+	// Call the function with retry and check the result
+	err := RetryWithExponentialBackoff(fn, maxRetries, initialBackoff)
+	assert.Error(t, err)
+
+	// Check the error message
+	expectedErrorMessage := "maximum number of retries exceeded: error"
+	if err.Error() != expectedErrorMessage {
+		t.Errorf("unexpected error message: got %v, want %v", err.Error(), expectedErrorMessage)
 	}
 }
