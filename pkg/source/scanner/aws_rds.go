@@ -11,6 +11,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/rds"
 )
 
+const (
+	apiCallInitialBackoff = 5
+	apiCallMaxRetries     = 5
+)
+
 // RdsClient build aws client
 type RdsClient interface {
 	DescribeDBInstancesPages(*rds.DescribeDBInstancesInput, func(*rds.DescribeDBInstancesOutput, bool) bool) error
@@ -51,10 +56,16 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 	for _, rdsInstance := range rdsInstances {
 		instanceID := aws.StringValue(rdsInstance.DBInstanceIdentifier)
 
-		// Get the tags for the instance
-		tagResult, err := a.RdsClient.ListTagsForResource(&rds.ListTagsForResourceInput{
-			ResourceName: aws.String(fmt.Sprintf("arn:aws:rds:%s:%s:db:%s", a.Region, a.AccountID, instanceID)),
-		})
+		// Retry request with exponential backoff if it fails due to rate limiting
+		var tagResult *rds.ListTagsForResourceOutput
+		err := util.RetryWithExponentialBackoff(func() error {
+			var err error
+			tagResult, err = a.RdsClient.ListTagsForResource(&rds.ListTagsForResourceInput{
+				ResourceName: aws.String(fmt.Sprintf("arn:aws:rds:%s:%s:db:%s", a.Region, a.AccountID, instanceID)),
+			})
+			return err
+		}, apiCallMaxRetries, apiCallInitialBackoff)
+
 		if err != nil {
 			return fmt.Errorf("failed to get tags for RDS instance %s. error: %w", instanceID, err)
 		}
