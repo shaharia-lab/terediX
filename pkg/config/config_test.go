@@ -24,6 +24,16 @@ func TestLoad(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestLoadAndValidateConfigYaml(t *testing.T) {
+	// Test with valid config file
+	path := "testdata/valid_config.yaml"
+	appConfig, loadError := Load(path)
+	assert.NoError(t, loadError)
+
+	validationError := Validate(appConfig)
+	assert.NoError(t, validationError)
+}
+
 func TestValidate(t *testing.T) {
 	testCases := []struct {
 		name    string
@@ -64,6 +74,16 @@ func TestValidate(t *testing.T) {
 							"branch":        "mybranch",
 							"path":          "mypath",
 							"file_patterns": "*.yaml",
+						},
+					},
+					"source3": {
+						Type: pkg.SourceTypeAWSS3,
+						Configuration: map[string]string{
+							"access_key":    "access_key",
+							"secret_key":    "secret_key",
+							"session_token": "session_token",
+							"region":        "x",
+							"account_id":    "account_id",
 						},
 					},
 				},
@@ -1623,6 +1643,53 @@ func TestValidate(t *testing.T) {
 							"account_id":    "xxx",
 							"region":        "xxxx",
 							"secret_key":    "xxxx",
+						},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name: "name",
+						Source: RelationCriteriaNode{
+							Kind:      "kind",
+							MetaKey:   "source_kind-key1",
+							MetaValue: "source-kind-value1",
+						},
+						Target: RelationCriteriaNode{
+							Kind:      "related-kind",
+							MetaKey:   "related-metadata-key",
+							MetaValue: "related-metadata-value",
+						},
+					}},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing account_id for AWS S3 source",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeAWSRDS,
+						Configuration: map[string]string{
+							"session_token": "session",
+							"region":        "xxxx",
+							"secret_key":    "xxxx",
+							"access_key":    "xxxx",
 						},
 					},
 				},

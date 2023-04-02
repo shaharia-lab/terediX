@@ -36,14 +36,10 @@ source:
       secret_key: "xxxx"
       session_token: "xxxx"
       region: "x"
+      account_id: "xxx"
   aws_rds_one:
     type: aws_rds
-    configuration:
-      access_key: "xxxx"
-      secret_key: "xxxx"
-      session_token: "xxxx"
-      region: "x"
-      account_id: "xxx"
+    config_from: aws_s3_one
 relations:
   criteria:
     - name: "file-system-rule1"
