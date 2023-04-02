@@ -1,3 +1,3 @@
 FROM scratch
-COPY example /usr/bin/teredix
+COPY teredix /usr/bin/teredix
 ENTRYPOINT ["/usr/bin/teredix"]
