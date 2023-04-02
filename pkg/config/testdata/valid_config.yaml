@@ -44,9 +44,6 @@ source:
       session_token: "xxxx"
       region: "x"
       account_id: "xxx"
-    resource_types:
-      - rds
-      - s3
 relations:
   criteria:
     - name: "file-system-rule1"

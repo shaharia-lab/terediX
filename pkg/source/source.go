@@ -3,7 +3,6 @@ package source
 
 import (
 	"context"
-	"fmt"
 	"teredix/pkg"
 	"teredix/pkg/config"
 	"teredix/pkg/source/scanner"
@@ -71,12 +70,6 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 			awsCnf := aws.NewConfig().WithRegion(s.Configuration["region"]).WithCredentials(credentials.NewStaticCredentials(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"]))
 			newSession, _ := session.NewSession(awsCnf)
 			rdsClient := rds.New(newSession)
-
-			for _, t := range s.ResourceTypes {
-				fmt.Println(t)
-			}
-
-			panic(1)
 
 			awsS3 := scanner.NewAWSRDS(sourceKey, s.Configuration["region"], s.Configuration["account_id"], rdsClient)
 			finalSources = append(finalSources, Source{
