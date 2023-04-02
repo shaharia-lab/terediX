@@ -66,6 +66,17 @@ func TestValidate(t *testing.T) {
 							"file_patterns": "*.yaml",
 						},
 					},
+					"aws": {
+						Type: pkg.SourceTypeAWSRDS,
+						Configuration: map[string]string{
+							"access_key":    "access",
+							"secret_key":    "secret",
+							"account_id":    "xxx",
+							"region":        "eu-west",
+							"session_token": "xxxx",
+						},
+						ResourceTypes: []string{"rds", "s3"},
+					},
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1736,6 +1747,104 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: true,
+		},
+		{
+			name: "invalid AWS resource types",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeAWSRDS,
+						Configuration: map[string]string{
+							"access_key":    "access",
+							"secret_key":    "secret",
+							"account_id":    "xxx",
+							"region":        "eu-west",
+							"session_token": "xxxx",
+						},
+						ResourceTypes: []string{"invlaid_source_type", "rds"},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name: "name",
+						Source: RelationCriteriaNode{
+							Kind:      "kind",
+							MetaKey:   "source_kind-key1",
+							MetaValue: "source-kind-value1",
+						},
+						Target: RelationCriteriaNode{
+							Kind:      "related-kind",
+							MetaKey:   "related-metadata-key",
+							MetaValue: "related-metadata-value",
+						},
+					}},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "aws resource types are empty",
+			config: AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeAWSRDS,
+						Configuration: map[string]string{
+							"access_key":    "access",
+							"secret_key":    "secret",
+							"account_id":    "xxx",
+							"region":        "eu-west",
+							"session_token": "xxxx",
+						},
+						ResourceTypes: []string{},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name: "name",
+						Source: RelationCriteriaNode{
+							Kind:      "kind",
+							MetaKey:   "source_kind-key1",
+							MetaValue: "source-kind-value1",
+						},
+						Target: RelationCriteriaNode{
+							Kind:      "related-kind",
+							MetaKey:   "related-metadata-key",
+							MetaValue: "related-metadata-value",
+						},
+					}},
+				},
+			},
+			wantErr: false,
 		},
 		{
 			name: "missing region for AWS RDS source",

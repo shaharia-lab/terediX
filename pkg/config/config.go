@@ -37,6 +37,7 @@ type SourceConfiguration struct {
 type Source struct {
 	Type          string            `yaml:"type"`
 	Configuration map[string]string `yaml:"configuration"`
+	ResourceTypes []string          `yaml:"resource_types,omitempty"`
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
 }
 
@@ -240,6 +241,10 @@ func (c *AppConfig) validateSourceConfiguration(name string, source Source) erro
 		if err := c.validateConfigurationKeys(name, source, "access_key", "secret_key", "session_token", "region", "account_id"); err != nil {
 			return err
 		}
+
+		if err := c.validateAWSResourceTypes(name, source); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unknown source type: '%s'", source.Type)
 	}
@@ -251,6 +256,25 @@ func (c *AppConfig) validateConfigurationKeys(sourceName string, source Source, 
 		keyNotEmpty, ok := source.Configuration[k]
 		if !ok || keyNotEmpty == "" {
 			return fmt.Errorf("source '%s' requires 'configuration.%s'", k, sourceName)
+		}
+	}
+
+	return nil
+}
+
+func (c *AppConfig) validateAWSResourceTypes(sourceName string, source Source) error {
+	if source.ResourceTypes == nil || len(source.ResourceTypes) == 0 {
+		return nil
+	}
+
+	validResourceTypes := map[string]bool{
+		"s3":  true,
+		"rds": true,
+	}
+
+	for _, resourceType := range source.ResourceTypes {
+		if _, ok := validResourceTypes[resourceType]; !ok {
+			return fmt.Errorf("resource type: %s is not valid for source: %s", resourceType, sourceName)
 		}
 	}
 
