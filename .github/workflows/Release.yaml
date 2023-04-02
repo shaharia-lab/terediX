@@ -22,7 +22,6 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: 1.19
-          cache: true
       - uses: docker/login-action@v1
         with:
           registry: ghcr.io
