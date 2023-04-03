@@ -17,8 +17,7 @@
 </p><br/><br/>
 
 <p align="center">
-  <a href="https://github.com/shahariaazam/teredix"><img src="https://user-images.githubusercontent.
-com/1095008/229536376-51ddaa75-85ee-4e3e-95df-7cf6093392bf.png" width="100%"/></a>
+  <a href="https://github.com/shahariaazam/teredix"><img src="https://user-images.githubusercontent.com/1095008/229536376-51ddaa75-85ee-4e3e-95df-7cf6093392bf.png" width="100%"/></a>
 </p><br/>
 
 `TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and
