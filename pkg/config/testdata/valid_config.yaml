@@ -43,6 +43,9 @@ source:
   aws_ec2_one:
     type: aws_ec2
     config_from: aws_s3_one
+  aws_ecr_example:
+    type: aws_ecr
+    config_from: aws_s3_one
 relations:
   criteria:
     - name: "file-system-rule1"

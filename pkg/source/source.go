@@ -7,6 +7,12 @@ import (
 	"teredix/pkg/config"
 	"teredix/pkg/source/scanner"
 
+	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
+
+	aws2 "github.com/aws/aws-sdk-go-v2/aws"
+
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
+
 	ec2v2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	configv2 "github.com/aws/aws-sdk-go-v2/config"
@@ -83,17 +89,33 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 		}
 
 		if s.Type == pkg.SourceTypeAWSEC2 {
-			cfg, _ := configv2.LoadDefaultConfig(context.TODO())
-			awsCredentials := credentialsv2.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
-
-			cfg.Credentials = awsCredentials
-			cfg.Region = s.Configuration["region"]
-
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
-				Scanner: scanner.NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2v2.NewFromConfig(cfg)),
+				Scanner: scanner.NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2v2.NewFromConfig(buildAWSConfig(s))),
+			})
+		}
+
+		if s.Type == pkg.SourceTypeAWSECR {
+			finalSources = append(finalSources, Source{
+				Name: sourceKey,
+				Scanner: scanner.NewAWSECR(
+					sourceKey,
+					s.Configuration["region"],
+					s.Configuration["account_id"],
+					ecr.NewFromConfig(buildAWSConfig(s)),
+					resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(s)),
+				),
 			})
 		}
 	}
 	return finalSources
+}
+
+func buildAWSConfig(s config.Source) aws2.Config {
+	cfg, _ := configv2.LoadDefaultConfig(context.TODO())
+	awsCredentials := credentialsv2.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
+
+	cfg.Credentials = awsCredentials
+	cfg.Region = s.Configuration["region"]
+	return cfg
 }
