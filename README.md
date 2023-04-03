@@ -20,6 +20,9 @@
   <a href="https://github.com/shahariaazam/teredix"><img src="https://user-images.githubusercontent.com/1095008/229536376-51ddaa75-85ee-4e3e-95df-7cf6093392bf.png" width="100%"/></a>
 </p><br/>
 
+
+## 🤔  What is TerediX?
+
 `TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and
 explore them as a resource graph. Users can use **teredix** to create resource graphs that depict the relationships
 and dependencies between different resources. The tool also allows users to search for specific resources and view details about each resource, such as its name, type, description, and associated tags.
@@ -27,9 +30,12 @@ and dependencies between different resources. The tool also allows users to sear
 **teredix** can be a useful tool for organizations looking to manage their technology resources more effectively and
 gain a better understanding of how those resources are interconnected.
 
+This tools can efficiently collect all the resources and their relevent metadata from different sources and can build 
+relationship between resources to enhance visibility of resources.
+
 ![Technical Resource Graph](https://user-images.githubusercontent.com/1095008/227896903-ff4b916d-893e-489e-8ffe-1469fff0703a.jpg)
 
-## Table of Contents
+## 📄 Table of Contents
 - [Technical Architecture](#technical-architecture)
 - [Getting Started](#getting-started)
   - [Run Discovery](#run-discovery)
@@ -48,7 +54,7 @@ gain a better understanding of how those resources are interconnected.
 - [License](#license)
 
 
-## Technical Architecture
+## 💻	Technical Architecture
 
 ```puml
 +-------------------+       +------------------------+        +------------------------+
@@ -90,7 +96,7 @@ processes the resources as they become available.
 **Visualizer:** This component is responsible for displaying the discovered resources and their relationships. It
 takes in a display type and renders the resources in that format.
 
-## Getting Started
+## 🚀 Getting Started
 
 - To get started, you just need to download the latest binary from [latest release](https://github.com/shahariaazam/terediX/releases).
 - Prepare your config file. Here is the [example config file](#config-file).
@@ -103,7 +109,7 @@ takes in a display type and renders the resources in that format.
 | relation                 | This command is responsible to build relationship between resources                 |
 | display                  | It will generate visualized resource graph that can be opened in your browser       |
 
-### Run Discovery
+### 📥 Run Discovery
 
 To discover the resources, run the following command.
 
@@ -111,7 +117,7 @@ To discover the resources, run the following command.
 teredix discover --config {your_config.yaml file}
 ```
 
-### Build the resource relationship
+### 🔗 Build the resource relationship
 
 If you want to build the relationship between resources based on your relation criteria defined in your config file,
 run -
@@ -120,7 +126,7 @@ run -
 teredix relation --config {your_config.yaml file}
 ```
 
-### Explore Resource Graph Visualization
+### 🔍 Explore Resource Graph Visualization
 
 To display the resource graph in an interactive way, please run the following command.
 
@@ -129,7 +135,7 @@ teredix display --config {your_config.yaml file}
 ```
 It will show `Displaying resource graph at http://localhost:8989`. Open your browser and visit the URL.
 
-## Usage
+## 💻 Usage
 
 ```shell
 ➜ teredix --help
@@ -150,7 +156,7 @@ Flags:
   -v, --version   version for this command
 ```
 
-## Config file
+## ⚙️ Config file
 
 Here is an example `config.yaml` file. You should create your own config file with all the configuration.
 
@@ -213,8 +219,7 @@ relations:
         meta_value: "/some/other/path"
 ```
 
-You can get a complete valid config file in [valid_config.yaml](https://github.
-com/shahariaazam/terediX/blob/master/pkg/config/testdata/valid_config.yaml)
+You can get a complete valid config file in [valid_config.yaml](https://github.com/shahariaazam/terediX/blob/master/pkg/config/testdata/valid_config.yaml)
 
 
 | Field                                 | Type   | Required | Description                                                                                                                                                          |
@@ -252,11 +257,9 @@ The following fields can be specified for each criteria:
 | `target.meta_key`   | string | yes      | The metadata key used to identify the resource.   |
 | `target.meta_value` | string | yes      | The metadata value used to identify the resource. |
 
-## Supported Source
+## 🌐 Supported Source
 
-### AWS RDS
-
-### AWS EC2
+### 🖥️ AWS EC2
 
 Discover all EC2 instances and it's tags
 
