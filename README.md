@@ -1,17 +1,25 @@
-# teredix
+<h1 align="center">TerediX</h1>
+<p align="center">Tech Resource Graph (Discovery & Exploration)</p>
 
-[![CI](https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml/badge.svg)](https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml)
-[![codecov](https://codecov.io/gh/shahariaazam/terediX/branch/master/graph/badge.svg?token=NKTKQ45HDN)](https://codecov.io/gh/shahariaazam/terediX)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=bugs)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
+<p align="center">
+    <a href="https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml"><img src="https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml/badge.svg" height="20"/></a>
+	<a href="https://codecov.io/gh/shahariaazam/terediX"><img src="https://codecov.io/gh/shahariaazam/terediX/branch/master/graph/badge.svg?token=NKTKQ45HDN" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=reliability_rating" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=vulnerabilities" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=security_rating" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_rating" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=code_smells" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=ncloc" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=alert_status" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=duplicated_lines_density" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=bugs" height="20"/></a>
+	<a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_index" height="20"/></a>
+</p><br/><br/>
+
+<p align="center">
+  <a href="https://github.com/shahariaazam/teredix"><img src="https://user-images.githubusercontent.
+com/1095008/229536376-51ddaa75-85ee-4e3e-95df-7cf6093392bf.png" width="100%"/></a>
+</p><br/>
 
 `TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and
 explore them as a resource graph. Users can use **teredix** to create resource graphs that depict the relationships
@@ -150,13 +158,11 @@ Here is an example `config.yaml` file. You should create your own config file wi
 ```yaml
 ---
 organization:
-  name: Acme Tech
-  logo: https://example.com
-
+  name: "Acme Tech"
+  logo: "https://example.com"
 discovery:
-  name: Infrastructure Discovery
-  description: Some description text
-
+  name: "Infrastructure Discovery"
+  description: "Some description text"
 storage:
   batch_size: 2
   engines:
@@ -165,34 +171,36 @@ storage:
       port: 5432
       user: "app"
       password: "pass"
-      db: "app
-  default_engine: postgresql
-
+      db: "app"
+  default_engine: "postgresql"
 source:
   fs_one:
-    type: file_system
+    type: "file_system"
     configuration:
       root_directory: "/some/path"
   fs_two:
-    type: file_system
+    type: "file_system"
     configuration:
       root_directory: "/some/other/path"
   github_repo_sh:
-    type: github_repository
+    type: "github_repository"
     configuration:
       token: "xxxx"
       user_or_org: "xxxx"
   aws_s3_one:
-    type: aws_s3
+    type: "aws_s3"
     configuration:
       access_key: "xxxx"
       secret_key: "xxxx"
       session_token: "xxxx"
       region: "x"
-      account_id: "xxx
+      account_id: "xxx"
   aws_rds_one:
-    type: aws_rds
-    config_from: aws_s3_one
+    type: "aws_rds"
+    config_from: "aws_s3_one"
+  aws_ec2_org:
+    type: "aws_ec2"
+    config_from: "aws_s3_one"
 relations:
   criteria:
     - name: "file-system-rule1"
@@ -205,6 +213,10 @@ relations:
         meta_key: "Root-Directory"
         meta_value: "/some/other/path"
 ```
+
+You can get a complete valid config file in [valid_config.yaml](https://github.
+com/shahariaazam/terediX/blob/master/pkg/config/testdata/valid_config.yaml)
+
 
 | Field                                 | Type   | Required | Description                                                                                                                                                          |
 |---------------------------------------|--------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -242,6 +254,41 @@ The following fields can be specified for each criteria:
 | `target.meta_value` | string | yes      | The metadata value used to identify the resource. |
 
 ## Supported Source
+
+### AWS RDS
+
+### AWS EC2
+
+Discover all EC2 instances and it's tags
+
+```yaml
+source:
+  aws_ec2_first_config:
+    type: aws_ec2
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
+      account_id: "xxx
+```
+
+#### Available metadata for AWS RDS Instance
+
+| Meta Key                                 | Description                                                       |
+|------------------------------------------|-------------------------------------------------------------------|
+| AWS-EC2-Instance-ID                      | The ID of the instance.                                           |
+| AWS-EC2-Image-ID                         | The ID of the AMI                                                 |
+| AWS-EC2-PrivateDnsName                   | The private IPv4 DNS name                                         |
+| AWS-EC2-InstanceType                     | The instance type                                                 |
+| AWS-EC2-Architecture                     | The architecture of the instance                                  |
+| AWS-EC2-InstanceLifecycle                | Indicates whether this is a Spot Instance or a Scheduled Instance |
+| AWS-EC2-InstanceState                    | The current state of the instance                                 |
+| AWS-EC2-VpcId                            | The ID of the VPC in which the instance is running                |
+| AWS-EC2-Tag-{tagKey}                     | Any tags assigned to the instance                                 |
+| AWS-EC2-Security-Group-{securityGroupID} | Security group ID                                                 |
+| Scanner-Label                            | Name of the source configured in config.yaml file                 |
+
 
 ### AWS RDS
 
