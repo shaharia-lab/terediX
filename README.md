@@ -206,8 +206,7 @@ relations:
         meta_value: "/some/other/path"
 ```
 
-You can get a complete valid config file in [valid_config.yaml](https://github.
-com/shahariaazam/terediX/blob/master/pkg/config/testdata/valid_config.yaml)
+You can get a complete valid config file in [valid_config.yaml](https://github.com/shahariaazam/terediX/blob/master/pkg/config/testdata/valid_config.yaml)
 
 
 | Field                                 | Type   | Required | Description                                                                                                                                                          |
@@ -247,8 +246,6 @@ The following fields can be specified for each criteria:
 
 ## Supported Source
 
-### AWS RDS
-
 ### AWS EC2
 
 Discover all EC2 instances and it's tags
@@ -265,7 +262,7 @@ source:
       account_id: "xxx
 ```
 
-#### Available metadata for AWS RDS Instance
+#### Available metadata for AWS EC2 Instance
 
 | Meta Key                                 | Description                                                       |
 |------------------------------------------|-------------------------------------------------------------------|
