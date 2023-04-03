@@ -38,14 +38,14 @@ relationship between resources to enhance visibility of resources.
 - [Getting Started](#-getting-started)
   - [Run Discovery](#-run-discovery)
   - [Build the Resource Relationship](#-build-the-resource-relationship)
-  - [Explore Resource Graph Visualization](#-explore-resource-graph-visualization)
+  - [Explore Resource Graph Visualization](#chartwithupwardstrend-explore-resource-graph-visualization)
 - [Usage](#-usage)
 - [Config file](#config-file)
 - [Supported Source](#-supported-source)
-  - [AWS EC2](#-aws-ec2)
+  - [AWS EC2](#computer-aws-ec2)
   - [AWS ECR](#-aws-ecr)
-  - [AWS RDS](#aws-rds)
-  - [File System](#-file-system)
+  - [AWS RDS](#cloud-aws-rds)
+  - [File System](#filefolder-file-system)
   - [GitHub Repository](#octocat-github-repository)
 - [Supported Storage](#supported-storage)
   - [PostgreSQL](#-postgresql)
@@ -127,7 +127,7 @@ run -
 teredix relation --config {your_config.yaml file}
 ```
 
-### 🔍 Explore Resource Graph Visualization
+### :chart_with_upwards_trend: Explore Resource Graph Visualization
 
 To display the resource graph in an interactive way, please run the following command.
 
@@ -136,7 +136,7 @@ teredix display --config {your_config.yaml file}
 ```
 It will show `Displaying resource graph at http://localhost:8989`. Open your browser and visit the URL.
 
-## 💻 Usage
+## :computer: Usage
 
 ```shell
 ➜ teredix --help
@@ -263,7 +263,7 @@ The following fields can be specified for each criteria:
 
 ## 🌐 Supported Source
 
-### 💻 AWS EC2
+### :computer: AWS EC2
 
 Discover all EC2 instances and it's tags
 
@@ -324,7 +324,7 @@ source:
 | Scanner-Label           | Name of the source configured in config.yaml file                          |
 
 
-### AWS RDS
+### :cloud: AWS RDS
 
 Discover all RDS instances and it's tags
 
@@ -406,7 +406,7 @@ source:
 | GitHub-Repo-Topic        | Topics of GitHub repository                       |
 
 
-### 📁 File System
+### :file_folder: File System
 
 It will scan the file system and generate resource for each file. Required configuration:
 
