@@ -84,6 +84,10 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 						Key:   "AWS-ECR-Repository-URI",
 						Value: *repository.RepositoryUri,
 					},
+					{
+						Key:   pkg.MetaKeyScannerLabel,
+						Value: a.SourceName,
+					},
 				},
 			}
 

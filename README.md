@@ -193,6 +193,9 @@ source:
   aws_ec2_org:
     type: "aws_ec2"
     config_from: "aws_s3_one"
+  aws_ecr_org:
+    type: "aws_ecr"
+    config_from: "aws_s3_one"
 relations:
   criteria:
     - name: "file-system-rule1"
@@ -277,6 +280,34 @@ source:
 | AWS-EC2-Tag-{tagKey}                     | Any tags assigned to the instance                                 |
 | AWS-EC2-Security-Group-{securityGroupID} | Security group ID                                                 |
 | Scanner-Label                            | Name of the source configured in config.yaml file                 |
+
+
+### AWS ECR
+
+Discover all ECR repositories and it's tags
+
+```yaml
+source:
+  aws_ecr_work_config:
+    type: aws_ecr
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
+      account_id: "xxx
+```
+
+#### Available metadata for AWS ECR repository
+
+| Meta Key                | Description                                                                |
+|-------------------------|----------------------------------------------------------------------------|
+| AWS-ECR-Registry-Id     | ECR registry ID.                                                           |
+| AWS-ECR-Repository-Name | ECR Repository name. eg. hello-world                                       |
+| AWS-ECR-Repository-URI  | Repository URI. eg. 123456789.dkr.ecr.eu-west-1.amazonaws.com/hello-world  |
+| AWS-ECR-Repository-Arn  | Repository ARN. eg. arn:aws:ecr:eu-west-1:123456789:repository/hello-world |
+| AWS-ECR-{tagKey}        | Tags of ECR repositories                                                   |
+| Scanner-Label           | Name of the source configured in config.yaml file                          |
 
 
 ### AWS RDS

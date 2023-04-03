@@ -246,6 +246,10 @@ func TestAWSECR_Scan(t *testing.T) {
 				Key:   "AWS-ECR-Image-Tag",
 				Value: "tag3",
 			},
+			{
+				Key:   pkg.MetaKeyScannerLabel,
+				Value: "tag3",
+			},
 		},
 	}
 
