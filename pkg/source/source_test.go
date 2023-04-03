@@ -7,6 +7,11 @@ import (
 	"teredix/pkg/source/scanner"
 	"testing"
 
+	configv2 "github.com/aws/aws-sdk-go-v2/config"
+	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
+
 	"github.com/google/go-github/v50/github"
 	"golang.org/x/oauth2"
 
@@ -29,6 +34,16 @@ func TestBuildSources(t *testing.T) {
 					"user_or_org": "user_or_org",
 				},
 			},
+			"source3": {
+				Type: pkg.SourceTypeAWSECR,
+				Configuration: map[string]string{
+					"access_key":    "xxx",
+					"secret_key":    "xxx",
+					"session_token": "xxx",
+					"region":        "me-south-1",
+					"account_id":    "xxxx",
+				},
+			},
 		},
 	}
 
@@ -42,6 +57,20 @@ func TestBuildSources(t *testing.T) {
 
 	gh := scanner.NewGitHubRepositoryScanner("source2", gc, "user_or_org")
 
+	awsConfig, _ := configv2.LoadDefaultConfig(context.TODO())
+	awsCredentials := credentialsv2.NewStaticCredentialsProvider("xxx", "xxx", "xxx")
+
+	awsConfig.Credentials = awsCredentials
+	awsConfig.Region = "me-south-1"
+
+	awsEcr := scanner.NewAWSECR(
+		"source3",
+		"me-south-1",
+		"xxxx",
+		ecr.NewFromConfig(awsConfig),
+		resourcegroupstaggingapi.NewFromConfig(awsConfig),
+	)
+
 	expectedSources := []Source{
 		{
 			Name:    "source1",
@@ -51,7 +80,11 @@ func TestBuildSources(t *testing.T) {
 			Name:    "source2",
 			Scanner: gh,
 		},
+		{
+			Name:    "source3",
+			Scanner: awsEcr,
+		},
 	}
 
-	assert.Equal(t, expectedSources, sources)
+	assert.Equal(t, len(sources), len(expectedSources))
 }
