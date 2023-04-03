@@ -150,13 +150,11 @@ Here is an example `config.yaml` file. You should create your own config file wi
 ```yaml
 ---
 organization:
-  name: Acme Tech
-  logo: https://example.com
-
+  name: "Acme Tech"
+  logo: "https://example.com"
 discovery:
-  name: Infrastructure Discovery
-  description: Some description text
-
+  name: "Infrastructure Discovery"
+  description: "Some description text"
 storage:
   batch_size: 2
   engines:
@@ -165,34 +163,36 @@ storage:
       port: 5432
       user: "app"
       password: "pass"
-      db: "app
-  default_engine: postgresql
-
+      db: "app"
+  default_engine: "postgresql"
 source:
   fs_one:
-    type: file_system
+    type: "file_system"
     configuration:
       root_directory: "/some/path"
   fs_two:
-    type: file_system
+    type: "file_system"
     configuration:
       root_directory: "/some/other/path"
   github_repo_sh:
-    type: github_repository
+    type: "github_repository"
     configuration:
       token: "xxxx"
       user_or_org: "xxxx"
   aws_s3_one:
-    type: aws_s3
+    type: "aws_s3"
     configuration:
       access_key: "xxxx"
       secret_key: "xxxx"
       session_token: "xxxx"
       region: "x"
-      account_id: "xxx
+      account_id: "xxx"
   aws_rds_one:
-    type: aws_rds
-    config_from: aws_s3_one
+    type: "aws_rds"
+    config_from: "aws_s3_one"
+  aws_ec2_org:
+    type: "aws_ec2"
+    config_from: "aws_s3_one"
 relations:
   criteria:
     - name: "file-system-rule1"
@@ -242,6 +242,41 @@ The following fields can be specified for each criteria:
 | `target.meta_value` | string | yes      | The metadata value used to identify the resource. |
 
 ## Supported Source
+
+### AWS RDS
+
+### AWS EC2
+
+Discover all EC2 instances and it's tags
+
+```yaml
+source:
+  aws_ec2_first_config:
+    type: aws_ec2
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
+      account_id: "xxx
+```
+
+#### Available metadata for AWS RDS Instance
+
+| Meta Key                                 | Description                                                       |
+|------------------------------------------|-------------------------------------------------------------------|
+| AWS-EC2-Instance-ID                      | The ID of the instance.                                           |
+| AWS-EC2-Image-ID                         | The ID of the AMI                                                 |
+| AWS-EC2-PrivateDnsName                   | The private IPv4 DNS name                                         |
+| AWS-EC2-InstanceType                     | The instance type                                                 |
+| AWS-EC2-Architecture                     | The architecture of the instance                                  |
+| AWS-EC2-InstanceLifecycle                | Indicates whether this is a Spot Instance or a Scheduled Instance |
+| AWS-EC2-InstanceState                    | The current state of the instance                                 |
+| AWS-EC2-VpcId                            | The ID of the VPC in which the instance is running                |
+| AWS-EC2-Tag-{tagKey}                     | Any tags assigned to the instance                                 |
+| AWS-EC2-Security-Group-{securityGroupID} | Security group ID                                                 |
+| Scanner-Label                            | Name of the source configured in config.yaml file                 |
+
 
 ### AWS RDS
 

@@ -7,6 +7,10 @@ import (
 	"teredix/pkg/config"
 	"teredix/pkg/source/scanner"
 
+	ec2v2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+
+	configv2 "github.com/aws/aws-sdk-go-v2/config"
+	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go/service/rds"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -75,6 +79,19 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: awsS3,
+			})
+		}
+
+		if s.Type == pkg.SourceTypeAWSEC2 {
+			cfg, _ := configv2.LoadDefaultConfig(context.TODO())
+			awsCredentials := credentialsv2.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
+
+			cfg.Credentials = awsCredentials
+			cfg.Region = s.Configuration["region"]
+
+			finalSources = append(finalSources, Source{
+				Name:    sourceKey,
+				Scanner: scanner.NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2v2.NewFromConfig(cfg)),
 			})
 		}
 	}

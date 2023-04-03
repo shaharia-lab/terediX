@@ -11,6 +11,9 @@ const (
 	// ResourceKindAWSRDS resource kind
 	ResourceKindAWSRDS = "AWS_RDS"
 
+	// ResourceKindAWSEC2 resource kind
+	ResourceKindAWSEC2 = "AWS_EC2"
+
 	// SourceTypeFileSystem file_system source type
 	SourceTypeFileSystem = "file_system"
 
@@ -22,6 +25,9 @@ const (
 
 	// SourceTypeAWSRDS source type
 	SourceTypeAWSRDS = "aws_rds"
+
+	// SourceTypeAWSEC2 source type
+	SourceTypeAWSEC2 = "aws_ec2"
 
 	// MetaKeyScannerLabel Scanner-Label meta key
 	MetaKeyScannerLabel = "Scanner-Label"
