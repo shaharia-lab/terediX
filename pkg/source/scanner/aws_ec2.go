@@ -65,9 +65,11 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 			},
 			MaxResults: aws.Int32(int32(perPage)),
 		}
+
 		if nextToken != "" {
 			params.NextToken = aws.String(nextToken)
 		}
+
 		resp, err := a.Ec2Client.DescribeInstances(context.TODO(), params)
 		if err != nil {
 			return err
@@ -76,64 +78,7 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 		// Loop through instances and their tags
 		for _, reservation := range resp.Reservations {
 			for _, instance := range reservation.Instances {
-				res := resource.Resource{
-					Name:       *instance.InstanceId,
-					Kind:       pkg.ResourceKindAWSEC2,
-					UUID:       *instance.InstanceId,
-					ExternalID: *instance.InstanceId,
-					MetaData: []resource.MetaData{
-						{
-							Key:   "AWS-EC2-Instance-ID",
-							Value: *instance.InstanceId,
-						},
-						{
-							Key:   "AWS-EC2-Image-ID",
-							Value: *instance.ImageId,
-						},
-						{
-							Key:   "AWS-EC2-PrivateDnsName",
-							Value: *instance.PrivateDnsName,
-						},
-						{
-							Key:   "AWS-EC2-InstanceType",
-							Value: string(instance.InstanceType),
-						},
-						{
-							Key:   "AWS-EC2-Architecture",
-							Value: string(instance.Architecture),
-						},
-						{
-							Key:   "AWS-EC2-InstanceLifecycle",
-							Value: string(instance.InstanceLifecycle),
-						},
-						{
-							Key:   "AWS-EC2-InstanceState",
-							Value: string(instance.State.Name),
-						},
-						{
-							Key:   "AWS-EC2-VpcId",
-							Value: *instance.VpcId,
-						},
-					},
-				}
-
-				for _, tag := range instance.Tags {
-					metaData := resource.MetaData{
-						Key:   fmt.Sprintf("AWS-EC2-%s", *tag.Key),
-						Value: *tag.Value,
-					}
-					res.MetaData = append(res.MetaData, metaData)
-				}
-
-				for _, sg := range instance.SecurityGroups {
-					metaData := resource.MetaData{
-						Key:   fmt.Sprintf("AWS-EC2-Security-Group-%s", *sg.GroupId),
-						Value: *sg.GroupName,
-					}
-					res.MetaData = append(res.MetaData, metaData)
-				}
-
-				resourceChannel <- res
+				resourceChannel <- a.mapToResource(instance)
 			}
 		}
 
@@ -146,4 +91,64 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	return nil
+}
+
+func (a *AWSEC2) mapToResource(instance types.Instance) resource.Resource {
+	res := resource.Resource{
+		Name:       *instance.InstanceId,
+		Kind:       pkg.ResourceKindAWSEC2,
+		UUID:       *instance.InstanceId,
+		ExternalID: *instance.InstanceId,
+		MetaData: []resource.MetaData{
+			{
+				Key:   "AWS-EC2-Instance-ID",
+				Value: *instance.InstanceId,
+			},
+			{
+				Key:   "AWS-EC2-Image-ID",
+				Value: *instance.ImageId,
+			},
+			{
+				Key:   "AWS-EC2-PrivateDnsName",
+				Value: *instance.PrivateDnsName,
+			},
+			{
+				Key:   "AWS-EC2-InstanceType",
+				Value: string(instance.InstanceType),
+			},
+			{
+				Key:   "AWS-EC2-Architecture",
+				Value: string(instance.Architecture),
+			},
+			{
+				Key:   "AWS-EC2-InstanceLifecycle",
+				Value: string(instance.InstanceLifecycle),
+			},
+			{
+				Key:   "AWS-EC2-InstanceState",
+				Value: string(instance.State.Name),
+			},
+			{
+				Key:   "AWS-EC2-VpcId",
+				Value: *instance.VpcId,
+			},
+		},
+	}
+
+	for _, tag := range instance.Tags {
+		metaData := resource.MetaData{
+			Key:   fmt.Sprintf("AWS-EC2-%s", *tag.Key),
+			Value: *tag.Value,
+		}
+		res.MetaData = append(res.MetaData, metaData)
+	}
+
+	for _, sg := range instance.SecurityGroups {
+		metaData := resource.MetaData{
+			Key:   fmt.Sprintf("AWS-EC2-Security-Group-%s", *sg.GroupId),
+			Value: *sg.GroupName,
+		}
+		res.MetaData = append(res.MetaData, metaData)
+	}
+	return res
 }
