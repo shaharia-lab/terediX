@@ -42,17 +42,17 @@ relationship between resources to enhance visibility of resources.
 - [Usage](#-usage)
 - [Config File](#-config-file)
 - [Supported Source](#-supported-source)
-  - [AWS EC2](#aws-ec2)
-  - [AWS ECR](#aws-ecr)
-  - [AWS RDS](#aws-rds)
-  - [File System](#file-system)
+  - [AWS EC2](#-aws-ec2)
+  - [AWS ECR](#-aws-ecr)
+  - [AWS RDS](#-aws-rds)
+  - [File System](#-file-system)
   - [GitHub Repository](#octocat-github-repository)
-- [Supported Storage](#supported-storage)
-  - [PostgreSQL](#postgresql)
-- [Supported Visualization](#supported-visualization)
+- [Supported Storage](#-supported-storage)
+  - [PostgreSQL](#-postgresql)
+- [Supported Visualization](#-supported-visualization)
   - [Cytoscape JS](#cytoscape-js)
-- [Contributing](#contributing)
-- [License](#license)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 
 ## 💻  Technical Architecture
@@ -263,7 +263,7 @@ The following fields can be specified for each criteria:
 
 ## 🌐 Supported Source
 
-### AWS EC2
+### 💻 AWS EC2
 
 Discover all EC2 instances and it's tags
 
@@ -296,7 +296,7 @@ source:
 | Scanner-Label                            | Name of the source configured in config.yaml file                 |
 
 
-### AWS ECR
+### 🐳 AWS ECR
 
 Discover all ECR repositories and it's tags
 
@@ -324,7 +324,7 @@ source:
 | Scanner-Label           | Name of the source configured in config.yaml file                          |
 
 
-### AWS RDS
+### ☁️ AWS RDS
 
 Discover all RDS instances and it's tags
 
@@ -351,7 +351,7 @@ source:
 | AWS-RDS-Tag-{tagKey} | Every tag key associated with the source will be added as metadata. {tagKey} is the tag key from RDS |
 
 
-### AWS S3
+### 📦 AWS S3
 
 Discover all the S3 buckets from AWS
 
@@ -406,7 +406,7 @@ source:
 | GitHub-Repo-Topic        | Topics of GitHub repository                       |
 
 
-### File System
+### 📁 File System
 
 It will scan the file system and generate resource for each file. Required configuration:
 
@@ -426,9 +426,9 @@ source:
 | Scanner-Label  | Name of the source configured in config.yaml file |
 
 
-## Supported Storage
+## 🗄️ Supported Storage
 
-### PostgreSQL
+### 🐘 PostgreSQL
 
 To configure the PostgreSQL database, you need to update your configuration as following:
 
@@ -450,7 +450,7 @@ run as goroutine and provide the resources as a channel for further processing/s
 to use batch_size to avoid consuming heavy memory load if your organization has so many resources for all the source
 combined
 
-## Supported Visualization
+## 📈 Supported Visualization
 
 To visualize the resource graph, here is the available visualizer.
 
@@ -458,10 +458,10 @@ To visualize the resource graph, here is the available visualizer.
 
 [Example](https://raw.githubusercontent.com/iVis-at-Bilkent/cytoscape.js-cise/master/demo.gif)
 
-### Contributing
+### 🤝 Contributing
 
 Contributions are welcome! Please follow the guidelines outlined in the [CONTRIBUTING](https://github.com/shahariaazam/teredix/blob/master/CONTRIBUTING.md) file.
 
-### License
+### 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/shahariaazam/teredix/blob/master/LICENSE) file for details.
