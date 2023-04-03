@@ -206,6 +206,10 @@ relations:
         meta_value: "/some/other/path"
 ```
 
+You can get a complete valid config file in [valid_config.yaml](https://github.
+com/shahariaazam/terediX/blob/master/pkg/config/testdata/valid_config.yaml)
+
+
 | Field                                 | Type   | Required | Description                                                                                                                                                          |
 |---------------------------------------|--------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `sources`                             | map    | yes      | Configuration for the sources from where resources will be discovered.                                                                                               |
