@@ -2,8 +2,11 @@
 package util
 
 import (
+	"context"
 	"fmt"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 
 	"github.com/google/uuid"
 )
@@ -35,4 +38,32 @@ func RetryWithExponentialBackoff(fn func() error, maxRetries int, initialBackoff
 
 		backoff *= time.Duration(subsequentBackoff)
 	}
+}
+
+type ResourceTaggingServiceClient interface {
+	GetResources(context.Context, *resourcegroupstaggingapi.GetResourcesInput, ...func(*resourcegroupstaggingapi.Options)) (*resourcegroupstaggingapi.GetResourcesOutput, error)
+}
+
+// GetAWSResourceTagByARN provides tags for any resource from ARN
+func GetAWSResourceTagByARN(ctx context.Context, resourceTaggingService ResourceTaggingServiceClient, arn string) (map[string]string, error) {
+	input := &resourcegroupstaggingapi.GetResourcesInput{
+		ResourceARNList: []string{arn},
+	}
+
+	resp, err := resourceTaggingService.GetResources(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	tags := make(map[string]string)
+
+	if len(resp.ResourceTagMappingList) == 0 {
+		return tags, nil
+	}
+
+	for _, tag := range resp.ResourceTagMappingList[0].Tags {
+		tags[*tag.Key] = *tag.Value
+	}
+
+	return tags, nil
 }

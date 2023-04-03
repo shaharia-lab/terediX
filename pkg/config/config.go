@@ -246,7 +246,7 @@ func (c *AppConfig) validateSourceConfiguration(name string, source Source) erro
 		if err := c.validateConfigurationKeys(name, source, "token", "user_or_org"); err != nil {
 			return err
 		}
-	case pkg.SourceTypeAWSS3, pkg.SourceTypeAWSRDS, pkg.SourceTypeAWSEC2:
+	case pkg.SourceTypeAWSS3, pkg.SourceTypeAWSRDS, pkg.SourceTypeAWSEC2, pkg.SourceTypeAWSECR:
 		if err := c.validateConfigurationKeys(name, source, "access_key", "secret_key", "session_token", "region", "account_id"); err != nil {
 			return err
 		}
