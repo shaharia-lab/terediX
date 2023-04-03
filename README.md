@@ -346,7 +346,7 @@ source:
 | AWS-S3-Tag-{tagKey} | Every tag key associated with the source will be added as metadata. {tagKey} is the tag key from S3 |
 
 
-### GitHub Repository
+### :octocat: GitHub Repository
 
 It will fetch all GitHub repositories with metadata
 
