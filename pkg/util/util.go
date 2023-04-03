@@ -40,6 +40,7 @@ func RetryWithExponentialBackoff(fn func() error, maxRetries int, initialBackoff
 	}
 }
 
+// ResourceTaggingServiceClient construct resource tagging service
 type ResourceTaggingServiceClient interface {
 	GetResources(context.Context, *resourcegroupstaggingapi.GetResourcesInput, ...func(*resourcegroupstaggingapi.Options)) (*resourcegroupstaggingapi.GetResourcesOutput, error)
 }
