@@ -34,20 +34,20 @@ This tools can efficiently collect all the resources and their relevent metadata
 relationship between resources to enhance visibility of resources.
 
 ## 📄 Table of Contents
-- [Technical Architecture](#-technical-architecture)
+- [Technical Architecture](#technical-architecture)
 - [Getting Started](#-getting-started)
   - [Run Discovery](#-run-discovery)
   - [Build the Resource Relationship](#-build-the-resource-relationship)
   - [Explore Resource Graph Visualization](#-explore-resource-graph-visualization)
 - [Usage](#-usage)
-- [Config File](#-config-file)
+- [Config file](#config-file)
 - [Supported Source](#-supported-source)
   - [AWS EC2](#-aws-ec2)
   - [AWS ECR](#-aws-ecr)
-  - [AWS RDS](#-aws-rds)
+  - [AWS RDS](#aws-rds)
   - [File System](#-file-system)
   - [GitHub Repository](#octocat-github-repository)
-- [Supported Storage](#-supported-storage)
+- [Supported Storage](#supported-storage)
   - [PostgreSQL](#-postgresql)
 - [Supported Visualization](#-supported-visualization)
   - [Cytoscape JS](#cytoscape-js)
@@ -55,7 +55,7 @@ relationship between resources to enhance visibility of resources.
 - [License](#-license)
 
 
-## 💻  Technical Architecture
+## 💻Technical Architecture
 
 ```puml
 +-------------------+       +------------------------+        +------------------------+
@@ -100,7 +100,7 @@ takes in a display type and renders the resources in that format.
 ## 🚀 Getting Started
 
 - To get started, you just need to download the latest binary from [latest release](https://github.com/shahariaazam/terediX/releases).
-- Prepare your config file. Here is the [example config file](#-config-file).
+- Prepare your config file. Here is the [example config file](#config-file).
 
 **This tool has three major commands available**
 
@@ -157,7 +157,7 @@ Flags:
   -v, --version   version for this command
 ```
 
-## ⚙️ Config file
+## Config file
 
 Here is an example `config.yaml` file. You should create your own config file with all the configuration.
 
@@ -324,7 +324,7 @@ source:
 | Scanner-Label           | Name of the source configured in config.yaml file                          |
 
 
-### ☁️ AWS RDS
+### AWS RDS
 
 Discover all RDS instances and it's tags
 
@@ -426,7 +426,7 @@ source:
 | Scanner-Label  | Name of the source configured in config.yaml file |
 
 
-## 🗄️ Supported Storage
+## Supported Storage
 
 ### 🐘 PostgreSQL
 
