@@ -33,8 +33,6 @@ gain a better understanding of how those resources are interconnected.
 This tools can efficiently collect all the resources and their relevent metadata from different sources and can build
 relationship between resources to enhance visibility of resources.
 
-![Technical Resource Graph](https://user-images.githubusercontent.com/1095008/227896903-ff4b916d-893e-489e-8ffe-1469fff0703a.jpg)
-
 ## 📄 Table of Contents
 - [Technical Architecture](#-technical-architecture)
 - [Getting Started](#-getting-started)
