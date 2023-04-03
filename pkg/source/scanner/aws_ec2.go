@@ -42,35 +42,11 @@ func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2
 
 // Scan discover resource and send to resource channel
 func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
-	// Set initial values for pagination
 	pageNum := 0
 	nextToken := ""
 
-	// Loop through pages of instances
 	for {
-		// Describe instances for current page
-		params := &ec2.DescribeInstancesInput{
-			Filters: []types.Filter{
-				{
-					Name: aws.String("instance-state-name"),
-					Values: []string{
-						"running",
-						"pending",
-						"shutting-down",
-						"terminated",
-						"stopping",
-						"stopped",
-					},
-				},
-			},
-			MaxResults: aws.Int32(int32(perPage)),
-		}
-
-		if nextToken != "" {
-			params.NextToken = aws.String(nextToken)
-		}
-
-		resp, err := a.Ec2Client.DescribeInstances(context.TODO(), params)
+		resp, err := a.makeAPICallToAWS(nextToken)
 		if err != nil {
 			return err
 		}
@@ -82,7 +58,6 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 			}
 		}
 
-		// Check if there are more pages
 		if resp.NextToken == nil {
 			break
 		}
@@ -91,6 +66,36 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	return nil
+}
+
+func (a *AWSEC2) makeAPICallToAWS(nextToken string) (*ec2.DescribeInstancesOutput, error) {
+	// Describe instances for current page
+	params := &ec2.DescribeInstancesInput{
+		Filters: []types.Filter{
+			{
+				Name: aws.String("instance-state-name"),
+				Values: []string{
+					"running",
+					"pending",
+					"shutting-down",
+					"terminated",
+					"stopping",
+					"stopped",
+				},
+			},
+		},
+		MaxResults: aws.Int32(int32(perPage)),
+	}
+
+	if nextToken != "" {
+		params.NextToken = aws.String(nextToken)
+	}
+
+	resp, err := a.Ec2Client.DescribeInstances(context.TODO(), params)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (a *AWSEC2) mapToResource(instance types.Instance) resource.Resource {
