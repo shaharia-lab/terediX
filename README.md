@@ -1,17 +1,27 @@
-# teredix
+<h1 align="center">TerediX</h1>
+<p align="center">Tech Resource Graph (Discovery & Exploration)</p>
 
-[![CI](https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml/badge.svg)](https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml)
-[![codecov](https://codecov.io/gh/shahariaazam/terediX/branch/master/graph/badge.svg?token=NKTKQ45HDN)](https://codecov.io/gh/shahariaazam/terediX)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=bugs)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX)
+<p align="center">
+  <a href="https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml"><img src="https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml/badge.svg" height="20"/></a>
+  <a href="https://codecov.io/gh/shahariaazam/terediX"><img src="https://codecov.io/gh/shahariaazam/terediX/branch/master/graph/badge.svg?token=NKTKQ45HDN" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=reliability_rating" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=vulnerabilities" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=security_rating" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_rating" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=code_smells" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=ncloc" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=alert_status" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=duplicated_lines_density" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=bugs" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_index" height="20"/></a>
+</p><br/><br/>
+
+<p align="center">
+  <a href="https://github.com/shahariaazam/teredix"><img src="https://user-images.githubusercontent.com/1095008/229536376-51ddaa75-85ee-4e3e-95df-7cf6093392bf.png" width="100%"/></a>
+</p><br/>
+
+
+## 🤔  What is TerediX?
 
 `TeReDiX` (Tech Resource Discover &amp; Exploration) is a tool to discover tech resources for an organization and
 explore them as a resource graph. Users can use **teredix** to create resource graphs that depict the relationships
@@ -20,28 +30,32 @@ and dependencies between different resources. The tool also allows users to sear
 **teredix** can be a useful tool for organizations looking to manage their technology resources more effectively and
 gain a better understanding of how those resources are interconnected.
 
-![Technical Resource Graph](https://user-images.githubusercontent.com/1095008/227896903-ff4b916d-893e-489e-8ffe-1469fff0703a.jpg)
+This tools can efficiently collect all the resources and their relevent metadata from different sources and can build
+relationship between resources to enhance visibility of resources.
 
-## Table of Contents
+## 📄 Table of Contents
 - [Technical Architecture](#technical-architecture)
-- [Getting Started](#getting-started)
-  - [Run Discovery](#run-discovery)
-  - [Build the Resource Relationship](#build-the-resource-relationship)
-  - [Explore Resource Graph Visualization](#explore-resource-graph-visualization)
-- [Usage](#usage)
-- [Config File](#config-file)
-- [Supported Source](#supported-source)
-  - [GitHub Repository](#github-repository)
-  - [File System](#file-system)
+- [Getting Started](#-getting-started)
+  - [Run Discovery](#-run-discovery)
+  - [Build the Resource Relationship](#-build-the-resource-relationship)
+  - [Explore Resource Graph Visualization](#chart_with_upwards_trend-explore-resource-graph-visualization)
+- [Usage](#computer-usage)
+- [Config file](#config-file)
+- [Supported Source](#-supported-source)
+  - [AWS EC2](#computer-aws-ec2)
+  - [AWS ECR](#-aws-ecr)
+  - [AWS RDS](#cloud-aws-rds)
+  - [File System](#file_folder-file-system)
+  - [GitHub Repository](#octocat-github-repository)
 - [Supported Storage](#supported-storage)
-  - [PostgreSQL](#postgresql)
-- [Supported Visualization](#supported-visualization)
+  - [PostgreSQL](#-postgresql)
+- [Supported Visualization](#-supported-visualization)
   - [Cytoscape JS](#cytoscape-js)
-- [Contributing](#contributing)
-- [License](#license)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 
-## Technical Architecture
+## 💻Technical Architecture
 
 ```puml
 +-------------------+       +------------------------+        +------------------------+
@@ -83,7 +97,7 @@ processes the resources as they become available.
 **Visualizer:** This component is responsible for displaying the discovered resources and their relationships. It
 takes in a display type and renders the resources in that format.
 
-## Getting Started
+## 🚀 Getting Started
 
 - To get started, you just need to download the latest binary from [latest release](https://github.com/shahariaazam/terediX/releases).
 - Prepare your config file. Here is the [example config file](#config-file).
@@ -96,7 +110,7 @@ takes in a display type and renders the resources in that format.
 | relation                 | This command is responsible to build relationship between resources                 |
 | display                  | It will generate visualized resource graph that can be opened in your browser       |
 
-### Run Discovery
+### 📥 Run Discovery
 
 To discover the resources, run the following command.
 
@@ -104,7 +118,7 @@ To discover the resources, run the following command.
 teredix discover --config {your_config.yaml file}
 ```
 
-### Build the resource relationship
+### 🔗 Build the resource relationship
 
 If you want to build the relationship between resources based on your relation criteria defined in your config file,
 run -
@@ -113,7 +127,7 @@ run -
 teredix relation --config {your_config.yaml file}
 ```
 
-### Explore Resource Graph Visualization
+### :chart_with_upwards_trend: Explore Resource Graph Visualization
 
 To display the resource graph in an interactive way, please run the following command.
 
@@ -122,7 +136,7 @@ teredix display --config {your_config.yaml file}
 ```
 It will show `Displaying resource graph at http://localhost:8989`. Open your browser and visit the URL.
 
-## Usage
+## :computer: Usage
 
 ```shell
 ➜ teredix --help
@@ -212,25 +226,25 @@ relations:
 You can get a complete valid config file in [valid_config.yaml](https://github.com/shahariaazam/terediX/blob/master/pkg/config/testdata/valid_config.yaml)
 
 
-| Field                                 | Type   | Required | Description                                                                                                                                                          |
-|---------------------------------------|--------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `sources`                             | map    | yes      | Configuration for the sources from where resources will be discovered.                                                                                               |
-| `sources.<name>`                      | object | yes      | Configuration for a specific source.                                                                                                                                 |
-| `sources.<name>.type`                 | string | yes      | The type of source. Currently, only `file_system` is supported.                                                                                                      |
-| `sources.<name>.configuration`        | map    | yes      | The configuration for the source. The specific configuration options depend on the source type. See specific configuration for each source [here](#supported-source) |
-| `storage`                             | object | yes      | Configuration for the storage where discovered resources will be saved.                                                                                              |
-| `storage.engines`                     | map    | yes      | Configuration for the storage engines that can be used to save resources.                                                                                            |
-| `storage.engines.postgresql`          | object | yes      | Configuration for the PostgreSQL engine.                                                                                                                             |
-| `storage.engines.postgresql.host`     | string | yes      | The hostname of the PostgreSQL server.                                                                                                                               |
-| `storage.engines.postgresql.port`     | int    | yes      | The port number of the PostgreSQL server.                                                                                                                            |
-| `storage.engines.postgresql.user`     | string | yes      | The username to use when connecting to the PostgreSQL server.                                                                                                        |
-| `storage.engines.postgresql.password` | string | yes      | The password to use when connecting to the PostgreSQL server.                                                                                                        |
-| `storage.engines.postgresql.db`       | string | yes      | The name of the database to use on the PostgreSQL server.                                                                                                            |
-| `processor`                           | object | yes      | Configuration for the processor that will discover resources and save them to storage.                                                                               |
-| `processor.batch_size`                | int    | yes      | The number of resources to save to storage at once.                                                                                                                  |
-| `log`                                 | object | no       | Configuration for logging.                                                                                                                                           |
-| `log.level`                           | string | no       | The logging level to use. Valid values are `debug`, `info`, `warn`, and `error`. If not specified, the default logging level is `info`.                              |
-| `log.format`                          | string | no       | The logging format to use. Valid values are `text` and `json`. If not specified, the default logging format is `text`.                                               |
+| Field                                 | Type   | Required | Description                                                                                                                                                           |
+|---------------------------------------|--------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `sources`                             | map    | yes      | Configuration for the sources from where resources will be discovered.                                                                                                |
+| `sources.<name>`                      | object | yes      | Configuration for a specific source.                                                                                                                                  |
+| `sources.<name>.type`                 | string | yes      | The type of source. Currently, only `file_system` is supported.                                                                                                       |
+| `sources.<name>.configuration`        | map    | yes      | The configuration for the source. The specific configuration options depend on the source type. See specific configuration for each source [here](#-supported-source) |
+| `storage`                             | object | yes      | Configuration for the storage where discovered resources will be saved.                                                                                               |
+| `storage.engines`                     | map    | yes      | Configuration for the storage engines that can be used to save resources.                                                                                             |
+| `storage.engines.postgresql`          | object | yes      | Configuration for the PostgreSQL engine.                                                                                                                              |
+| `storage.engines.postgresql.host`     | string | yes      | The hostname of the PostgreSQL server.                                                                                                                                |
+| `storage.engines.postgresql.port`     | int    | yes      | The port number of the PostgreSQL server.                                                                                                                             |
+| `storage.engines.postgresql.user`     | string | yes      | The username to use when connecting to the PostgreSQL server.                                                                                                         |
+| `storage.engines.postgresql.password` | string | yes      | The password to use when connecting to the PostgreSQL server.                                                                                                         |
+| `storage.engines.postgresql.db`       | string | yes      | The name of the database to use on the PostgreSQL server.                                                                                                             |
+| `processor`                           | object | yes      | Configuration for the processor that will discover resources and save them to storage.                                                                                |
+| `processor.batch_size`                | int    | yes      | The number of resources to save to storage at once.                                                                                                                   |
+| `log`                                 | object | no       | Configuration for logging.                                                                                                                                            |
+| `log.level`                           | string | no       | The logging level to use. Valid values are `debug`, `info`, `warn`, and `error`. If not specified, the default logging level is `info`.                               |
+| `log.format`                          | string | no       | The logging format to use. Valid values are `text` and `json`. If not specified, the default logging format is `text`.                                                |
 
 
 The following fields can be specified for each criteria:
@@ -247,9 +261,9 @@ The following fields can be specified for each criteria:
 | `target.meta_key`   | string | yes      | The metadata key used to identify the resource.   |
 | `target.meta_value` | string | yes      | The metadata value used to identify the resource. |
 
-## Supported Source
+## 🌐 Supported Source
 
-### AWS EC2
+### :computer: AWS EC2
 
 Discover all EC2 instances and it's tags
 
@@ -282,7 +296,7 @@ source:
 | Scanner-Label                            | Name of the source configured in config.yaml file                 |
 
 
-### AWS ECR
+### 🐳 AWS ECR
 
 Discover all ECR repositories and it's tags
 
@@ -310,7 +324,7 @@ source:
 | Scanner-Label           | Name of the source configured in config.yaml file                          |
 
 
-### AWS RDS
+### :cloud: AWS RDS
 
 Discover all RDS instances and it's tags
 
@@ -337,7 +351,7 @@ source:
 | AWS-RDS-Tag-{tagKey} | Every tag key associated with the source will be added as metadata. {tagKey} is the tag key from RDS |
 
 
-### AWS S3
+### 📦 AWS S3
 
 Discover all the S3 buckets from AWS
 
@@ -364,7 +378,7 @@ source:
 | AWS-S3-Tag-{tagKey} | Every tag key associated with the source will be added as metadata. {tagKey} is the tag key from S3 |
 
 
-### GitHub Repository
+### :octocat: GitHub Repository
 
 It will fetch all GitHub repositories with metadata
 
@@ -392,7 +406,7 @@ source:
 | GitHub-Repo-Topic        | Topics of GitHub repository                       |
 
 
-### File System
+### :file_folder: File System
 
 It will scan the file system and generate resource for each file. Required configuration:
 
@@ -414,7 +428,7 @@ source:
 
 ## Supported Storage
 
-### PostgreSQL
+### 🐘 PostgreSQL
 
 To configure the PostgreSQL database, you need to update your configuration as following:
 
@@ -436,7 +450,7 @@ run as goroutine and provide the resources as a channel for further processing/s
 to use batch_size to avoid consuming heavy memory load if your organization has so many resources for all the source
 combined
 
-## Supported Visualization
+## 📈 Supported Visualization
 
 To visualize the resource graph, here is the available visualizer.
 
@@ -444,10 +458,10 @@ To visualize the resource graph, here is the available visualizer.
 
 [Example](https://raw.githubusercontent.com/iVis-at-Bilkent/cytoscape.js-cise/master/demo.gif)
 
-### Contributing
+### 🤝 Contributing
 
 Contributions are welcome! Please follow the guidelines outlined in the [CONTRIBUTING](https://github.com/shahariaazam/teredix/blob/master/CONTRIBUTING.md) file.
 
-### License
+### 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/shahariaazam/teredix/blob/master/LICENSE) file for details.
