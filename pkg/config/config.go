@@ -261,7 +261,7 @@ func (c *AppConfig) validateConfigurationKeys(sourceName string, source Source, 
 	for _, k := range requiredKeys {
 		keyNotEmpty, ok := source.Configuration[k]
 		if !ok || keyNotEmpty == "" {
-			return fmt.Errorf("source '%s' requires 'configuration.%s'", k, sourceName)
+			return fmt.Errorf("source '%s' requires 'configuration.%s'", sourceName, k)
 		}
 	}
 
