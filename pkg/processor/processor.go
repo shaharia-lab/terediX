@@ -13,6 +13,10 @@ import (
 	"github.com/shahariaazam/teredix/pkg/resource"
 )
 
+const (
+	workerPoolSize = 10
+)
+
 // Processor represent resource processor
 type Processor struct {
 	Sources []source.Source
@@ -33,7 +37,7 @@ func NewProcessor(config Config, storage storage.Storage, sources []source.Sourc
 // Process start processing resources
 // Process start processing resources
 func (p *Processor) Process(resourceChan chan resource.Resource) {
-	workerPool := make(chan struct{}, 10)
+	workerPool := make(chan struct{}, workerPoolSize)
 
 	// Start a goroutine to process resources as they become available
 	go p.processResources(resourceChan)
