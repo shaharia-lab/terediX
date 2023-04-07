@@ -3,9 +3,10 @@ package scanner
 
 import (
 	"fmt"
-	"teredix/pkg"
-	"teredix/pkg/resource"
-	"teredix/pkg/util"
+
+	"github.com/shahariaazam/teredix/pkg"
+	"github.com/shahariaazam/teredix/pkg/resource"
+	"github.com/shahariaazam/teredix/pkg/util"
 
 	"github.com/aws/aws-sdk-go/aws"
 

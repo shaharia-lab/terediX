@@ -2,7 +2,7 @@
 package scanner
 
 import (
-	"teredix/pkg/resource"
+	"github.com/shahariaazam/teredix/pkg/resource"
 )
 
 // Scanner interface to build different scanner

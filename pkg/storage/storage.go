@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-	"teredix/pkg/config"
-	"teredix/pkg/resource"
+
+	"github.com/shahariaazam/teredix/pkg/config"
+	"github.com/shahariaazam/teredix/pkg/resource"
 )
 
 // ResourceFilter configure the filter

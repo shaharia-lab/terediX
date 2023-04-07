@@ -5,9 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"teredix/pkg"
-	"teredix/pkg/resource"
-	"teredix/pkg/util"
+
+	"github.com/shahariaazam/teredix/pkg"
+	"github.com/shahariaazam/teredix/pkg/resource"
+	"github.com/shahariaazam/teredix/pkg/util"
 )
 
 // FsScanner store configuration for file system scanner

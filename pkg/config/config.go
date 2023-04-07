@@ -4,7 +4,8 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
-	"teredix/pkg"
+
+	"github.com/shahariaazam/teredix/pkg"
 
 	"gopkg.in/yaml.v3"
 )

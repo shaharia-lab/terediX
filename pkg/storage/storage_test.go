@@ -2,8 +2,9 @@ package storage
 
 import (
 	"reflect"
-	"teredix/pkg/config"
 	"testing"
+
+	"github.com/shahariaazam/teredix/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -1,8 +1,9 @@
 package config
 
 import (
-	"teredix/pkg"
 	"testing"
+
+	"github.com/shahariaazam/teredix/pkg"
 
 	"github.com/stretchr/testify/assert"
 )

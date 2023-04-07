@@ -1,8 +1,9 @@
 package scanner
 
 import (
-	"teredix/pkg/resource"
 	"testing"
+
+	"github.com/shahariaazam/teredix/pkg/resource"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"

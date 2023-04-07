@@ -2,9 +2,10 @@ package scanner
 
 import (
 	"context"
-	"teredix/pkg"
-	"teredix/pkg/resource"
 	"testing"
+
+	"github.com/shahariaazam/teredix/pkg"
+	"github.com/shahariaazam/teredix/pkg/resource"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 
