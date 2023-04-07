@@ -4,8 +4,9 @@ package storage
 import (
 	"database/sql"
 	"strings"
-	"teredix/pkg/config"
-	"teredix/pkg/resource"
+
+	"github.com/shahariaazam/teredix/pkg/config"
+	"github.com/shahariaazam/teredix/pkg/resource"
 
 	_ "github.com/lib/pq" // postgresql driver
 )

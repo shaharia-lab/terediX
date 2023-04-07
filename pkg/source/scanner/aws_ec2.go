@@ -4,8 +4,9 @@ package scanner
 import (
 	"context"
 	"fmt"
-	"teredix/pkg"
-	"teredix/pkg/resource"
+
+	"github.com/shahariaazam/teredix/pkg"
+	"github.com/shahariaazam/teredix/pkg/resource"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 

@@ -3,9 +3,10 @@ package source
 
 import (
 	"context"
-	"teredix/pkg"
-	"teredix/pkg/config"
-	"teredix/pkg/source/scanner"
+
+	"github.com/shahariaazam/teredix/pkg"
+	"github.com/shahariaazam/teredix/pkg/config"
+	"github.com/shahariaazam/teredix/pkg/source/scanner"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 

@@ -6,12 +6,13 @@ import (
 	"io"
 	"os"
 	"strings"
-	"teredix/pkg/resource"
-	"teredix/pkg/source"
-	"teredix/pkg/source/scanner"
-	"teredix/pkg/storage"
 	"testing"
 	"time"
+
+	"github.com/shahariaazam/teredix/pkg/resource"
+	"github.com/shahariaazam/teredix/pkg/source"
+	"github.com/shahariaazam/teredix/pkg/source/scanner"
+	"github.com/shahariaazam/teredix/pkg/storage"
 
 	"github.com/stretchr/testify/mock"
 )

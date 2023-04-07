@@ -4,12 +4,13 @@ package processor
 import (
 	"fmt"
 	"sync"
-	"teredix/pkg/source"
-	"teredix/pkg/storage"
+
+	"github.com/shahariaazam/teredix/pkg/source"
+	"github.com/shahariaazam/teredix/pkg/storage"
 
 	"github.com/kyokomi/emoji"
 
-	"teredix/pkg/resource"
+	"github.com/shahariaazam/teredix/pkg/resource"
 )
 
 // Processor represent resource processor

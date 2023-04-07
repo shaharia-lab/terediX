@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"teredix/pkg/config"
-	"teredix/pkg/storage"
-	"teredix/pkg/visualize"
-	"teredix/pkg/visualize/cytoscape"
 	"time"
+
+	"github.com/shahariaazam/teredix/pkg/config"
+	"github.com/shahariaazam/teredix/pkg/storage"
+	"github.com/shahariaazam/teredix/pkg/visualize"
+	"github.com/shahariaazam/teredix/pkg/visualize/cytoscape"
 
 	"github.com/spf13/cobra"
 )

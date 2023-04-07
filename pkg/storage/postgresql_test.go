@@ -3,9 +3,10 @@ package storage
 import (
 	"errors"
 	"reflect"
-	"teredix/pkg/config"
-	"teredix/pkg/resource"
 	"testing"
+
+	"github.com/shahariaazam/teredix/pkg/config"
+	"github.com/shahariaazam/teredix/pkg/resource"
 
 	"github.com/stretchr/testify/assert"
 

@@ -5,7 +5,8 @@ import (
 	"bytes"
 	"embed"
 	"html/template"
-	"teredix/pkg/storage"
+
+	"github.com/shahariaazam/teredix/pkg/storage"
 )
 
 //go:embed index.html

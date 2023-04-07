@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"teredix/pkg/resource"
 	"testing"
+
+	"github.com/shahariaazam/teredix/pkg/resource"
 
 	"github.com/google/go-github/v50/github"
 	"github.com/stretchr/testify/assert"
