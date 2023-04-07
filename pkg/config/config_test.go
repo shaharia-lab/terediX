@@ -88,6 +88,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -122,6 +126,10 @@ func TestValidate(t *testing.T) {
 							"db":       "mydb",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Sources: map[string]Source{
 					"source1": {
@@ -165,6 +173,10 @@ func TestValidate(t *testing.T) {
 							"db":       "mydb",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Sources: map[string]Source{
 					"source1": {
@@ -211,6 +223,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -248,6 +264,10 @@ func TestValidate(t *testing.T) {
 							"db":       "mydb",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Sources: map[string]Source{
 					"source1": {
@@ -299,6 +319,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -342,6 +366,10 @@ func TestValidate(t *testing.T) {
 							"root_directory": "/root/path",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -387,6 +415,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -429,6 +461,10 @@ func TestValidate(t *testing.T) {
 							"root_directory": "/root/path",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -486,6 +522,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -530,6 +570,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -571,6 +615,10 @@ func TestValidate(t *testing.T) {
 						Type:          pkg.SourceTypeFileSystem,
 						Configuration: map[string]string{},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -616,6 +664,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -659,6 +711,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -698,6 +754,10 @@ func TestValidate(t *testing.T) {
 							"root_directory": "/root/path",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -775,6 +835,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -815,6 +879,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -852,6 +920,10 @@ func TestValidate(t *testing.T) {
 					},
 				},
 				Sources: map[string]Source{},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -895,6 +967,10 @@ func TestValidate(t *testing.T) {
 							"root_directory": "/root/path",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -956,6 +1032,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				}},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 			},
 			wantErr: true,
 		},
@@ -1001,6 +1081,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				}},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 			},
 			wantErr: true,
 		},
@@ -1030,6 +1114,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 			},
 			wantErr: true,
 		},
@@ -1050,6 +1138,10 @@ func TestValidate(t *testing.T) {
 							"db":       "mydb",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Sources: map[string]Source{
 					"source1": {
@@ -1079,6 +1171,10 @@ func TestValidate(t *testing.T) {
 							"db":       "mydb",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Sources: map[string]Source{
 					"source1": {
@@ -1117,6 +1213,10 @@ func TestValidate(t *testing.T) {
 							"root_directory": "/root/path",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1160,6 +1260,10 @@ func TestValidate(t *testing.T) {
 							"root_directory": "/root/path",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1205,6 +1309,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -1247,6 +1355,10 @@ func TestValidate(t *testing.T) {
 							"root_directory": "/root/path",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1291,6 +1403,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -1333,6 +1449,10 @@ func TestValidate(t *testing.T) {
 							"root_directory": "/root/path",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1377,6 +1497,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -1419,6 +1543,10 @@ func TestValidate(t *testing.T) {
 							"user_or_org": "myuser",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1463,6 +1591,10 @@ func TestValidate(t *testing.T) {
 							"secret_key": "secret",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1509,6 +1641,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -1553,6 +1689,10 @@ func TestValidate(t *testing.T) {
 							"secret_key": "secret",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1600,6 +1740,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -1646,6 +1790,10 @@ func TestValidate(t *testing.T) {
 							"secret_key":    "xxxx",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1694,6 +1842,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -1740,6 +1892,10 @@ func TestValidate(t *testing.T) {
 							"region":        "xxxx",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1802,6 +1958,10 @@ func TestValidate(t *testing.T) {
 						},
 					}},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 			},
 			wantErr: true,
 		},
@@ -1833,6 +1993,10 @@ func TestValidate(t *testing.T) {
 							"account_id":    "xxx",
 						},
 					},
+				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
 				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
@@ -1878,6 +2042,10 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				Logging: Logging{
+					Format: "json",
+					Level:  "info",
+				},
 				Relation: Relation{RelationCriteria: []RelationCriteria{
 					{
 						Name: "name",
@@ -1901,6 +2069,112 @@ func TestValidate(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := Validate(&tc.config)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestValidateLogging(t *testing.T) {
+	testCases := []struct {
+		name          string
+		loggingConfig Logging
+		wantErr       bool
+	}{
+		{
+			name: "valid logging config",
+			loggingConfig: Logging{
+				Format: "json",
+				Level:  "info",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid logging format",
+			loggingConfig: Logging{
+				Format: "invalid",
+				Level:  "info",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid logging level",
+			loggingConfig: Logging{
+				Format: "json",
+				Level:  "invalid",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			conf := AppConfig{
+				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Storage: Storage{
+					BatchSize:     2,
+					DefaultEngine: "postgresql",
+					Engines: map[string]interface{}{
+						"postgresql": map[string]interface{}{
+							"host":     "localhost",
+							"port":     5432,
+							"user":     "myuser",
+							"password": "mypassword",
+							"db":       "mydb",
+						},
+					},
+				},
+				Sources: map[string]Source{
+					"source1": {
+						Type: pkg.SourceTypeFileSystem,
+						Configuration: map[string]string{
+							"root_directory": "/root/path",
+						},
+					},
+					"source2": {
+						Type: pkg.SourceTypeGitHubRepository,
+						Configuration: map[string]string{
+							"token":         "mytoken",
+							"user_or_org":   "myuser",
+							"repository":    "myrepo",
+							"branch":        "mybranch",
+							"path":          "mypath",
+							"file_patterns": "*.yaml",
+						},
+					},
+					"source3": {
+						Type: pkg.SourceTypeAWSS3,
+						Configuration: map[string]string{
+							"access_key":    "access_key",
+							"secret_key":    "secret_key",
+							"session_token": "session_token",
+							"region":        "x",
+							"account_id":    "account_id",
+						},
+					},
+				},
+				Relation: Relation{RelationCriteria: []RelationCriteria{
+					{
+						Name: "name",
+						Source: RelationCriteriaNode{
+							Kind:      "kind",
+							MetaKey:   "source_kind-key1",
+							MetaValue: "source-kind-value1",
+						},
+						Target: RelationCriteriaNode{
+							Kind:      "related-kind",
+							MetaKey:   "related-metadata-key",
+							MetaValue: "related-metadata-value",
+						},
+					},
+				}},
+			}
+
+			conf.Logging = tc.loggingConfig
+
+			err := Validate(&conf)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tc.wantErr)
 			}
