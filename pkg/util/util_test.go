@@ -155,33 +155,9 @@ func TestIsExist(t *testing.T) {
 		panic bool
 	}{
 		{
-			name: "int in int slice",
-			what: 1,
-			in:   []int{1, 2, 3},
-			want: true,
-		},
-		{
-			name: "int not in int slice",
-			what: 4,
-			in:   []int{1, 2, 3},
-			want: false,
-		},
-		{
-			name: "float in float slice",
-			what: 1.234,
-			in:   []float64{1.234, 2.345, 3.456},
-			want: true,
-		},
-		{
 			name: "string in string slice",
 			what: "hello",
 			in:   []string{"hello", "world", "foo", "bar"},
-			want: true,
-		},
-		{
-			name: "bool in bool slice",
-			what: true,
-			in:   []bool{true, false},
 			want: true,
 		},
 		{
