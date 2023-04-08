@@ -73,6 +73,7 @@ func GetAWSResourceTagByARN(ctx context.Context, resourceTaggingService Resource
 
 const epsilon = 1e-6
 
+// IsExist check whether the given value exists in a slice
 func IsExist(what interface{}, in interface{}) bool {
 	s := reflect.ValueOf(in)
 
