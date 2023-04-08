@@ -13,6 +13,10 @@ import (
 	"github.com/shahariaazam/teredix/pkg/resource"
 )
 
+const (
+	workerPoolSize = 10
+)
+
 // Processor represent resource processor
 type Processor struct {
 	Sources []source.Source
@@ -31,7 +35,9 @@ func NewProcessor(config Config, storage storage.Storage, sources []source.Sourc
 }
 
 // Process start processing resources
+// Process start processing resources
 func (p *Processor) Process(resourceChan chan resource.Resource) {
+	workerPool := make(chan struct{}, workerPoolSize)
 
 	// Start a goroutine to process resources as they become available
 	go p.processResources(resourceChan)
@@ -42,6 +48,11 @@ func (p *Processor) Process(resourceChan chan resource.Resource) {
 		wg.Add(1)
 		go func(s source.Source) {
 			defer wg.Done()
+
+			// Acquire a worker from the worker pool
+			workerPool <- struct{}{}
+			defer func() { <-workerPool }()
+
 			err := s.Scanner.Scan(resourceChan)
 			if err != nil {
 				fmt.Printf("failed to start the scanner. scanner: %s. Error: %s", s.Name, err)
