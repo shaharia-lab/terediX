@@ -18,36 +18,34 @@ type PostgreSQL struct {
 
 // Prepare to prepare the database
 func (p *PostgreSQL) Prepare() error {
-	// Create the resources table if it doesn't exist
-	_, err := p.DB.Exec(`CREATE TABLE IF NOT EXISTS resources (
-		id SERIAL PRIMARY KEY,
-		kind TEXT NOT NULL,
-		uuid TEXT NOT NULL,
-		name TEXT NOT NULL,
-		external_id TEXT NOT NULL UNIQUE,
-		discovered_at TIMESTAMP NOT NULL DEFAULT NOW()
-	)`)
-	if err != nil {
-		return err
-	}
+	sqlString := `
+    CREATE TABLE IF NOT EXISTS resources (
+        id SERIAL PRIMARY KEY,
+        kind TEXT NOT NULL,
+        uuid TEXT NOT NULL,
+        name TEXT NOT NULL,
+        external_id TEXT NOT NULL UNIQUE,
+        discovered_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
 
-	// Create the metadata table if it doesn't exist
-	_, err = p.DB.Exec(`CREATE TABLE IF NOT EXISTS metadata (
-		resource_id INTEGER REFERENCES resources(id),
-		key TEXT NOT NULL,
-		value TEXT NOT NULL,
-		PRIMARY KEY(resource_id, key, value)
-	)`)
-	if err != nil {
-		return err
-	}
+    CREATE TABLE IF NOT EXISTS metadata (
+        resource_id INTEGER REFERENCES resources(id),
+        key TEXT NOT NULL,
+        value TEXT NOT NULL,
+        PRIMARY KEY(resource_id, key, value)
+    );
 
-	// Create the relations table if it doesn't exist
-	_, err = p.DB.Exec(`CREATE TABLE IF NOT EXISTS relations (
-		resource_id INTEGER REFERENCES resources(id),
-		related_resource_id INTEGER REFERENCES resources(id),
-		PRIMARY KEY(resource_id, related_resource_id)
-	)`)
+    CREATE TABLE IF NOT EXISTS relations (
+        resource_id INTEGER REFERENCES resources(id),
+        related_resource_id INTEGER REFERENCES resources(id),
+        PRIMARY KEY(resource_id, related_resource_id)
+    );
+
+	CREATE INDEX metadata_key_idx ON metadata (key);
+	CREATE INDEX metadata_value_idx ON metadata (value);
+`
+
+	_, err := p.DB.Exec(sqlString)
 	if err != nil {
 		return err
 	}
