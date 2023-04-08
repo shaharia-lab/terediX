@@ -23,11 +23,7 @@ func TestPostgreSQL_Prepare(t *testing.T) {
 	storage := &PostgreSQL{DB: db}
 
 	// Expect the resources table to be created
-	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS resources`).WillReturnResult(sqlmock.NewResult(0, 0))
-	// Expect the metadata table to be created
-	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS metadata`).WillReturnResult(sqlmock.NewResult(0, 0))
-	// Expect the relations table to be created
-	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS relations`).WillReturnResult(sqlmock.NewResult(0, 0))
+	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS resources(.*)CREATE TABLE IF NOT EXISTS metadata(.*)CREATE TABLE IF NOT EXISTS relations`).WillReturnResult(sqlmock.NewResult(0, 0))
 
 	if err := storage.Prepare(); err != nil {
 		t.Errorf("Unexpected error: %v", err)
