@@ -1,9 +1,11 @@
-// Package config read and validate config file
+// Package logginConfig read and validate logginConfig file
 package config
 
 import (
 	"fmt"
 	"io/ioutil"
+
+	"github.com/shahariaazam/teredix/pkg/util"
 
 	"github.com/shahariaazam/teredix/pkg"
 
@@ -67,6 +69,11 @@ type Relation struct {
 	RelationCriteria []RelationCriteria `yaml:"criteria"`
 }
 
+type Logging struct {
+	Format string `yaml:"format"`
+	Level  string `yaml:"level"`
+}
+
 // AppConfig provides configuration for the tools
 type AppConfig struct {
 	Organization Organization      `yaml:"organization"`
@@ -74,6 +81,7 @@ type AppConfig struct {
 	Storage      Storage           `yaml:"storage"`
 	Sources      map[string]Source `yaml:"source"`
 	Relation     Relation          `yaml:"relations"`
+	Logging      Logging           `yaml:"logging"`
 }
 
 // Load loads configuration file
@@ -129,6 +137,11 @@ func Validate(c *AppConfig) error {
 	}
 
 	err = c.validateRelations(c.Relation)
+	if err != nil {
+		return err
+	}
+
+	err = c.validateLoggingConfiguration(c.Logging)
 	if err != nil {
 		return err
 	}
@@ -324,5 +337,19 @@ func (c *AppConfig) validateRelationCriteria(criteria RelationCriteria) error {
 	if criteria.Target.MetaValue == "" {
 		return fmt.Errorf("relations.criteria.target.meta_value is required")
 	}
+	return nil
+}
+
+func (c *AppConfig) validateLoggingConfiguration(loggingConfig Logging) error {
+	validFormat := []string{"text", "json"}
+	if !util.IsExist(loggingConfig.Format, validFormat) {
+		return fmt.Errorf("'%s' log format is not supported", loggingConfig.Format)
+	}
+
+	validLevel := []string{"info", "debug", "warning", "error"}
+	if !util.IsExist(loggingConfig.Level, validLevel) {
+		return fmt.Errorf("'%s' log level is not supported", loggingConfig.Level)
+	}
+
 	return nil
 }

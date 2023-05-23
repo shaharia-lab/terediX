@@ -57,3 +57,6 @@ relations:
         kind: "FilePath"
         meta_key: "Root-Directory"
         meta_value: "/some/path"
+logging:
+  format: "json"
+  level: "info"

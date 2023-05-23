@@ -4,6 +4,7 @@ package util
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
@@ -67,4 +68,32 @@ func GetAWSResourceTagByARN(ctx context.Context, resourceTaggingService Resource
 	}
 
 	return tags, nil
+}
+
+// IsExist check whether the given value exists in a slice
+func IsExist(what interface{}, in interface{}) bool {
+	s := reflect.ValueOf(in)
+
+	if s.Kind() != reflect.Slice {
+		panic("IsExist: Second argument must be a slice")
+	}
+
+	for i := 0; i < s.Len(); i++ {
+		if s.Index(i).Kind() != reflect.TypeOf(what).Kind() {
+			continue
+		}
+
+		switch s.Index(i).Kind() {
+		case reflect.String:
+			if s.Index(i).String() == reflect.ValueOf(what).String() {
+				return true
+			}
+		default:
+			if reflect.DeepEqual(what, s.Index(i).Interface()) {
+				return true
+			}
+		}
+	}
+
+	return false
 }

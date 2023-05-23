@@ -145,3 +145,46 @@ func TestGetAWSResourceTagByARN(t *testing.T) {
 		t.Errorf("Unexpected tags: got %v, expected %v", tags, expectedTags)
 	}
 }
+
+func TestIsExist(t *testing.T) {
+	testCases := []struct {
+		name  string
+		what  interface{}
+		in    interface{}
+		want  bool
+		panic bool
+	}{
+		{
+			name: "string in string slice",
+			what: "hello",
+			in:   []string{"hello", "world", "foo", "bar"},
+			want: true,
+		},
+		{
+			name:  "panic with non-slice",
+			what:  "foo",
+			in:    "bar",
+			panic: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					if !tc.panic {
+						t.Errorf("unexpected panic: %v", r)
+					}
+				} else if tc.panic {
+					t.Errorf("expected panic but did not occur")
+				}
+			}()
+
+			got := IsExist(tc.what, tc.in)
+
+			if got != tc.want {
+				t.Errorf("IsExist(%v, %v) = %v; want %v", tc.what, tc.in, got, tc.want)
+			}
+		})
+	}
+}
