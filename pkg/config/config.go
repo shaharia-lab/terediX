@@ -18,8 +18,9 @@ type Organization struct {
 
 // Discovery hold discovery configuration
 type Discovery struct {
-	Name        string `yaml:"name"`
-	Description string `yaml:"description"`
+	Name           string `yaml:"name"`
+	Description    string `yaml:"description"`
+	WorkerPoolSize int    `yaml:"worker_pool_size"`
 }
 
 // Storage store storage configuration
