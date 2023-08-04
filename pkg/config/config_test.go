@@ -45,7 +45,7 @@ func TestValidate(t *testing.T) {
 			name: "valid config",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -109,7 +109,7 @@ func TestValidate(t *testing.T) {
 		{
 			name: "missing organization name",
 			config: AppConfig{
-				Discovery: Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery: Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -197,7 +197,7 @@ func TestValidate(t *testing.T) {
 			name: "missing storage engine",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "non_existent_engine",
@@ -235,7 +235,7 @@ func TestValidate(t *testing.T) {
 			name: "missing storage default engine",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "non_existent_engine",
@@ -279,7 +279,7 @@ func TestValidate(t *testing.T) {
 			name: "invalid storage engine config",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -321,7 +321,7 @@ func TestValidate(t *testing.T) {
 			name: "invalid default storage engine",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "invalid_engine",
@@ -365,7 +365,7 @@ func TestValidate(t *testing.T) {
 			name: "invalid batch_size",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     -1,
 					DefaultEngine: "postgresql",
@@ -409,7 +409,7 @@ func TestValidate(t *testing.T) {
 			name: "missing source type",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -452,7 +452,7 @@ func TestValidate(t *testing.T) {
 			name: "missing kube_config_file_path for kubernetes config",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -508,7 +508,7 @@ func TestValidate(t *testing.T) {
 			name: "missing kube_config_file_path for kubernetes config",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -552,7 +552,7 @@ func TestValidate(t *testing.T) {
 			name: "missing root_directory for file_system source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -594,7 +594,7 @@ func TestValidate(t *testing.T) {
 			name: "empty root_directory for file_system source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -638,7 +638,7 @@ func TestValidate(t *testing.T) {
 			name: "missing neo4j engine config_key",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "neo4j",
@@ -681,7 +681,7 @@ func TestValidate(t *testing.T) {
 			name: "valid neo4j engine config",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "neo4j",
@@ -721,7 +721,7 @@ func TestValidate(t *testing.T) {
 			name: "invalid neo4j engine configuration: not a map",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "neo4j",
@@ -759,7 +759,7 @@ func TestValidate(t *testing.T) {
 			name: "invalid postgresql engine configuration - not a map",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -797,7 +797,7 @@ func TestValidate(t *testing.T) {
 			name: "unknown storage engine",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "cassandra", // this engine is not defined
@@ -837,7 +837,7 @@ func TestValidate(t *testing.T) {
 			name: "no sources defined",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -874,7 +874,7 @@ func TestValidate(t *testing.T) {
 			name: "unknown source type",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -918,7 +918,7 @@ func TestValidate(t *testing.T) {
 			name: "invalid source depends_on",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -963,7 +963,7 @@ func TestValidate(t *testing.T) {
 			name: "invalid source depends_on - multiple dependencies",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1008,7 +1008,7 @@ func TestValidate(t *testing.T) {
 			name: "missing relations field",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1037,7 +1037,7 @@ func TestValidate(t *testing.T) {
 			name: "missing relations field",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1066,7 +1066,7 @@ func TestValidate(t *testing.T) {
 			name: "empty relation criteria",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1096,7 +1096,7 @@ func TestValidate(t *testing.T) {
 			name: "missing relations criteria name",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1139,7 +1139,7 @@ func TestValidate(t *testing.T) {
 			name: "missing relation criteria source.kind",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1183,7 +1183,7 @@ func TestValidate(t *testing.T) {
 			name: "missing relation criteria source.meta_key",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1226,7 +1226,7 @@ func TestValidate(t *testing.T) {
 			name: "missing relation criteria source.meta_value",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1269,7 +1269,7 @@ func TestValidate(t *testing.T) {
 			name: "missing relation criteria target.kind",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1312,7 +1312,7 @@ func TestValidate(t *testing.T) {
 			name: "missing relation criteria target.meta_key",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1355,7 +1355,7 @@ func TestValidate(t *testing.T) {
 			name: "missing relation criteria target.meta_value",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1398,7 +1398,7 @@ func TestValidate(t *testing.T) {
 			name: "missing GitHub token for GitHubRepository source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1442,7 +1442,7 @@ func TestValidate(t *testing.T) {
 			name: "missing access key for AWS S3 source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1486,7 +1486,7 @@ func TestValidate(t *testing.T) {
 			name: "missing secret key for AWS S3 source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1531,7 +1531,7 @@ func TestValidate(t *testing.T) {
 			name: "missing session token for AWS S3 source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1576,7 +1576,7 @@ func TestValidate(t *testing.T) {
 			name: "missing region for AWS S3 source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1622,7 +1622,7 @@ func TestValidate(t *testing.T) {
 			name: "missing access key for AWS S3 source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1669,7 +1669,7 @@ func TestValidate(t *testing.T) {
 			name: "missing account_id for AWS S3 source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1716,7 +1716,7 @@ func TestValidate(t *testing.T) {
 			name: "missing secret key for AWS RDS source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1763,7 +1763,7 @@ func TestValidate(t *testing.T) {
 			name: "missing session token for AWS RDS source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1809,7 +1809,7 @@ func TestValidate(t *testing.T) {
 			name: "missing region for AWS RDS source",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",
@@ -1856,7 +1856,7 @@ func TestValidate(t *testing.T) {
 			name: "missing GitHub repository user_or_org",
 			config: AppConfig{
 				Organization: Organization{Name: "My Org", Logo: "http://example.com"},
-				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description"},
+				Discovery:    Discovery{Name: "My Discovery", Description: "Discovery description", WorkerPoolSize: 1},
 				Storage: Storage{
 					BatchSize:     2,
 					DefaultEngine: "postgresql",

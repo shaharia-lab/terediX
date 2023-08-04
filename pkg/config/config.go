@@ -150,6 +150,10 @@ func (c *AppConfig) validateDiscovery(discovery Discovery) error {
 		return fmt.Errorf("discovery name is required")
 	}
 
+	if discovery.WorkerPoolSize < 1 {
+		return fmt.Errorf("discovery.worker_pool_size is missing. It must be 1 or greater")
+	}
+
 	return nil
 }
 
