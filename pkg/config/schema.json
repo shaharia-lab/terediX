@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "organization": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "logo": { "type": "string", "format": "uri" }
+      },
+      "required": ["name"]
+    },
+    "discovery": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "worker_pool_size": { "type": "integer" }
+      },
+      "required": ["name"]
+    },
+    "storage": {
+      "type": "object",
+      "properties": {
+        "batch_size": { "type": "integer" },
+        "engines": {
+          "type": "object",
+          "properties": {
+            "postgresql": {
+              "type": "object",
+              "properties": {
+                "host": { "type": "string" },
+                "port": { "type": "integer" },
+                "user": { "type": "string" },
+                "password": { "type": "string" },
+                "db": { "type": "string" }
+              },
+              "required": ["host", "port", "user", "password", "db"]
+            },
+            "neo4j": {
+              "type": "object",
+              "properties": {
+                "config_key": { "type": "string" }
+              },
+              "required": ["config_key"]
+            }
+          }
+        },
+        "default_engine": { "type": "string" }
+      },
+      "required": ["batch_size", "engines"]
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "fs_one": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "configuration": {
+              "type": "object",
+              "properties": {
+                "root_directory": { "type": "string" }
+              },
+              "required": ["root_directory"]
+            }
+          },
+          "required": ["type", "configuration"]
+        },
+        "fs_two": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "configuration": {
+              "type": "object",
+              "properties": {
+                "root_directory": { "type": "string" }
+              },
+              "required": ["root_directory"]
+            }
+          },
+          "required": ["type", "configuration"]
+        },
+        "aws_s3_one": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "configuration": {
+              "type": "object",
+              "properties": {
+                "access_key": { "type": "string" },
+                "secret_key": { "type": "string" },
+                "session_token": { "type": "string" },
+                "region": { "type": "string" },
+                "account_id": { "type": "string" }
+              },
+              "required": ["access_key", "secret_key", "region", "account_id"]
+            }
+          },
+          "required": ["type", "configuration"]
+        },
+        "aws_rds_one": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "config_from": { "type": "string" }
+          },
+          "required": ["type", "config_from"]
+        },
+        "aws_ec2_one": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "config_from": { "type": "string" }
+          },
+          "required": ["type", "config_from"]
+        },
+        "aws_ecr_example": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "config_from": { "type": "string" }
+          },
+          "required": ["type", "config_from"]
+        }
+      }
+    },
+    "relations": {
+      "type": "object",
+      "properties": {
+        "criteria": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string" },
+                  "meta_key": { "type": "string" },
+                  "meta_value": { "type": "string" }
+                },
+                "required": ["kind", "meta_key", "meta_value"]
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string" },
+                  "meta_key": { "type": "string" },
+                  "meta_value": { "type": "string" }
+                },
+                "required": ["kind", "meta_key", "meta_value"]
+              }
+            },
+            "required": ["name", "source", "target"]
+          }
+        }
+      }
+    }
+  },
+  "required": ["organization", "discovery", "storage", "source", "relations"]
+}
