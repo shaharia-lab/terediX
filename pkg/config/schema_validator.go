@@ -3,6 +3,7 @@ package config
 import (
 	_ "embed"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
@@ -28,32 +29,32 @@ func (sv *SchemaValidator) readJsonSchema() (string, error) {
 	return jsonSchema, nil
 }
 
-func (sv *SchemaValidator) Validate(yamlContent string) (bool, error) {
+func (sv *SchemaValidator) Validate(yamlContent string) error {
 	var m interface{}
 	err := yaml.Unmarshal([]byte(yamlContent), &m)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to unmarshal yaml content. Error: %w", err)
 	}
 	m, err = sv.toStringKeys(m)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to prepare yaml content for validation against json schema. Error: %w", err)
 	}
 
 	compiler := jsonschema.NewCompiler()
 	if err := compiler.AddResource("schema.json", strings.NewReader(jsonSchema)); err != nil {
-		return false, err
+		return fmt.Errorf("json schema compiler failed. Error: %w", err)
 	}
 
 	schema, err := compiler.Compile("schema.json")
 	if err != nil {
-		return false, err
+		return fmt.Errorf("failed to compile json schema during validation. Error: %w", err)
 	}
 
 	if err := schema.Validate(m); err != nil {
-		return false, err
+		return fmt.Errorf("failed to validate configuration. Error: %w", err)
 	}
 
-	return true, nil
+	return nil
 }
 
 func (sv *SchemaValidator) toStringKeys(val interface{}) (interface{}, error) {

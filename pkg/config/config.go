@@ -85,6 +85,12 @@ func Load(path string) (*AppConfig, error) {
 		return &appConfig, fmt.Errorf("failed to read YAML file: %w", err)
 	}
 
+	schemaValidator := NewSchemaValidator()
+	err = schemaValidator.Validate(string(yamlFile))
+	if err != nil {
+		return nil, fmt.Errorf("invalid configuration file %s. Error: %w", path, err)
+	}
+
 	err = yaml.Unmarshal(yamlFile, &appConfig)
 	if err != nil {
 		return &appConfig, fmt.Errorf("failed to unmarshal YAML data: %w", err)

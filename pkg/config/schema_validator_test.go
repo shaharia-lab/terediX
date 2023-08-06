@@ -8,7 +8,6 @@ func TestSchemaValidator_Validate(t *testing.T) {
 	tests := []struct {
 		name        string
 		yamlContent string
-		expected    bool
 		expectError bool
 	}{
 		{
@@ -74,7 +73,6 @@ relations:
         meta_key: "Root-Directory"
         meta_value: "/some/path"
 `,
-			expected:    true,
 			expectError: false,
 		},
 	}
@@ -82,14 +80,18 @@ relations:
 	validator := NewSchemaValidator()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			valid, err := validator.Validate(tt.yamlContent)
+			err := validator.Validate(tt.yamlContent)
 			if (err != nil) != tt.expectError {
 				t.Errorf("unexpected error: %v", err)
 				return
 			}
 
-			if valid != tt.expected {
-				t.Errorf("expected valid: %v, but got: %v", tt.expected, valid)
+			if err != nil && !tt.expectError {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			if err == nil && tt.expectError {
+				t.Errorf("expected error: %v", err)
 			}
 		})
 	}
