@@ -41,7 +41,7 @@ func validate(cfgFile string) error {
 	}
 
 	schemaValidator := config.NewSchemaValidator()
-	_, err = schemaValidator.Validate(string(yamlFile))
+	err = schemaValidator.Validate(string(yamlFile))
 	if err != nil {
 		return fmt.Errorf("invalid configuration. error: %w", err)
 	}
