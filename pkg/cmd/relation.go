@@ -22,11 +22,6 @@ func NewRelationCommand() *cobra.Command {
 				return err
 			}
 
-			err = config.Validate(appConfig)
-			if err != nil {
-				return err
-			}
-
 			st := storage.BuildStorage(appConfig)
 			return st.StoreRelations(appConfig.Relation)
 		},

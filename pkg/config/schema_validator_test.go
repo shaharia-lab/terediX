@@ -75,6 +75,50 @@ relations:
 `,
 			expectError: false,
 		},
+		{
+			name: "Valid YAML against JSON schema",
+			yamlContent: `
+---
+organization:
+  name: My Org
+  logo: http://example.com
+discovery:
+  description: ""
+storage:
+  batch_size: 2
+  engines:
+    postgresql:
+      db: mydb
+      host: localhost
+      password: mypassword
+      port: 5432
+      user: myuser
+  default_engine: postgresql
+source:
+  source1:
+    type: file_system
+    configuration:
+      root_directory: /root/path
+relations:
+  criteria:
+    - name: name
+      kind: kind
+      metadata_key: ""
+      metadata_value: ""
+      related_kind: ""
+      related_metadata_key: ""
+      related_metadata_value: ""
+      source:
+        kind: kind
+        meta_key: source_kind-key1
+        meta_value: source-kind-value1
+      target:
+        kind: related-kind
+        meta_key: related-metadata-key
+        meta_value: related-metadata-value
+`,
+			expectError: true,
+		},
 	}
 
 	validator := NewSchemaValidator()
