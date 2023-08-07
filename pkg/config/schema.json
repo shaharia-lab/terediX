@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "organization": {
       "$ref": "#/definitions/root.organization"
@@ -9,6 +10,51 @@
       "$ref": "#/definitions/root.discovery"
     },
     "storage": {
+      "$ref": "#/definitions/root.storage"
+    },
+    "source": {
+      "$ref": "#/definitions/root.source"
+    },
+    "relations": {
+      "$ref": "#/definitions/root.relations"
+    }
+  },
+  "required": ["organization", "discovery", "storage", "source", "relations"],
+  "definitions": {
+    "root.organization": {
+      "type": "object",
+      "properties": {
+        "logo": {
+          "type": "string",
+          "minLength": 4
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["logo", "name"]
+    },
+    "root.discovery": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "worker_pool_size": { "type": "number", "minimum": 1}
+      },
+      "required": [
+        "name",
+        "description",
+        "worker_pool_size"
+      ]
+    },
+    "root.storage": {
       "type": "object",
       "properties": {
         "batch_size": {
@@ -27,34 +73,61 @@
             }
           },
           "anyOf": [
-            { "required": ["postgresql"] },
-            { "required": ["neo4j"] }
+            {
+              "required": [
+                "postgresql"
+              ]
+            },
+            {
+              "required": [
+                "neo4j"
+              ]
+            }
           ]
         },
         "default_engine": {
           "type": "string",
-          "enum": ["postgresql", "neo4j"]
+          "enum": [
+            "postgresql",
+            "neo4j"
+          ]
         }
       },
-      "required": ["batch_size", "engines", "default_engine"]
+      "required": [
+        "batch_size",
+        "engines",
+        "default_engine"
+      ]
     },
-    "source": {
+    "root.source": {
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
         ".*": {
           "oneOf": [
-            { "$ref": "#/definitions/source.aws_ec2" },
-            { "$ref": "#/definitions/source.aws_ecr" },
-            { "$ref": "#/definitions/source.aws_rds" },
-            { "$ref": "#/definitions/source.aws_s3" },
-            { "$ref": "#/definitions/source.file_system" },
-            { "$ref": "#/definitions/source.github_repository" }
+            {
+              "$ref": "#/definitions/source.aws_ec2"
+            },
+            {
+              "$ref": "#/definitions/source.aws_ecr"
+            },
+            {
+              "$ref": "#/definitions/source.aws_rds"
+            },
+            {
+              "$ref": "#/definitions/source.aws_s3"
+            },
+            {
+              "$ref": "#/definitions/source.file_system"
+            },
+            {
+              "$ref": "#/definitions/source.github_repository"
+            }
           ]
         }
       }
     },
-    "relations": {
+    "root.relations": {
       "type": "object",
       "properties": {
         "criteria": {
@@ -62,58 +135,56 @@
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
+              "name": {
+                "type": "string"
+              },
               "source": {
                 "type": "object",
                 "properties": {
-                  "kind": { "type": "string" },
-                  "meta_key": { "type": "string" },
-                  "meta_value": { "type": "string" }
+                  "kind": {
+                    "type": "string"
+                  },
+                  "meta_key": {
+                    "type": "string"
+                  },
+                  "meta_value": {
+                    "type": "string"
+                  }
                 },
-                "required": ["kind", "meta_key", "meta_value"]
+                "required": [
+                  "kind",
+                  "meta_key",
+                  "meta_value"
+                ]
               },
               "target": {
                 "type": "object",
                 "properties": {
-                  "kind": { "type": "string" },
-                  "meta_key": { "type": "string" },
-                  "meta_value": { "type": "string" }
+                  "kind": {
+                    "type": "string"
+                  },
+                  "meta_key": {
+                    "type": "string"
+                  },
+                  "meta_value": {
+                    "type": "string"
+                  }
                 },
-                "required": ["kind", "meta_key", "meta_value"]
+                "required": [
+                  "kind",
+                  "meta_key",
+                  "meta_value"
+                ]
               }
             },
-            "required": ["name", "source", "target"]
+            "required": [
+              "name",
+              "source",
+              "target"
+            ]
           }
         }
       }
-    }
-  },
-  "required": ["organization", "discovery", "storage", "source", "relations"],
-  "definitions": {
-    "root.organization": {
-      "type": "object",
-      "properties": {
-        "logo": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "required": ["logo", "name"]
-    },
-    "root.discovery": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "worker_pool_size": { "type": "integer" }
-      },
-      "required": [
-        "name",
-        "description",
-        "worker_pool_size"
-      ]
     },
     "source.file_system": {
       "type": "object",
@@ -132,7 +203,8 @@
       "type": "object",
       "properties": {
         "root_directory": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": ["root_directory"]
@@ -154,10 +226,12 @@
       "type": "object",
       "properties": {
         "user_or_org": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "token": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": ["user_or_org", "token"]
@@ -218,19 +292,24 @@
       "type": "object",
       "properties": {
         "access_key": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "secret_key": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "session_token": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "region": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "account_id": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": ["access_key", "secret_key", "session_token", "region", "account_id"]
@@ -239,19 +318,24 @@
       "type": "object",
       "properties": {
         "host": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "port": {
-          "type": "integer"
+          "type": "number",
+          "minimum": 1
         },
         "user": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "password": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "db": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": ["host", "port", "user", "password", "db"]
