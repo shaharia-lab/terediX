@@ -21,6 +21,7 @@ organization:
 discovery:
   name: Infrastructure Discovery
   description: Some description text
+  worker_pool_size: 1
 
 storage:
   batch_size: 2
@@ -46,7 +47,7 @@ source:
       root_directory: "/some/other/path"
   aws_s3_one:
     type: aws_s3
-    configuration:
+    configuration: &aws_conf
       access_key: "xxxx"
       secret_key: "xxxx"
       session_token: "xxxx"
@@ -54,13 +55,13 @@ source:
       account_id: "xxx"
   aws_rds_one:
     type: aws_rds
-    config_from: aws_s3_one
+    configuration: *aws_conf
   aws_ec2_one:
     type: aws_ec2
-    config_from: aws_s3_one
+    configuration: *aws_conf
   aws_ecr_example:
     type: aws_ecr
-    config_from: aws_s3_one
+    configuration: *aws_conf
 relations:
   criteria:
     - name: "file-system-rule1"

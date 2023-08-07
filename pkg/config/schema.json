@@ -122,7 +122,7 @@
           "type": "string"
         }
       },
-      "required": ["type", "configuration"]
+      "required": ["logo", "name"]
     },
     "root.discovery": {
       "type": "object",
