@@ -3,21 +3,10 @@
   "type": "object",
   "properties": {
     "organization": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "logo": { "type": "string", "format": "uri" }
-      },
-      "required": ["name"]
+      "$ref": "#/definitions/root.organization"
     },
     "discovery": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "worker_pool_size": { "type": "integer" }
-      },
-      "required": ["name"]
+      "$ref": "#/definitions/root.discovery"
     },
     "storage": {
       "type": "object",
@@ -123,6 +112,31 @@
   },
   "required": ["organization", "discovery", "storage", "source", "relations"],
   "definitions": {
+    "root.organization": {
+      "type": "object",
+      "properties": {
+        "logo": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "root.discovery": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "worker_pool_size": { "type": "integer" }
+      },
+      "required": [
+        "name",
+        "description",
+        "worker_pool_size"
+      ]
+    },
     "source.file_system": {
       "type": "object",
       "properties": {
