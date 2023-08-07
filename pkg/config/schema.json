@@ -73,76 +73,17 @@
     },
     "source": {
       "type": "object",
-      "properties": {
-        "fs_one": {
-          "type": "object",
-          "properties": {
-            "type": { "type": "string" },
-            "configuration": {
-              "type": "object",
-              "properties": {
-                "root_directory": { "type": "string" }
-              },
-              "required": ["root_directory"]
-            }
-          },
-          "required": ["type", "configuration"]
-        },
-        "fs_two": {
-          "type": "object",
-          "properties": {
-            "type": { "type": "string" },
-            "configuration": {
-              "type": "object",
-              "properties": {
-                "root_directory": { "type": "string" }
-              },
-              "required": ["root_directory"]
-            }
-          },
-          "required": ["type", "configuration"]
-        },
-        "aws_s3_one": {
-          "type": "object",
-          "properties": {
-            "type": { "type": "string" },
-            "configuration": {
-              "type": "object",
-              "properties": {
-                "access_key": { "type": "string" },
-                "secret_key": { "type": "string" },
-                "session_token": { "type": "string" },
-                "region": { "type": "string" },
-                "account_id": { "type": "string" }
-              },
-              "required": ["access_key", "secret_key", "region", "account_id"]
-            }
-          },
-          "required": ["type", "configuration"]
-        },
-        "aws_rds_one": {
-          "type": "object",
-          "properties": {
-            "type": { "type": "string" },
-            "config_from": { "type": "string" }
-          },
-          "required": ["type", "config_from"]
-        },
-        "aws_ec2_one": {
-          "type": "object",
-          "properties": {
-            "type": { "type": "string" },
-            "config_from": { "type": "string" }
-          },
-          "required": ["type", "config_from"]
-        },
-        "aws_ecr_example": {
-          "type": "object",
-          "properties": {
-            "type": { "type": "string" },
-            "config_from": { "type": "string" }
-          },
-          "required": ["type", "config_from"]
+      "additionalProperties": false,
+      "patternProperties": {
+        ".*": {
+          "oneOf": [
+            { "$ref": "#/definitions/source.aws_ec2" },
+            { "$ref": "#/definitions/source.aws_ecr" },
+            { "$ref": "#/definitions/source.aws_rds" },
+            { "$ref": "#/definitions/source.aws_s3" },
+            { "$ref": "#/definitions/source.file_system" },
+            { "$ref": "#/definitions/source.github_repository" }
+          ]
         }
       }
     },
@@ -180,5 +121,127 @@
       }
     }
   },
-  "required": ["organization", "discovery", "storage", "source", "relations"]
+  "required": ["organization", "discovery", "storage", "source", "relations"],
+  "definitions": {
+    "source.file_system": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["file_system"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.file_system.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.file_system.configuration": {
+      "type": "object",
+      "properties": {
+        "root_directory": {
+          "type": "string"
+        }
+      },
+      "required": ["root_directory"]
+    },
+    "source.github_repository": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["github_repository"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.github_repository.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.github_repository.configuration": {
+      "type": "object",
+      "properties": {
+        "user_or_org": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      },
+      "required": ["user_or_org", "token"]
+    },
+    "source.aws_s3": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["aws_s3"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.aws_common.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.aws_rds": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["aws_rds"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.aws_common.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.aws_ec2": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["aws_ec2"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.aws_common.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.aws_ecr": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["aws_ecr"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.aws_common.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.aws_common.configuration": {
+      "type": "object",
+      "properties": {
+        "access_key": {
+          "type": "string"
+        },
+        "secret_key": {
+          "type": "string"
+        },
+        "session_token": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "account_id": {
+          "type": "string"
+        }
+      },
+      "required": ["access_key", "secret_key", "session_token", "region", "account_id"]
+    }
+  }
 }
