@@ -1,32 +1,6 @@
-/*
-Package config provides functionality to validate YAML configuration using a JSON schema.
-
-This package defines a SchemaValidator type that allows you to validate a YAML content against a predefined JSON schema.
-The JSON schema is embedded using the //go:embed directive.
-
-Usage:
-	validator := config.NewSchemaValidator()
-
-	yamlContent := `
-		source:
-		  fs_one:
-		    type: file_system
-		    configuration:
-		      root_directory: "/some/path"
-		...`
-
-	err := validator.Validate(yamlContent)
-	if err != nil {
-		fmt.Println("Validation error:", err)
-	}
-
-Note:
-	The embedded JSON schema is expected to be stored in a file named "schema.json" in the same package directory.
-
-For more details about the embedded JSON schema, refer to the embedded schema documentation.
-
-This package relies on the santhosh-tekuri/jsonschema and gopkg.in/yaml.v2 libraries.
-*/
+// Package config provides functionality to validate YAML configuration using a JSON schema.
+// This package defines a SchemaValidator type that allows you to validate a YAML content against a predefined JSON schema.
+// The JSON schema is embedded using the //go:embed directive.
 package config
 
 import (
@@ -52,33 +26,6 @@ func NewSchemaValidator() *SchemaValidator {
 }
 
 // Validate validates the provided YAML content against the embedded JSON schema.
-// It checks whether the provided YAML conforms to the expected structure and data types defined in the JSON schema.
-// If the validation fails, an error is returned indicating the reason for the failure.
-//
-// Parameters:
-//   - yamlContent: A string containing the YAML content to be validated.
-//
-// Returns:
-//   - An error indicating the validation failure, if any.
-//
-// Example:
-//   validator := config.NewSchemaValidator()
-//   yamlContent := `
-//     source:
-//       fs_one:
-//         type: file_system
-//         configuration:
-//           root_directory: "/some/path"
-//     ...`
-//   err := validator.Validate(yamlContent)
-//   if err != nil {
-//     fmt.Println("Validation error:", err)
-//   }
-//
-// Note:
-//   - The embedded JSON schema is expected to be stored in a file named "schema.json" in the same package directory.
-//   - This method relies on the santhosh-tekuri/jsonschema and gopkg.in/yaml.v2 libraries.
-//
 func (sv *SchemaValidator) Validate(yamlContent string) error {
 	var m interface{}
 	err := yaml.Unmarshal([]byte(yamlContent), &m)
