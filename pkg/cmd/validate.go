@@ -17,12 +17,12 @@
 //   - gopkg.in/yaml.v2: YAML parsing library.
 //
 // Usage:
-//   func main() {
-//     rootCmd := cmd.NewRootCommand()
-//     if err := rootCmd.Execute(); err != nil {
-//       fmt.Println(err)
-//     }
-//   }
+//  func main() {
+//    rootCmd := cmd.NewRootCommand()
+//    if err := rootCmd.Execute(); err != nil {
+//      fmt.Println(err)
+//    }
+//  }
 //
 package cmd
 
