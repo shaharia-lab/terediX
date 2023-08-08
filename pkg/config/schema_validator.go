@@ -42,9 +42,11 @@ import (
 //go:embed schema.json
 var jsonSchema string
 
+// SchemaValidator struct represent schema validator
 type SchemaValidator struct {
 }
 
+// NewSchemaValidator construct a new validator
 func NewSchemaValidator() *SchemaValidator {
 	return &SchemaValidator{}
 }
