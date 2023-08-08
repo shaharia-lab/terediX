@@ -1,4 +1,29 @@
-// Package cmd provides commands
+// Package cmd provides a collection of commands for the Teredix application's command-line interface.
+// These commands allow users to perform various tasks related to configuration validation and discovery.
+//
+// The commands are built using the spf13/cobra library, a powerful framework for building CLI applications in Go.
+// Each command has its own logic defined in its corresponding function, and they utilize the pkg/config package
+// for YAML configuration validation.
+//
+// The "validate" command validates a provided YAML configuration file against a predefined JSON schema.
+// If the validation is successful, it prints a success message; otherwise, it reports validation errors.
+//
+// Example:
+//   teredix validate -c config.yaml
+//
+// Dependencies:
+//   - github.com/spf13/cobra: CLI command framework.
+//   - github.com/shahariaazam/teredix/pkg/config: Package for YAML configuration validation.
+//   - gopkg.in/yaml.v2: YAML parsing library.
+//
+// Usage:
+//   func main() {
+//     rootCmd := cmd.NewRootCommand()
+//     if err := rootCmd.Execute(); err != nil {
+//       fmt.Println(err)
+//     }
+//   }
+//
 package cmd
 
 import (
