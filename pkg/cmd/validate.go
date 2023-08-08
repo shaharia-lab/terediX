@@ -9,7 +9,7 @@
 // If the validation is successful, it prints a success message; otherwise, it reports validation errors.
 //
 // Example:
-//   teredix validate -c config.yaml
+// 	teredix validate -c config.yaml
 //
 // Dependencies:
 //   - github.com/spf13/cobra: CLI command framework.
