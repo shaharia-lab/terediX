@@ -1,5 +1,5 @@
 // Package cmd provides a collection of commands for the Teredix application's command-line interface.
-// These commands allow users to perform various tasks related to configuration validation and discovery.
+// These commands allow users to perform various tasks related to configuration validation.
 //
 // The commands are built using the spf13/cobra library, a powerful framework for building CLI applications in Go.
 // Each command has its own logic defined in its corresponding function, and they utilize the pkg/config package
