@@ -35,11 +35,6 @@ func run(cfgFile string) error {
 		return err
 	}
 
-	err = config.Validate(appConfig)
-	if err != nil {
-		return err
-	}
-
 	sources := source.BuildSources(appConfig)
 	st := storage.BuildStorage(appConfig)
 	err = st.Prepare()

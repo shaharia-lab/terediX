@@ -1,0 +1,353 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "organization": {
+      "$ref": "#/definitions/root.organization"
+    },
+    "discovery": {
+      "$ref": "#/definitions/root.discovery"
+    },
+    "storage": {
+      "$ref": "#/definitions/root.storage"
+    },
+    "source": {
+      "$ref": "#/definitions/root.source"
+    },
+    "relations": {
+      "$ref": "#/definitions/root.relations"
+    }
+  },
+  "required": ["organization", "discovery", "storage", "source", "relations"],
+  "definitions": {
+    "root.organization": {
+      "type": "object",
+      "properties": {
+        "logo": {
+          "type": "string",
+          "minLength": 4
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["logo", "name"]
+    },
+    "root.discovery": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "worker_pool_size": { "type": "number", "minimum": 1}
+      },
+      "required": [
+        "name",
+        "description",
+        "worker_pool_size"
+      ]
+    },
+    "root.storage": {
+      "type": "object",
+      "properties": {
+        "batch_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "engines": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "postgresql": {
+              "$ref": "#/definitions/storage.postgresql"
+            },
+            "neo4j": {
+              "$ref": "#/definitions/storage.neo4j"
+            }
+          },
+          "anyOf": [
+            {
+              "required": [
+                "postgresql"
+              ]
+            },
+            {
+              "required": [
+                "neo4j"
+              ]
+            }
+          ]
+        },
+        "default_engine": {
+          "type": "string",
+          "enum": [
+            "postgresql",
+            "neo4j"
+          ]
+        }
+      },
+      "required": [
+        "batch_size",
+        "engines",
+        "default_engine"
+      ]
+    },
+    "root.source": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        ".*": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/source.aws_ec2"
+            },
+            {
+              "$ref": "#/definitions/source.aws_ecr"
+            },
+            {
+              "$ref": "#/definitions/source.aws_rds"
+            },
+            {
+              "$ref": "#/definitions/source.aws_s3"
+            },
+            {
+              "$ref": "#/definitions/source.file_system"
+            },
+            {
+              "$ref": "#/definitions/source.github_repository"
+            }
+          ]
+        }
+      }
+    },
+    "root.relations": {
+      "type": "object",
+      "properties": {
+        "criteria": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "meta_key": {
+                    "type": "string"
+                  },
+                  "meta_value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "meta_key",
+                  "meta_value"
+                ]
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "meta_key": {
+                    "type": "string"
+                  },
+                  "meta_value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "meta_key",
+                  "meta_value"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "source",
+              "target"
+            ]
+          }
+        }
+      }
+    },
+    "source.file_system": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["file_system"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.file_system.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.file_system.configuration": {
+      "type": "object",
+      "properties": {
+        "root_directory": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["root_directory"]
+    },
+    "source.github_repository": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["github_repository"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.github_repository.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.github_repository.configuration": {
+      "type": "object",
+      "properties": {
+        "user_or_org": {
+          "type": "string",
+          "minLength": 1
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["user_or_org", "token"]
+    },
+    "source.aws_s3": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["aws_s3"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.aws_common.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.aws_rds": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["aws_rds"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.aws_common.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.aws_ec2": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["aws_ec2"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.aws_common.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.aws_ecr": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["aws_ecr"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.aws_common.configuration"
+        }
+      },
+      "required": ["type", "configuration"]
+    },
+    "source.aws_common.configuration": {
+      "type": "object",
+      "properties": {
+        "access_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "secret_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session_token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "region": {
+          "type": "string",
+          "minLength": 1
+        },
+        "account_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["access_key", "secret_key", "session_token", "region", "account_id"]
+    },
+    "storage.postgresql": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "port": {
+          "type": "number",
+          "minimum": 1
+        },
+        "user": {
+          "type": "string",
+          "minLength": 1
+        },
+        "password": {
+          "type": "string",
+          "minLength": 1
+        },
+        "db": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["host", "port", "user", "password", "db"]
+    },
+    "storage.neo4j": {
+      "type": "object",
+      "properties": {
+        "config_key": {
+          "type": "string"
+        }
+      },
+      "required": ["config_key"]
+    }
+  }
+}
