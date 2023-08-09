@@ -18,8 +18,9 @@ type Organization struct {
 
 // Discovery hold discovery configuration
 type Discovery struct {
-	Name        string `yaml:"name"`
-	Description string `yaml:"description"`
+	Name           string `yaml:"name"`
+	Description    string `yaml:"description"`
+	WorkerPoolSize int    `yaml:"worker_pool_size"`
 }
 
 // Storage store storage configuration
@@ -115,6 +116,10 @@ func Load(path string) (*AppConfig, error) {
 func (c *AppConfig) validateDiscovery(discovery Discovery) error {
 	if discovery.Name == "" {
 		return fmt.Errorf("discovery name is required")
+	}
+
+	if discovery.WorkerPoolSize < 1 {
+		return fmt.Errorf("discovery.worker_pool_size is missing. It must be 1 or greater")
 	}
 
 	return nil

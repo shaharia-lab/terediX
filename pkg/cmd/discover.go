@@ -42,7 +42,7 @@ func run(cfgFile string) error {
 		return err
 	}
 
-	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
+	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize, WorkerPoolSize: appConfig.Discovery.WorkerPoolSize}
 	p := processor.NewProcessor(processConfig, st, sources)
 
 	resourceChan := make(chan resource.Resource)

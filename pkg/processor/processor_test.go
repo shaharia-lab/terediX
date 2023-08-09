@@ -42,7 +42,7 @@ func TestProcessor_Process(t *testing.T) {
 	}
 
 	// Set up test data
-	config := Config{BatchSize: 2}
+	config := Config{BatchSize: 2, WorkerPoolSize: 1}
 
 	processor := NewProcessor(config, mockStorage, sources)
 
@@ -90,7 +90,7 @@ func TestProcessor_Process_Handle_Error_From_Scanner(t *testing.T) {
 	}
 
 	// Set up test data
-	config := Config{BatchSize: 2}
+	config := Config{BatchSize: 2, WorkerPoolSize: 1}
 
 	processor := NewProcessor(config, mockStorage, sources)
 
@@ -146,7 +146,7 @@ func TestProcessor_Process_Handle_Error_From_Storage_During_Persist(t *testing.T
 	}
 
 	// Set up test data
-	config := Config{BatchSize: 2}
+	config := Config{BatchSize: 2, WorkerPoolSize: 1}
 
 	processor := NewProcessor(config, mockStorage, sources)
 
