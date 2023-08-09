@@ -29,11 +29,6 @@ func NewDisplayCommand() *cobra.Command {
 				return err
 			}
 
-			err = config.Validate(appConfig)
-			if err != nil {
-				return err
-			}
-
 			st := storage.BuildStorage(appConfig)
 			c := cytoscape.NewCytoscapa(st)
 			v := visualize.NewVisualizer(c)

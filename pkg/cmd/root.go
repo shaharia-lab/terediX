@@ -17,6 +17,7 @@ func NewRootCmd(version string) *cobra.Command {
 		NewDiscoverCommand(),
 		NewRelationCommand(),
 		NewDisplayCommand(),
+		NewValidateCommand(),
 	)
 
 	return &cmd

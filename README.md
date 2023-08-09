@@ -2,22 +2,22 @@
 <p align="center">Tech Resource Graph (Discovery & Exploration)</p>
 
 <p align="center">
-  <a href="https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml"><img src="https://github.com/shahariaazam/terediX/actions/workflows/CI.yaml/badge.svg" height="20"/></a>
-  <a href="https://codecov.io/gh/shahariaazam/terediX"><img src="https://codecov.io/gh/shahariaazam/terediX/branch/master/graph/badge.svg?token=NKTKQ45HDN" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=reliability_rating" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=vulnerabilities" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=security_rating" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_rating" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=code_smells" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=ncloc" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=alert_status" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=duplicated_lines_density" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=bugs" height="20"/></a>
-  <a href="https://sonarcloud.io/summary/new_code?id=shahariaazam_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shahariaazam_terediX&metric=sqale_index" height="20"/></a>
+  <a href="https://github.com/shaharia-lab/teredix/actions/workflows/CI.yaml"><img src="https://github.com/shaharia-lab/teredix/actions/workflows/CI.yaml/badge.svg" height="20"/></a>
+  <a href="https://codecov.io/gh/shaharia-lab/teredix"><img src="https://codecov.io/gh/shaharia-lab/teredix/branch/master/graph/badge.svg?token=NKTKQ45HDN" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=reliability_rating" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=vulnerabilities" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=security_rating" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=sqale_rating" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=code_smells" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=ncloc" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=alert_status" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=duplicated_lines_density" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=bugs" height="20"/></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=sqale_index" height="20"/></a>
 </p><br/><br/>
 
 <p align="center">
-  <a href="https://github.com/shahariaazam/teredix"><img src="https://user-images.githubusercontent.com/1095008/229536376-51ddaa75-85ee-4e3e-95df-7cf6093392bf.png" width="100%"/></a>
+  <a href="https://github.com/shaharia-lab/teredix"><img src="https://user-images.githubusercontent.com/1095008/229536376-51ddaa75-85ee-4e3e-95df-7cf6093392bf.png" width="100%"/></a>
 </p><br/>
 
 
@@ -99,7 +99,7 @@ takes in a display type and renders the resources in that format.
 
 ## 🚀 Getting Started
 
-- To get started, you just need to download the latest binary from [latest release](https://github.com/shahariaazam/terediX/releases).
+- To get started, you just need to download the latest binary from [latest release](https://github.com/shaharia-lab/teredix/releases).
 - Prepare your config file. Here is the [example config file](#config-file).
 
 **This tool has three major commands available**
@@ -159,71 +159,7 @@ Flags:
 
 ## Config file
 
-Here is an example `config.yaml` file. You should create your own config file with all the configuration.
-
-```yaml
----
-organization:
-  name: "Acme Tech"
-  logo: "https://example.com"
-discovery:
-  name: "Infrastructure Discovery"
-  description: "Some description text"
-storage:
-  batch_size: 2
-  engines:
-    postgresql:
-      host: "localhost"
-      port: 5432
-      user: "app"
-      password: "pass"
-      db: "app"
-  default_engine: "postgresql"
-source:
-  fs_one:
-    type: "file_system"
-    configuration:
-      root_directory: "/some/path"
-  fs_two:
-    type: "file_system"
-    configuration:
-      root_directory: "/some/other/path"
-  github_repo_sh:
-    type: "github_repository"
-    configuration:
-      token: "xxxx"
-      user_or_org: "xxxx"
-  aws_s3_one:
-    type: "aws_s3"
-    configuration:
-      access_key: "xxxx"
-      secret_key: "xxxx"
-      session_token: "xxxx"
-      region: "x"
-      account_id: "xxx"
-  aws_rds_one:
-    type: "aws_rds"
-    config_from: "aws_s3_one"
-  aws_ec2_org:
-    type: "aws_ec2"
-    config_from: "aws_s3_one"
-  aws_ecr_org:
-    type: "aws_ecr"
-    config_from: "aws_s3_one"
-relations:
-  criteria:
-    - name: "file-system-rule1"
-      source:
-        kind: "FilePath"
-        meta_key: "Root-Directory"
-        meta_value: "/some/path"
-      target:
-        kind: "FilePath"
-        meta_key: "Root-Directory"
-        meta_value: "/some/other/path"
-```
-
-You can get a complete valid config file in [valid_config.yaml](https://github.com/shahariaazam/terediX/blob/master/pkg/config/testdata/valid_config.yaml)
+Here is an example of a valid [configuration](pkg/config/testdata/valid_config.yaml). You should create your own config file with all the configuration.
 
 
 | Field                                 | Type   | Required | Description                                                                                                                                                           |
@@ -460,8 +396,8 @@ To visualize the resource graph, here is the available visualizer.
 
 ### 🤝 Contributing
 
-Contributions are welcome! Please follow the guidelines outlined in the [CONTRIBUTING](https://github.com/shahariaazam/teredix/blob/master/CONTRIBUTING.md) file.
+Contributions are welcome! Please follow the guidelines outlined in the [CONTRIBUTING](https://github.com/shaharia-lab/teredix/blob/master/CONTRIBUTING.md) file.
 
 ### 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/shahariaazam/teredix/blob/master/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/shaharia-lab/teredix/blob/master/LICENSE) file for details.
