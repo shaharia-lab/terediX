@@ -47,6 +47,14 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 
 	rootResource := resource.NewResource("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
 
+	if util.IsFieldExistsInConfig(fileSystemFieldRootDirectory, s.fields) {
+		rootResource.AddMetaData(fileSystemFieldRootDirectory, s.rootDirectory)
+	}
+
+	if util.IsFieldExistsInConfig(fileSystemFieldMachineHost, s.fields) {
+		rootResource.AddMetaData(fileSystemFieldMachineHost, hostname)
+	}
+
 	rootResource.AddMetaData("Machine-Host", hostname)
 	rootResource.AddMetaData("Root-Directory", s.rootDirectory)
 	rootResource.AddMetaData(pkg.MetaKeyScannerLabel, s.name)
@@ -60,6 +68,14 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 		nr.AddMetaData("Machine-Host", hostname)
 		nr.AddMetaData("Root-Directory", s.rootDirectory)
 		nr.AddMetaData("Scanner-Label", s.name)
+
+		if util.IsFieldExistsInConfig(fileSystemFieldRootDirectory, s.fields) {
+			nr.AddMetaData(fileSystemFieldRootDirectory, s.rootDirectory)
+		}
+
+		if util.IsFieldExistsInConfig(fileSystemFieldMachineHost, s.fields) {
+			nr.AddMetaData(fileSystemFieldMachineHost, hostname)
+		}
 
 		resourceChannel <- nr
 	}
@@ -97,13 +113,4 @@ func (s *FsScanner) listFilesRecursive(path string) ([]File, error) {
 		}
 	}
 	return files, nil
-}
-
-func (s *FsScanner) fieldExists(value string) bool {
-	for _, v := range s.fields {
-		if v == value {
-			return true
-		}
-	}
-	return false
 }
