@@ -139,7 +139,7 @@ It will show `Displaying resource graph at http://localhost:8989`. Open your bro
 
 ### Validate configuration file
 
-To test & validate your configuration YAML file, 
+To test & validate your configuration YAML file,
 
 ```shell
 teredix validate --config {your_config.yaml file}
