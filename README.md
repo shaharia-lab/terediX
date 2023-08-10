@@ -357,7 +357,7 @@ source:
 
 | Meta Key       | Description                                       |
 |----------------|---------------------------------------------------|
-| Machine-Host   | Hostname of the machine                           |
+| machineHost   | Hostname of the machine                           |
 | Root-Directory | Root directory to scan the recursive file list    |
 | Scanner-Label  | Name of the source configured in config.yaml file |
 

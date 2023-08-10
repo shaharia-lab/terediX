@@ -55,7 +55,6 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 		rootResource.AddMetaData(fileSystemFieldMachineHost, hostname)
 	}
 
-	rootResource.AddMetaData("Machine-Host", hostname)
 	rootResource.AddMetaData("Root-Directory", s.rootDirectory)
 	rootResource.AddMetaData(pkg.MetaKeyScannerLabel, s.name)
 
@@ -65,7 +64,6 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 		nr := resource.NewResource("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
 		nr.AddRelation(rootResource)
 
-		nr.AddMetaData("Machine-Host", hostname)
 		nr.AddMetaData("Root-Directory", s.rootDirectory)
 		nr.AddMetaData("Scanner-Label", s.name)
 

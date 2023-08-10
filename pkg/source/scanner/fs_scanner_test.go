@@ -37,9 +37,8 @@ func TestFsScanner_ScanV2(t *testing.T) {
 				"filex.txt": "file1 content",
 			},
 			expectedResourceCount: 2,
-			expectedMetaDataCount: 6,
+			expectedMetaDataCount: 5,
 			expectedMetaDataKeys: []string{
-				"Machine-Host",
 				"Root-Directory",
 				"Scanner-Label",
 				fileSystemFieldMachineHost,
@@ -60,9 +59,8 @@ func TestFsScanner_ScanV2(t *testing.T) {
 				"filex.txt":        "file1 content",
 			},
 			expectedResourceCount: 3,
-			expectedMetaDataCount: 6,
+			expectedMetaDataCount: 5,
 			expectedMetaDataKeys: []string{
-				"Machine-Host",
 				"Root-Directory",
 				"Scanner-Label",
 				fileSystemFieldMachineHost,
