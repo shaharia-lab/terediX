@@ -26,10 +26,16 @@ source:
     type: file_system
     configuration:
       root_directory: "/some/path"
+    fields:
+      - machineHost
+      - rootDirectory
   fs_two:
     type: file_system
     configuration:
       root_directory: "/some/other/path"
+    fields:
+      - rootDirectory
+      - machineHost
   #two:
   #  type: kubernetes
   #  configuration:

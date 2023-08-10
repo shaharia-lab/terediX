@@ -39,6 +39,7 @@ type Source struct {
 	Type          string            `yaml:"type"`
 	ConfigFrom    string            `yaml:"config_from,omitempty"`
 	Configuration map[string]string `yaml:"configuration"`
+	Fields        []string          `yaml:"fields"`
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
 }
 

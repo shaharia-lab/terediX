@@ -162,7 +162,7 @@ func TestFsScanner_Scan(t *testing.T) {
 
 			go func() {
 				// Create an FsScanner for the temporary directory and scan it
-				scanner := NewFsScanner("scanner_name", tmpDir, tt.attachMetaData)
+				scanner := NewFsScanner("scanner_name", tmpDir, []string{"rootDirectory", "machineHost"})
 				scanner.Scan(resourceChannel)
 				close(resourceChannel)
 			}()

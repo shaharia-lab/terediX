@@ -11,11 +11,16 @@ import (
 	"github.com/shahariaazam/teredix/pkg/util"
 )
 
+const (
+	fileSystemFieldRootDirectory = "rootDirectory"
+	fileSystemFieldMachineHost   = "machineHost"
+)
+
 // FsScanner store configuration for file system scanner
 type FsScanner struct {
 	name          string
 	rootDirectory string
-	metaData      map[string]string
+	fields        []string
 }
 
 // File represent file information
@@ -24,8 +29,8 @@ type File struct {
 }
 
 // NewFsScanner construct new file system scanner
-func NewFsScanner(name, rootDirectory string, metaData map[string]string) FsScanner {
-	return FsScanner{name: name, rootDirectory: rootDirectory, metaData: metaData}
+func NewFsScanner(name, rootDirectory string, fields []string) FsScanner {
+	return FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
 }
 
 // Scan scans the file system
@@ -41,9 +46,6 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	rootResource := resource.NewResource("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
-	for k, v := range s.metaData {
-		rootResource.AddMetaData(k, v)
-	}
 
 	rootResource.AddMetaData("Machine-Host", hostname)
 	rootResource.AddMetaData("Root-Directory", s.rootDirectory)
@@ -54,9 +56,6 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	for _, f := range files {
 		nr := resource.NewResource("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
 		nr.AddRelation(rootResource)
-		for k, v := range s.metaData {
-			nr.AddMetaData(k, v)
-		}
 
 		nr.AddMetaData("Machine-Host", hostname)
 		nr.AddMetaData("Root-Directory", s.rootDirectory)
@@ -98,4 +97,13 @@ func (s *FsScanner) listFilesRecursive(path string) ([]File, error) {
 		}
 	}
 	return files, nil
+}
+
+func (s *FsScanner) fieldExists(value string) bool {
+	for _, v := range s.fields {
+		if v == value {
+			return true
+		}
+	}
+	return false
 }

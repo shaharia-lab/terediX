@@ -1,6 +1,11 @@
 // Package resource represents resources
 package resource
 
+import (
+	"strconv"
+	"time"
+)
+
 // Resource represent resource
 type Resource struct {
 	Kind        string
@@ -45,6 +50,18 @@ func (r *Resource) AddMetaData(key, value string) {
 		Key:   key,
 		Value: value,
 	})
+}
+
+// AddStampData adds meta data for each resource
+func (r *Resource) AddStampData(scanner string) {
+	stampMetaData := map[string]string{
+		"_scannedAt": strconv.FormatInt(time.Now().UTC().Unix(), 10),
+		"_scanner":   scanner,
+	}
+
+	for key, value := range stampMetaData {
+		r.MetaData = append(r.MetaData, MetaData{Key: key, Value: value})
+	}
 }
 
 // FindMetaValue finds meta value by key

@@ -25,11 +25,10 @@ source:
   fs_one:
     type: file_system
     configuration:
-      root_directory: "/some/path"
-  fs_two:
-    type: file_system
-    configuration:
-      root_directory: "/some/other/path"
+      root_directory: "/home/shaharia/Projects/hellodev"
+    fields:
+      - machineHost
+      - rootDirectory
   aws_s3_one:
     type: aws_s3
     configuration: &aws_conf

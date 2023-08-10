@@ -14,7 +14,7 @@ func Test_validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "valid config file",
+			name:    "invalid config file",
 			cfgFile: "testdata/invalid_config.yaml",
 			wantErr: true,
 		},
