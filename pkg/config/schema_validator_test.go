@@ -71,11 +71,11 @@ relations:
     - name: "file-system-rule1"
       source:
         kind: "FilePath"
-        meta_key: "Root-Directory"
+        meta_key: "rootDirectory"
         meta_value: "/some/path"
       target:
         kind: "FilePath"
-        meta_key: "Root-Directory"
+        meta_key: "rootDirectory"
         meta_value: "/some/path"
 `,
 			expectError: false,
