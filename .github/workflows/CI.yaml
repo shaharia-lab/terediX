@@ -74,7 +74,7 @@ jobs:
     needs:
       - build
 
-  test:
+  test-unit:
     name: Unit Test
     runs-on: ubuntu-latest
     steps:
@@ -87,7 +87,7 @@ jobs:
           go-version: '^1.20'
 
       - name: Test
-        run: make testc
+        run: make test-unit
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
@@ -95,22 +95,98 @@ jobs:
       - name: Publish artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: coverage.out
+          name: coverage-unit-${GITHUB_SHA}.out
+          path: coverage_unit.out
+
+  test-integration:
+    name: Run Discovery Command
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: pass
+          POSTGRES_DB: app
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Go ^1.20
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20'
+
+      - name: Test
+        env:
+          TEST_DB_HOST: postgresql
+        run: make test-integration
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-integration-${GITHUB_SHA}.out
+          path: coverage_integration.out
+
+  merge-coverage:
+    name: Run Discovery Command
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Go ^1.20
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20'
+
+      - name: Download unit test artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage-unit-${GITHUB_SHA}.out
+
+      - name: Download integration test artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage-integration-${GITHUB_SHA}.out
+
+      - name: Install gocovmerge
+        run: |
+          go install github.com/wadey/gocovmerge
+          gocovmerge coverage_unit.out coverage_integration.out > coverage.out
+          cat ./coverage.out
+
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-${GITHUB_SHA}.out
           path: coverage.out
+    needs:
+      - test-unit
+      - test-integration
 
   sonarcloud-scan:
     runs-on: ubuntu-latest
-    needs: test
+    needs:
+      - merge-coverage
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Download artifacts
+      - name: Download integration test artifacts
         uses: actions/download-artifact@v2
         with:
-          name: coverage.out
+          name: coverage-${GITHUB_SHA}.out
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master

@@ -7,7 +7,6 @@ import (
 	"github.com/shahariaazam/teredix/pkg/resource"
 	"github.com/shahariaazam/teredix/pkg/source"
 	"github.com/shahariaazam/teredix/pkg/storage"
-
 	"github.com/spf13/cobra"
 )
 

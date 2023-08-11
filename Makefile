@@ -35,8 +35,11 @@ clean:
 test:
 	$(GOTEST) ./...
 
-testc:
-	$(GOTEST) ./... -coverprofile=coverage.out
+test-unit:
+	$(GOTEST) ./... -coverprofile=coverage_unit.out
+
+test-integration:
+	$(GOTEST) -tags integration -cover ./... -coverprofile=coverage_integration.out
 
 mod:
 	$(GOMOD) download
