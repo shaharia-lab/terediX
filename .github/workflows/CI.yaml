@@ -99,7 +99,7 @@ jobs:
           path: coverage_unit.out
 
   test-integration:
-    name: Run Discovery Command
+    name: Integration test
     runs-on: ubuntu-latest
     services:
       postgres:
