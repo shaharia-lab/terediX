@@ -1,0 +1,8 @@
+# Linting for dockerfile
+---
+trustedRegistries:
+  - docker.io
+  - "*.gcr.io"
+failure-threshold: info
+ignored:
+  - DL3018
