@@ -66,7 +66,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: teredix-binary-${GITHUB_SHA}
-          path: build/teredix
+          path: ./build
       - name: Run configuration validation against JSON schema
         run: |
           ./build/teredix validate --config ./pkg/cmd/testdata/valid_config.yaml
