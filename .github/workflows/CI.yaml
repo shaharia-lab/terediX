@@ -104,7 +104,6 @@ jobs:
         run: |
           go install github.com/wadey/gocovmerge
           gocovmerge coverage_unit.out coverage_integration.out > coverage.out
-          cat ./coverage.out
 
       - name: Publish artifacts
         uses: actions/upload-artifact@v2
