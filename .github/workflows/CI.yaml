@@ -69,6 +69,7 @@ jobs:
           path: ./build
       - name: Run configuration validation against JSON schema
         run: |
+          chmod +x ./build/teredix
           ./build/teredix validate --config ./pkg/cmd/testdata/valid_config.yaml
           ./build/teredix validate --config ./pkg/config/testdata/valid_config.yaml
     needs:
