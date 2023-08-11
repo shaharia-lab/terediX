@@ -20,6 +20,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const fileSystemSourceIntegrationTestRootDirectory = "cmd/testdata"
+
 const yamlContent = `
 ---
 organization:
@@ -72,7 +74,7 @@ func TestProcessor_Process_Integration(t *testing.T) {
 	}
 
 	yamlContentReplaced := strings.ReplaceAll(yamlContent, `host: "localhost"`, fmt.Sprintf(`host: "%s"`, testDBHost))
-	yamlContentReplaced = strings.ReplaceAll(yamlContentReplaced, `{{ROOT_DIRECTORY}}`, GetTestRootDirectory(t))
+	yamlContentReplaced = strings.ReplaceAll(yamlContentReplaced, `{{ROOT_DIRECTORY}}`, getTestRootDiretory(t))
 
 	WriteToFile("config.yaml", yamlContentReplaced)
 	appConfig, err := config.Load("config.yaml")
@@ -138,13 +140,8 @@ func deleteTables(db *sql.DB, tables []string) error {
 	return nil
 }
 
-func GetTestRootDirectory(t *testing.T) string {
-	// Get the current file's path
+func getTestRootDiretory(t *testing.T) string {
 	_, filename, _, _ := runtime.Caller(0)
-
-	// Get the directory of the current file
 	dir := filepath.Dir(filepath.Dir(filename))
-
-	// Get the absolute path of a specific directory relative to the test file
-	return filepath.Join(dir, "cmd/testdata")
+	return filepath.Join(dir, fileSystemSourceIntegrationTestRootDirectory)
 }
