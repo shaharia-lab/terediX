@@ -145,3 +145,45 @@ func TestGetAWSResourceTagByARN(t *testing.T) {
 		t.Errorf("Unexpected tags: got %v, expected %v", tags, expectedTags)
 	}
 }
+
+func TestIsFieldExistsInConfig(t *testing.T) {
+	tests := []struct {
+		name   string
+		value  string
+		fields []string
+		want   bool
+	}{
+		{
+			name:   "field exists",
+			value:  "color",
+			fields: []string{"color", "size", "weight"},
+			want:   true,
+		},
+		{
+			name:   "field does not exist",
+			value:  "height",
+			fields: []string{"color", "size", "weight"},
+			want:   false,
+		},
+		{
+			name:   "empty fields",
+			value:  "color",
+			fields: []string{},
+			want:   false,
+		},
+		{
+			name:   "empty value",
+			value:  "",
+			fields: []string{"color", "size", "weight"},
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsFieldExistsInConfig(tt.value, tt.fields); got != tt.want {
+				t.Errorf("IsFieldExistsInConfig(%v, %v) = %v; want %v", tt.value, tt.fields, got, tt.want)
+			}
+		})
+	}
+}

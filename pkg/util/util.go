@@ -68,3 +68,13 @@ func GetAWSResourceTagByARN(ctx context.Context, resourceTaggingService Resource
 
 	return tags, nil
 }
+
+// IsFieldExistsInConfig to check if specific field exists in config
+func IsFieldExistsInConfig(value string, fields []string) bool {
+	for _, v := range fields {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}

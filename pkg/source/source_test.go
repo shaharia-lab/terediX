@@ -50,7 +50,7 @@ func TestBuildSources(t *testing.T) {
 
 	sources := BuildSources(appConfig)
 
-	fsScanner := scanner.NewFsScanner("source1", "/path/to/directory", map[string]string{})
+	fsScanner := scanner.NewFsScanner("source1", "/path/to/directory", []string{"rootDirectory"})
 
 	gc := scanner.NewGitHubRepositoryClient(github.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: "token"},

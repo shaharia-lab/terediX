@@ -11,11 +11,16 @@ import (
 	"github.com/shahariaazam/teredix/pkg/util"
 )
 
+const (
+	fileSystemFieldRootDirectory = "rootDirectory"
+	fileSystemFieldMachineHost   = "machineHost"
+)
+
 // FsScanner store configuration for file system scanner
 type FsScanner struct {
 	name          string
 	rootDirectory string
-	metaData      map[string]string
+	fields        []string
 }
 
 // File represent file information
@@ -24,8 +29,8 @@ type File struct {
 }
 
 // NewFsScanner construct new file system scanner
-func NewFsScanner(name, rootDirectory string, metaData map[string]string) FsScanner {
-	return FsScanner{name: name, rootDirectory: rootDirectory, metaData: metaData}
+func NewFsScanner(name, rootDirectory string, fields []string) FsScanner {
+	return FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
 }
 
 // Scan scans the file system
@@ -41,12 +46,15 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	rootResource := resource.NewResource("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
-	for k, v := range s.metaData {
-		rootResource.AddMetaData(k, v)
+
+	if util.IsFieldExistsInConfig(fileSystemFieldRootDirectory, s.fields) {
+		rootResource.AddMetaData(fileSystemFieldRootDirectory, s.rootDirectory)
 	}
 
-	rootResource.AddMetaData("Machine-Host", hostname)
-	rootResource.AddMetaData("Root-Directory", s.rootDirectory)
+	if util.IsFieldExistsInConfig(fileSystemFieldMachineHost, s.fields) {
+		rootResource.AddMetaData(fileSystemFieldMachineHost, hostname)
+	}
+
 	rootResource.AddMetaData(pkg.MetaKeyScannerLabel, s.name)
 
 	resourceChannel <- rootResource
@@ -54,13 +62,16 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	for _, f := range files {
 		nr := resource.NewResource("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
 		nr.AddRelation(rootResource)
-		for k, v := range s.metaData {
-			nr.AddMetaData(k, v)
+
+		nr.AddMetaData("Scanner-Label", s.name)
+
+		if util.IsFieldExistsInConfig(fileSystemFieldRootDirectory, s.fields) {
+			nr.AddMetaData(fileSystemFieldRootDirectory, s.rootDirectory)
 		}
 
-		nr.AddMetaData("Machine-Host", hostname)
-		nr.AddMetaData("Root-Directory", s.rootDirectory)
-		nr.AddMetaData("Scanner-Label", s.name)
+		if util.IsFieldExistsInConfig(fileSystemFieldMachineHost, s.fields) {
+			nr.AddMetaData(fileSystemFieldMachineHost, hostname)
+		}
 
 		resourceChannel <- nr
 	}

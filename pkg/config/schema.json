@@ -195,9 +195,12 @@
         },
         "configuration": {
           "$ref": "#/definitions/source.file_system.configuration"
+        },
+        "fields": {
+          "$ref": "#/definitions/source.file_system.fields"
         }
       },
-      "required": ["type", "configuration"]
+      "required": ["type", "configuration", "fields"]
     },
     "source.file_system.configuration": {
       "type": "object",
@@ -208,6 +211,15 @@
         }
       },
       "required": ["root_directory"]
+    },
+    "source.file_system.fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["rootDirectory", "machineHost"]
+      },
+      "uniqueItems": true,
+      "additionalItems": false
     },
     "source.github_repository": {
       "type": "object",

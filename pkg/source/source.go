@@ -41,7 +41,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 	var finalSources []Source
 	for sourceKey, s := range appConfig.Sources {
 		if s.Type == pkg.SourceTypeFileSystem {
-			fs := scanner.NewFsScanner(sourceKey, s.Configuration["root_directory"], map[string]string{})
+			fs := scanner.NewFsScanner(sourceKey, s.Configuration["root_directory"], s.Fields)
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: &fs,

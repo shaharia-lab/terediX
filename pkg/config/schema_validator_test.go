@@ -41,10 +41,14 @@ source:
     type: file_system
     configuration:
       root_directory: "/some/path"
+    fields: &file_system_fields
+      - rootDirectory
+      - machineHost
   fs_two:
     type: file_system
     configuration:
       root_directory: "/some/other/path"
+    fields: *file_system_fields
   aws_s3_one:
     type: aws_s3
     configuration: &aws_conf
@@ -67,11 +71,11 @@ relations:
     - name: "file-system-rule1"
       source:
         kind: "FilePath"
-        meta_key: "Root-Directory"
+        meta_key: "rootDirectory"
         meta_value: "/some/path"
       target:
         kind: "FilePath"
-        meta_key: "Root-Directory"
+        meta_key: "rootDirectory"
         meta_value: "/some/path"
 `,
 			expectError: false,

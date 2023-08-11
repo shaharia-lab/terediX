@@ -104,11 +104,12 @@ takes in a display type and renders the resources in that format.
 
 **This tool has three major commands available**
 
-| Command                  | Description                                                                         |
-|--------------------------|-------------------------------------------------------------------------------------|
-| discover                 | It will go through each sources and discover resources and save it to your database |
-| relation                 | This command is responsible to build relationship between resources                 |
-| display                  | It will generate visualized resource graph that can be opened in your browser       |
+| Command  | Description                                                                         |
+|----------|-------------------------------------------------------------------------------------|
+| discover | It will go through each sources and discover resources and save it to your database |
+| relation | This command is responsible to build relationship between resources                 |
+| display  | It will generate visualized resource graph that can be opened in your browser       |
+| validate | Validate your configuration file                                                    |
 
 ### 📥 Run Discovery
 
@@ -135,6 +136,15 @@ To display the resource graph in an interactive way, please run the following co
 teredix display --config {your_config.yaml file}
 ```
 It will show `Displaying resource graph at http://localhost:8989`. Open your browser and visit the URL.
+
+### Validate configuration file
+
+To test & validate your configuration YAML file,
+
+```shell
+teredix validate --config {your_config.yaml file}
+```
+It will show `Configuration is valid!` or not. If configuration is not valid, it will display error.
 
 ## :computer: Usage
 
@@ -352,14 +362,17 @@ source:
     type: file_system
     configuration:
       root_directory: "/path/to/directory"
+    fields:
+      - rootDirectory
+      - machineHost
 ```
 #### Available metadata for file_system source
 
-| Meta Key       | Description                                       |
-|----------------|---------------------------------------------------|
-| Machine-Host   | Hostname of the machine                           |
-| Root-Directory | Root directory to scan the recursive file list    |
-| Scanner-Label  | Name of the source configured in config.yaml file |
+| Data Fields   | Description                                       |
+|---------------|---------------------------------------------------|
+| machineHost   | Hostname of the machine                           |
+| rootDirectory | Root directory to scan the recursive file list    |
+| Scanner-Label | Name of the source configured in config.yaml file |
 
 
 ## Supported Storage
