@@ -6,8 +6,9 @@ import (
 	"database/sql"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -47,7 +48,7 @@ source:
   fs_one:
     type: file_system
     configuration:
-      root_directory: "/home/shaharia/Projects/teredix/pkg/cmd/testdata"
+      root_directory: "{{ROOT_DIRECTORY}}"
     fields: &file_system_fields
       - rootDirectory
       - machineHost
@@ -67,11 +68,11 @@ relations:
 func TestProcessor_Process_Integration(t *testing.T) {
 	testDBHost := os.Getenv("TEST_DB_HOST")
 	if testDBHost == "" {
-		log.Println("TEST_DB_HOST env not set")
 		testDBHost = "localhost"
 	}
 
 	yamlContentReplaced := strings.ReplaceAll(yamlContent, `host: "localhost"`, fmt.Sprintf(`host: "%s"`, testDBHost))
+	yamlContentReplaced = strings.ReplaceAll(yamlContentReplaced, `{{ROOT_DIRECTORY}}`, GetTestRootDirectory(t))
 
 	WriteToFile("config.yaml", yamlContentReplaced)
 	appConfig, err := config.Load("config.yaml")
@@ -135,4 +136,15 @@ func deleteTables(db *sql.DB, tables []string) error {
 		fmt.Printf("Deleted table %s successfully\n", table)
 	}
 	return nil
+}
+
+func GetTestRootDirectory(t *testing.T) string {
+	// Get the current file's path
+	_, filename, _, _ := runtime.Caller(0)
+
+	// Get the directory of the current file
+	dir := filepath.Dir(filepath.Dir(filename))
+
+	// Get the absolute path of a specific directory relative to the test file
+	return filepath.Join(dir, "cmd/testdata")
 }
