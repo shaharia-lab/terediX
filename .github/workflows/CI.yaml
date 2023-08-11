@@ -124,7 +124,7 @@ jobs:
 
       - name: Test
         env:
-          TEST_DB_HOST: postgresql
+          TEST_DB_HOST: postgres
         run: make test-integration
 
       - name: Upload coverage reports to Codecov
