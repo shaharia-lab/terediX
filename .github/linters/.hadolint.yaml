@@ -1,4 +1,4 @@
-# Linting for dockerfile
+# Linting for Dockerfile
 ---
 trustedRegistries:
   - docker.io
