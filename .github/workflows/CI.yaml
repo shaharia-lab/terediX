@@ -99,7 +99,6 @@ jobs:
           TEST_DB_HOST: postgres
         run: |
           make test-integration
-        continue-on-error: true
 
       - name: Merge unit & integration tests code coverage
         run: |
