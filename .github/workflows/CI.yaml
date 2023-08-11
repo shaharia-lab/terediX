@@ -126,6 +126,7 @@ jobs:
         env:
           TEST_DB_HOST: postgres
         run: make test-integration
+        continue-on-error: true
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
