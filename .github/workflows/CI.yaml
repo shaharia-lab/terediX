@@ -10,6 +10,7 @@ on:
 jobs:
 
   build:
+    name: Build Binary
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,6 +31,7 @@ jobs:
           path: build/teredix
 
   lint:
+    name: Linting
     permissions:
       contents: read  # for actions/checkout to fetch code
       pull-requests: write  # for golangci/golangci-lint-action to fetch pull requests
@@ -64,14 +66,16 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: teredix-binary-${GITHUB_SHA}
-          path: .
-      - name: Run ls
+          path: build/teredix
+      - name: Run configuration validation against JSON schema
         run: |
-          ls -la
+          ./build/teredix validate --config ./pkg/cmd/testdata/valid_config.yaml
+          ./build/teredix validate --config ./pkg/config/testdata/valid_config.yaml
     needs:
       - build
 
   test:
+    name: Unit Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
