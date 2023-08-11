@@ -109,7 +109,7 @@ jobs:
       - name: Publish artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: coverage-${GITHUB_SHA}.out
+          name: coverage-${{ github.sha }}.out
           path: coverage.out
 
   code-analysis:
@@ -124,7 +124,7 @@ jobs:
       - name: Download integration test artifacts
         uses: actions/download-artifact@v2
         with:
-          name: coverage-${GITHUB_SHA}.out
+          name: coverage-${{ github.sha }}.out
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
