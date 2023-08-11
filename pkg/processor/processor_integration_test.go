@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -66,6 +67,7 @@ relations:
 func TestProcessor_Process_Integration(t *testing.T) {
 	testDBHost := os.Getenv("TEST_DB_HOST")
 	if testDBHost == "" {
+		log.Println("TEST_DB_HOST env not set")
 		testDBHost = "localhost"
 	}
 
