@@ -23,9 +23,7 @@ RM := rm -rf
 
 all: clean build test
 
-build: $(BUILD_DIR)/$(APP_NAME)
-
-$(BUILD_DIR)/$(APP_NAME):
+build:
 	$(MKDIR) $(BUILD_DIR)
 	$(GOBUILD) -gcflags="$(GCFLAGS)" -ldflags="$(LDFLAGS)" -o $@
 
@@ -37,8 +35,11 @@ clean:
 test:
 	$(GOTEST) ./...
 
-testc:
-	$(GOTEST) ./... -coverprofile=coverage.out
+test-unit:
+	$(GOTEST) ./... -coverprofile=coverage_unit.out
+
+test-integration:
+	$(GOTEST) -tags integration -cover ./... -coverprofile=coverage_integration.out
 
 mod:
 	$(GOMOD) download
@@ -49,3 +50,8 @@ vendor:
 dist: clean build
 	$(MKDIR) $(DIST_DIR)
 	$(CP) $(BUILD_DIR)/$(APP_NAME) $(DIST_DIR)/$(APP_NAME)
+
+validate_json_schema: clean build
+	$(MKDIR) $(DIST_DIR)
+	$(BUILD_DIR)/$(APP_NAME) validate --config ./pkg/cmd/testdata/valid_config.yaml
+	$(BUILD_DIR)/$(APP_NAME) validate --config ./pkg/config/testdata/valid_config.yaml
