@@ -137,7 +137,7 @@ jobs:
           path: coverage_integration.out
 
   merge-coverage:
-    name: Run Discovery Command
+    name: Merge code coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
