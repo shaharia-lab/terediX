@@ -102,6 +102,7 @@ jobs:
   test-integration:
     name: Integration test
     runs-on: ubuntu-latest
+    container: node:10.18-jessie
     services:
       postgres:
         image: postgres
@@ -131,7 +132,9 @@ jobs:
       - name: Test
         env:
           TEST_DB_HOST: postgres
-        run: make test-integration
+        run: |
+          echo ${{ job.services.postgres.ports[5432] }}
+          make test-integration
         continue-on-error: true
 
       - name: Upload coverage reports to Codecov
