@@ -3,6 +3,6 @@
 trustedRegistries:
   - docker.io
   - "*.gcr.io"
-failure-threshold: info
+failure-threshold: error
 ignored:
   - DL3018
