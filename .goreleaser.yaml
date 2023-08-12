@@ -21,7 +21,7 @@ dockers:
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=MIT
 nfpms:
-  - maintainer: Shaharia Azam <mail@shaharia.com>
+  - maintainer: Shaharia Lab OÜ <hello@shaharialab.com>
     description: Teredix discover and tech resource and generate resource graph
     homepage: https://github.com/shaharia-lab/teredix
     license: MIT
