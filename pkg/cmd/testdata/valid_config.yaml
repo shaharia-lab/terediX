@@ -29,6 +29,7 @@ source:
     fields:
       - machineHost
       - rootDirectory
+
   fs_two:
     type: file_system
     configuration:
@@ -36,6 +37,18 @@ source:
     fields:
       - rootDirectory
       - machineHost
+
+  github_repo:
+    type: github_repository
+    configuration:
+      user_or_org: "some_org"
+      token: "token"
+    fields:
+      - company
+      - homepage
+      - language
+      - organization
+      - stars
   #two:
   #  type: kubernetes
   #  configuration:

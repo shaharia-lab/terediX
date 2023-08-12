@@ -230,6 +230,9 @@
         },
         "configuration": {
           "$ref": "#/definitions/source.github_repository.configuration"
+        },
+        "fields": {
+          "$ref": "#/definitions/source.github_repository.fields"
         }
       },
       "required": ["type", "configuration"]
@@ -247,6 +250,15 @@
         }
       },
       "required": ["user_or_org", "token"]
+    },
+    "source.github_repository.fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["language", "stars", "homepage", "organization", "company"]
+      },
+      "uniqueItems": true,
+      "additionalItems": false
     },
     "source.aws_s3": {
       "type": "object",

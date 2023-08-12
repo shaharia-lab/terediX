@@ -44,6 +44,17 @@ source:
     fields: &file_system_fields
       - rootDirectory
       - machineHost
+  github_repo:
+    type: github_repository
+    configuration:
+      user_or_org: "some_org"
+      token: "token"
+    fields:
+      - company
+      - homepage
+      - language
+      - organization
+      - stars
   fs_two:
     type: file_system
     configuration:
