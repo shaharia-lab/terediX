@@ -3,7 +3,7 @@ FROM --platform=$BUILDPLATFORM golang:1.20-alpine as builder
 RUN apk add --no-cache make git
 WORKDIR /workspace/teredix
 
-COPY go.mod go.sum /workspace/teredix/
+COPY . /workspace/teredix/
 RUN go mod download
 
 COPY . /workspace/teredix
