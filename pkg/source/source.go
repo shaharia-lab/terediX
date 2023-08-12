@@ -58,7 +58,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 			client := github.NewClient(tc)
 			gc := scanner.NewGitHubRepositoryClient(client)
 
-			gh := scanner.NewGitHubRepositoryScanner(sourceKey, gc, s.Configuration["user_or_org"])
+			gh := scanner.NewGitHubRepositoryScanner(sourceKey, gc, s.Configuration["user_or_org"], s.Fields)
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: gh,

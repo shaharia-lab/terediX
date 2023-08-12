@@ -56,11 +56,12 @@ type GitHubRepositoryScanner struct {
 	ghClient GitHubClient
 	user     string
 	name     string
+	fields   []string
 }
 
 // NewGitHubRepositoryScanner construct a new GitHub repository scanner
-func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string) *GitHubRepositoryScanner {
-	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name}
+func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string, fields []string) *GitHubRepositoryScanner {
+	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name, fields: fields}
 }
 
 // Scan scans GitHub to get the list of repositories as resources

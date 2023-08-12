@@ -107,7 +107,7 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			var res []resource.Resource
 
 			go func() {
-				s := NewGitHubRepositoryScanner("test", mockClient, tc.user)
+				s := NewGitHubRepositoryScanner("test", mockClient, tc.user, []string{})
 				s.Scan(resourceChannel)
 				close(resourceChannel)
 			}()

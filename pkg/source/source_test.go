@@ -56,7 +56,7 @@ func TestBuildSources(t *testing.T) {
 		&oauth2.Token{AccessToken: "token"},
 	))))
 
-	gh := scanner.NewGitHubRepositoryScanner("source2", gc, "user_or_org")
+	gh := scanner.NewGitHubRepositoryScanner("source2", gc, "user_or_org", []string{})
 
 	awsConfig, _ := configv2.LoadDefaultConfig(context.TODO())
 	awsCredentials := credentialsv2.NewStaticCredentialsProvider("xxx", "xxx", "xxx")
