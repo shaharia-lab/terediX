@@ -9,20 +9,20 @@ builds:
       - amd64
       - arm64
 dockers:
-  - image_templates: ["ghcr.io/shahariaazam/teredix:{{ .Version }}"]
+  - image_templates: ["ghcr.io/shaharia-lab/teredix:{{ .Version }}"]
     dockerfile: Dockerfile
     build_flag_templates:
       - --label=org.opencontainers.image.title={{ .ProjectName }}
       - --label=org.opencontainers.image.description={{ .ProjectName }}
-      - --label=org.opencontainers.image.url=https://github.com/shahariaazam/teredix
-      - --label=org.opencontainers.image.source=https://github.com/shahariaazam/teredix
+      - --label=org.opencontainers.image.url=https://github.com/shaharia-lab/teredix
+      - --label=org.opencontainers.image.source=https://github.com/shaharia-lab/teredix
       - --label=org.opencontainers.image.version={{ .Version }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=MIT
 nfpms:
   - maintainer: Shaharia Azam <mail@shaharia.com>
     description: Teredix discover and tech resource and generate resource graph
-    homepage: https://github.com/shahariaazam/teredix
+    homepage: https://github.com/shaharia-lab/teredix
     license: MIT
     formats:
       - deb

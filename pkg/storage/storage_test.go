@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/shahariaazam/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 )

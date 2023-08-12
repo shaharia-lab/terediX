@@ -1,4 +1,4 @@
-module github.com/shahariaazam/teredix
+module github.com/shaharia-lab/teredix
 
 go 1.18
 

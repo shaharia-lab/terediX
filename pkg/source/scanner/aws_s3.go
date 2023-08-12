@@ -4,9 +4,9 @@ package scanner
 import (
 	"fmt"
 
-	"github.com/shahariaazam/teredix/pkg"
-	"github.com/shahariaazam/teredix/pkg/resource"
-	"github.com/shahariaazam/teredix/pkg/util"
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/util"
 
 	"github.com/aws/aws-sdk-go/aws"
 

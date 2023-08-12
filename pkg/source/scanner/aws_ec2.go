@@ -5,8 +5,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/shahariaazam/teredix/pkg"
-	"github.com/shahariaazam/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/resource"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 

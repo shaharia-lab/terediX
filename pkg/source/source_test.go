@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/shahariaazam/teredix/pkg"
-	"github.com/shahariaazam/teredix/pkg/config"
-	"github.com/shahariaazam/teredix/pkg/source/scanner"
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/source/scanner"
 
 	configv2 "github.com/aws/aws-sdk-go-v2/config"
 	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"

@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/shahariaazam/teredix/pkg/source"
-	"github.com/shahariaazam/teredix/pkg/storage"
+	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 
 	"github.com/kyokomi/emoji"
 
-	"github.com/shahariaazam/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/resource"
 )
 
 // Processor represent resource processor

@@ -4,9 +4,9 @@ package source
 import (
 	"context"
 
-	"github.com/shahariaazam/teredix/pkg"
-	"github.com/shahariaazam/teredix/pkg/config"
-	"github.com/shahariaazam/teredix/pkg/source/scanner"
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/source/scanner"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 

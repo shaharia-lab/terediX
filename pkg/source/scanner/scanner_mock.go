@@ -2,7 +2,7 @@
 package scanner
 
 import (
-	"github.com/shahariaazam/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/resource"
 
 	"github.com/stretchr/testify/mock"
 )
