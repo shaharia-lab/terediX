@@ -3,7 +3,7 @@ package scanner
 import (
 	"testing"
 
-	"github.com/shahariaazam/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/resource"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"

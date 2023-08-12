@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/shahariaazam/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/resource"
 
 	"github.com/google/go-github/v50/github"
 	"github.com/stretchr/testify/assert"

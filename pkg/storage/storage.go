@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/shahariaazam/teredix/pkg/config"
-	"github.com/shahariaazam/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/resource"
 )
 
 // ResourceFilter configure the filter

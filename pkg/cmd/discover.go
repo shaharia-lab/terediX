@@ -2,11 +2,11 @@
 package cmd
 
 import (
-	"github.com/shahariaazam/teredix/pkg/config"
-	"github.com/shahariaazam/teredix/pkg/processor"
-	"github.com/shahariaazam/teredix/pkg/resource"
-	"github.com/shahariaazam/teredix/pkg/source"
-	"github.com/shahariaazam/teredix/pkg/storage"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/processor"
+	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/spf13/cobra"
 )
 

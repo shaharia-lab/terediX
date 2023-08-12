@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/shahariaazam/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )

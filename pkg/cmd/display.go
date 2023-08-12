@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/shahariaazam/teredix/pkg/config"
-	"github.com/shahariaazam/teredix/pkg/storage"
-	"github.com/shahariaazam/teredix/pkg/visualize"
-	"github.com/shahariaazam/teredix/pkg/visualize/cytoscape"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/shaharia-lab/teredix/pkg/visualize"
+	"github.com/shaharia-lab/teredix/pkg/visualize/cytoscape"
 
 	"github.com/spf13/cobra"
 )
