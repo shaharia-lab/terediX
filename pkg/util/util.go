@@ -104,6 +104,7 @@ func MetaKeyExists(resource resource.Resource, key string) bool {
 	return false
 }
 
+// CheckIfMetaKeysExistsInResources Checks if all the keys in the given list exist in the MetaData of all the Resources
 func CheckIfMetaKeysExistsInResources(t *testing.T, res []resource.Resource, expectedMetaDataKeys []string) {
 	for k, v := range res {
 		exists, missingKeys := CheckKeysInMetaData(v, expectedMetaDataKeys)
