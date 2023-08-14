@@ -255,7 +255,17 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["language", "stars", "homepage", "organization", "company"]
+        "enum": [
+          "language",
+          "stars",
+          "homepage",
+          "organization",
+          "company",
+          "git_url",
+          "owner_name",
+          "owner_login",
+          "topics"
+        ]
       },
       "uniqueItems": true,
       "additionalItems": false

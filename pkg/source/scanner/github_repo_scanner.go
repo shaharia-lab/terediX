@@ -3,6 +3,7 @@ package scanner
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -14,11 +15,15 @@ import (
 )
 
 const (
-	fieldCompany  = "company"
-	fieldHomepage = "homepage"
-	fieldLanguage = "language"
-	fieldOrg      = "organization"
-	fieldStars    = "stars"
+	fieldCompany    = "company"
+	fieldHomepage   = "homepage"
+	fieldLanguage   = "language"
+	fieldOrg        = "organization"
+	fieldStars      = "stars"
+	fieldGitURL     = "git_url"
+	fieldOwnerName  = "owner_name"
+	fieldOwnerLogin = "owner_login"
+	fieldTopics     = "topics"
 )
 
 // GitHubClient present interface to build GitHub client
@@ -26,7 +31,7 @@ type GitHubClient interface {
 	ListRepositories(ctx context.Context, user string, opts *github.RepositoryListOptions) ([]*github.Repository, error)
 }
 
-// GitHubRepositoryClient github repository client
+// GitHubRepositoryClient GitHub repository client
 type GitHubRepositoryClient struct {
 	client *github.Client
 }
@@ -114,56 +119,31 @@ func (r *GitHubRepositoryScanner) mapToResource(repo *github.Repository) resourc
 		repoMeta = append(repoMeta, resource.MetaData{Key: fieldStars, Value: strconv.Itoa(repo.GetStargazersCount())})
 	}
 
-	defaultMeta := []resource.MetaData{
-		{
-			Key:   "GitHub-Repo-Language",
-			Value: repo.GetLanguage(),
-		},
-		{
-			Key:   "GitHub-Repo-Stars",
-			Value: fmt.Sprintf("%d", repo.GetStargazersCount()),
-		},
-		{
-			Key:   pkg.MetaKeyScannerLabel,
-			Value: r.name,
-		},
-		{
-			Key:   "GitHub-Repo-Git-URL",
-			Value: repo.GetGitURL(),
-		},
-		{
-			Key:   "GitHub-Repo-Homepage",
-			Value: repo.GetHomepage(),
-		},
-		{
-			Key:   "GitHub-Repo-Organization",
-			Value: repo.GetOrganization().GetLogin(),
-		},
-		{
-			Key:   "GitHub-Owner",
-			Value: repo.GetOwner().GetLogin(),
-		},
-		{
-			Key:   "GitHub-Company",
-			Value: repo.GetOwner().GetCompany(),
-		},
+	if util.IsFieldExistsInConfig(fieldGitURL, r.fields) && repo.GetGitURL() != "" {
+		repoMeta = append(repoMeta, resource.MetaData{Key: fieldGitURL, Value: repo.GetGitURL()})
 	}
 
-	for _, t := range repo.Topics {
-		repoMeta = append(repoMeta, resource.MetaData{
-			Key:   "GitHub-Repo-Topic",
-			Value: t,
-		})
+	if util.IsFieldExistsInConfig(fieldOwnerName, r.fields) && repo.GetOwner() != nil && repo.GetOwner().GetName() != "" {
+		repoMeta = append(repoMeta, resource.MetaData{Key: fieldOwnerName, Value: repo.GetOwner().GetName()})
 	}
 
-	metaData := append(repoMeta, defaultMeta...)
+	if util.IsFieldExistsInConfig(fieldOwnerLogin, r.fields) && repo.GetOwner() != nil && repo.GetOwner().GetLogin() != "" {
+		repoMeta = append(repoMeta, resource.MetaData{Key: fieldOwnerLogin, Value: repo.GetOwner().GetLogin()})
+	}
+
+	if util.IsFieldExistsInConfig(fieldTopics, r.fields) && len(repo.Topics) > 0 {
+		topics, err := json.Marshal(repo.Topics)
+		if err == nil {
+			repoMeta = append(repoMeta, resource.MetaData{Key: fieldTopics, Value: string(topics)})
+		}
+	}
 
 	re := resource.Resource{
 		Kind:       pkg.ResourceKindGitHubRepository,
 		UUID:       util.GenerateUUID(),
 		Name:       repo.GetFullName(),
 		ExternalID: repo.GetFullName(),
-		MetaData:   metaData,
+		MetaData:   repoMeta,
 	}
 	return re
 }

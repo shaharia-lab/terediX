@@ -40,6 +40,10 @@ source:
       - language
       - organization
       - stars
+      - git_url
+      - owner_login
+      - owner_name
+      - topics
   aws_s3_one:
     type: aws_s3
     configuration: &aws_conf

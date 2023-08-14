@@ -49,6 +49,10 @@ source:
       - language
       - organization
       - stars
+      - git_url
+      - owner_login
+      - owner_name
+      - topics
   #two:
   #  type: kubernetes
   #  configuration:

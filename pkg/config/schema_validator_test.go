@@ -55,6 +55,10 @@ source:
       - language
       - organization
       - stars
+      - git_url
+      - owner_login
+      - owner_name
+      - topics
   fs_two:
     type: file_system
     configuration:
