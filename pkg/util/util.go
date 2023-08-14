@@ -4,11 +4,12 @@ package util
 import (
 	"context"
 	"fmt"
+	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
-
 	"github.com/google/uuid"
+	"github.com/shaharia-lab/teredix/pkg/resource"
 )
 
 // GenerateUUID generate v4 UUID
@@ -77,4 +78,37 @@ func IsFieldExistsInConfig(value string, fields []string) bool {
 		}
 	}
 	return false
+}
+
+// CheckKeysInMetaData Checks if all the keys in the given list exist in the MetaData of a Resource
+// Returns a boolean indicating if all keys exist and a slice of missing keys
+func CheckKeysInMetaData(resource resource.Resource, keys []string) (bool, []string) {
+	missingKeys := []string{}
+
+	for _, key := range keys {
+		if !MetaKeyExists(resource, key) {
+			missingKeys = append(missingKeys, key)
+		}
+	}
+
+	return len(missingKeys) == 0, missingKeys
+}
+
+// MetaKeyExists Helper function to check if a single key exists in MetaData
+func MetaKeyExists(resource resource.Resource, key string) bool {
+	for _, md := range resource.MetaData {
+		if md.Key == key {
+			return true
+		}
+	}
+	return false
+}
+
+func CheckIfMetaKeysExistsInResources(t *testing.T, res []resource.Resource, expectedMetaDataKeys []string) {
+	for k, v := range res {
+		exists, missingKeys := CheckKeysInMetaData(v, expectedMetaDataKeys)
+		if !exists {
+			t.Errorf("Metadata missing. Missing keys [%d]: %v", k, missingKeys)
+		}
+	}
 }

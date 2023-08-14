@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/shaharia-lab/teredix/pkg/resource"
-
 	"github.com/google/go-github/v50/github"
+	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -123,6 +123,53 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			}
 
 			assert.Equal(t, len(tc.ghRepositories), len(res))
+		})
+	}
+}
+
+func TestGitHubRepositoryScanner_ScanV2(t *testing.T) {
+	testCases := []struct {
+		name                  string
+		ghRepositories        []*github.Repository
+		expectedTotalResource int
+		expectedMetaDataKeys  []string
+	}{
+		{
+			name: "returns resources",
+			ghRepositories: []*github.Repository{
+				{
+					ID:              github.Int64(123),
+					Name:            github.String("testrepo"),
+					FullName:        github.String("testuser/testrepo"),
+					Language:        github.String("Go"),
+					StargazersCount: github.Int(42),
+					GitURL:          github.String("https://git_url"),
+					Topics:          []string{"foo", "bar"},
+				},
+			},
+			expectedTotalResource: 1,
+			expectedMetaDataKeys: []string{
+				"GitHub-Repo-Language",
+				"GitHub-Repo-Stars",
+				"GitHub-Repo-Homepage",
+				"GitHub-Repo-Organization",
+				"GitHub-Owner",
+				"GitHub-Company",
+				"GitHub-Repo-Topic",
+				"Scanner-Label",
+				"GitHub-Repo-Git-URL",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockClient := new(GitHubClientMock)
+			mockClient.On("ListRepositories", mock.Anything, mock.Anything, mock.Anything).Return(tc.ghRepositories, nil)
+
+			res := RunScannerForTests(NewGitHubRepositoryScanner("test", mockClient, "something", []string{}))
+			assert.Equal(t, tc.expectedTotalResource, len(res))
+			util.CheckIfMetaKeysExistsInResources(t, res, tc.expectedMetaDataKeys)
 		})
 	}
 }

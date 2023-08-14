@@ -4,12 +4,21 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
 
 	"github.com/google/go-github/v50/github"
+)
+
+const (
+	fieldCompany  = "company"
+	fieldHomepage = "homepage"
+	fieldLanguage = "language"
+	fieldOrg      = "organization"
+	fieldStars    = "stars"
 )
 
 // GitHubClient present interface to build GitHub client
@@ -83,7 +92,29 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 }
 
 func (r *GitHubRepositoryScanner) mapToResource(repo *github.Repository) resource.Resource {
-	repoMeta := []resource.MetaData{
+	var repoMeta []resource.MetaData
+
+	if util.IsFieldExistsInConfig(fieldCompany, r.fields) && repo.GetOwner() != nil && repo.GetOwner().GetCompany() != "" {
+		repoMeta = append(repoMeta, resource.MetaData{Key: fieldCompany, Value: repo.GetOwner().GetCompany()})
+	}
+
+	if util.IsFieldExistsInConfig(fieldLanguage, r.fields) && repo.GetLanguage() != "" {
+		repoMeta = append(repoMeta, resource.MetaData{Key: fieldLanguage, Value: repo.GetLanguage()})
+	}
+
+	if util.IsFieldExistsInConfig(fieldHomepage, r.fields) && repo.GetHomepage() != "" {
+		repoMeta = append(repoMeta, resource.MetaData{Key: fieldHomepage, Value: repo.GetHomepage()})
+	}
+
+	if util.IsFieldExistsInConfig(fieldOrg, r.fields) && repo.GetOrganization() != nil && repo.GetOrganization().GetName() != "" {
+		repoMeta = append(repoMeta, resource.MetaData{Key: fieldOrg, Value: repo.GetOrganization().GetName()})
+	}
+
+	if util.IsFieldExistsInConfig(fieldStars, r.fields) {
+		repoMeta = append(repoMeta, resource.MetaData{Key: fieldStars, Value: strconv.Itoa(repo.GetStargazersCount())})
+	}
+
+	defaultMeta := []resource.MetaData{
 		{
 			Key:   "GitHub-Repo-Language",
 			Value: repo.GetLanguage(),
@@ -125,12 +156,14 @@ func (r *GitHubRepositoryScanner) mapToResource(repo *github.Repository) resourc
 		})
 	}
 
+	metaData := append(repoMeta, defaultMeta...)
+
 	re := resource.Resource{
 		Kind:       pkg.ResourceKindGitHubRepository,
 		UUID:       util.GenerateUUID(),
 		Name:       repo.GetFullName(),
 		ExternalID: repo.GetFullName(),
-		MetaData:   repoMeta,
+		MetaData:   metaData,
 	}
 	return re
 }

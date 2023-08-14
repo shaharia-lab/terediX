@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi/types"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/shaharia-lab/teredix/pkg/resource"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	"github.com/stretchr/testify/mock"
@@ -186,4 +187,65 @@ func TestIsFieldExistsInConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCheckKeysInMetaData(t *testing.T) {
+	tests := []struct {
+		name            string
+		resource        resource.Resource
+		keys            []string
+		expectedExists  bool
+		expectedMissing []string
+	}{
+		{
+			name: "all keys present",
+			resource: resource.Resource{
+				MetaData: []resource.MetaData{
+					{Key: "key1", Value: "value1"},
+					{Key: "key2", Value: "value2"},
+				},
+			},
+			keys:            []string{"key1", "key2"},
+			expectedExists:  true,
+			expectedMissing: []string{},
+		},
+		{
+			name: "some keys missing",
+			resource: resource.Resource{
+				MetaData: []resource.MetaData{
+					{Key: "key1", Value: "value1"},
+				},
+			},
+			keys:            []string{"key1", "key2"},
+			expectedExists:  false,
+			expectedMissing: []string{"key2"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			exists, missingKeys := CheckKeysInMetaData(tt.resource, tt.keys)
+
+			if exists != tt.expectedExists {
+				t.Errorf("expected existence: %v, got: %v", tt.expectedExists, exists)
+			}
+
+			if !slicesEqual(missingKeys, tt.expectedMissing) {
+				t.Errorf("expected missing keys: %v, got: %v", tt.expectedMissing, missingKeys)
+			}
+		})
+	}
+}
+
+// slicesEqual checks if two slices have the same elements, order matters.
+func slicesEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }
