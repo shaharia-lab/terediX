@@ -13,6 +13,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 )
 
+const (
+	ecrFieldRepositoryName = "repositoryName"
+	ecrFieldArn            = "repositoryArn"
+	ecrFieldRegistryId     = "registryId"
+	ecrFieldRepositoryUri  = "repositoryUri"
+	ecrFieldTags           = "tags"
+)
+
 // EcrClient build aws client
 type EcrClient interface {
 	DescribeRepositories(context.Context, *ecr.DescribeRepositoriesInput, ...func(options *ecr.Options)) (*ecr.DescribeRepositoriesOutput, error)

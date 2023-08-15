@@ -55,7 +55,7 @@ source:
       - topics
   aws_ec2_one:
     type: aws_ec2
-    configuration:
+    configuration: &aws_conf
       access_key: "xxxx"
       secret_key: "xxxx"
       session_token: "xxxx"
@@ -71,12 +71,15 @@ source:
       - instance_state
       - vpc_id
       - tags
-  #two:
-  #  type: kubernetes
-  #  configuration:
-  #    kube_config_file_path: "another_path"
-  #  depends_on:
-  #    - "one"
+  aws_ecr_one:
+    type: aws_ecr
+    configuration: *aws_conf
+    fields:
+      - repository_name
+      - repository_uri
+      - registry_id
+      - arn
+      - tags
 relations:
   criteria:
     - name: "file-system-rule1"

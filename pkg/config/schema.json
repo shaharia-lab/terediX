@@ -235,7 +235,7 @@
           "$ref": "#/definitions/source.github_repository.fields"
         }
       },
-      "required": ["type", "configuration"]
+      "required": ["type", "configuration", "fields"]
     },
     "source.github_repository.configuration": {
       "type": "object",
@@ -310,7 +310,26 @@
           "$ref": "#/definitions/source.aws_ec2.fields"
         }
       },
-      "required": ["type", "configuration"]
+      "required": ["type", "configuration", "fields"]
+    },
+    "source.aws_ec2.fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "instance_id",
+          "image_id",
+          "private_dns_name",
+          "instance_type",
+          "architecture",
+          "instance_lifecycle",
+          "instance_state",
+          "vpc_id",
+          "tags"
+        ]
+      },
+      "uniqueItems": true,
+      "additionalItems": false
     },
     "source.aws_ecr": {
       "type": "object",
@@ -321,9 +340,27 @@
         },
         "configuration": {
           "$ref": "#/definitions/source.aws_common.configuration"
+        },
+        "fields": {
+          "$ref": "#/definitions/source.aws_ecr.fields"
         }
       },
       "required": ["type", "configuration"]
+    },
+    "source.aws_ecr.fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "repository_name",
+          "arn",
+          "registry_id",
+          "repository_uri",
+          "tags"
+        ]
+      },
+      "uniqueItems": true,
+      "additionalItems": false
     },
     "source.aws_common.configuration": {
       "type": "object",
@@ -350,25 +387,6 @@
         }
       },
       "required": ["access_key", "secret_key", "session_token", "region", "account_id"]
-    },
-    "source.aws_ec2.fields": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": [
-          "instance_id",
-          "image_id",
-          "private_dns_name",
-          "instance_type",
-          "architecture",
-          "instance_lifecycle",
-          "instance_state",
-          "vpc_id",
-          "tags"
-        ]
-      },
-      "uniqueItems": true,
-      "additionalItems": false
     },
     "storage.postgresql": {
       "type": "object",
