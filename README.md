@@ -335,22 +335,19 @@ source:
     configuration:
       token: "xxx"
       user_or_org: "xxxx"
+    fields:
+      - company
+      - homepage
+      - language
+      - organization
+      - stars
+      - git_url
+      - owner_login
+      - owner_name
+      - topics
 ```
 
-#### Available metadata for github_repository source
-
-| Meta Key                 | Description                                       |
-|--------------------------|---------------------------------------------------|
-| GitHub-Repo-Language     | Primary language detected for this repository     |
-| GitHub-Repo-Stars        | Total count of stars                              |
-| Scanner-Label            | Name of the source configured in config.yaml file |
-| GitHub-Repo-Git-URL      | Git URL for the repository                        |
-| GitHub-Repo-Homepage     | Homepage URL of GitHub repository                 |
-| GitHub-Repo-Organization | Name of the organization                          |
-| GitHub-Owner             | Owner of GitHub repository                        |
-| GitHub-Company           | Company name of the GitHub repository owner       |
-| GitHub-Repo-Topic        | Topics of GitHub repository                       |
-
+More detailed definition of fields are available [here](https://docs.github.com/en/free-pro-team@latest/rest/repos/repos?apiVersion=2022-11-28#get-a-repository)
 
 ### :file_folder: File System
 

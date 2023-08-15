@@ -9,9 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/shaharia-lab/teredix/pkg/resource"
-
 	"github.com/google/go-github/v50/github"
+	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -46,55 +45,57 @@ func (_m *GitHubClientMock) ListRepositories(ctx context.Context, user string, o
 
 func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 	testCases := []struct {
-		name                 string
-		user                 string
-		ghRepositories       []*github.Repository
-		want                 []resource.Resource
-		expectedMetaDataKeys []string
+		name                  string
+		sourceFields          []string
+		ghRepositories        []*github.Repository
+		expectedTotalResource int
+		expectedMetaDataKeys  []string
 	}{
 		{
 			name: "returns resources",
-			user: "testuser",
+			sourceFields: []string{
+				fieldCompany,
+				fieldHomepage,
+				fieldLanguage,
+				fieldOrg,
+				fieldStars,
+				fieldGitURL,
+				fieldOwnerName,
+				fieldOwnerLogin,
+				fieldTopics,
+			},
 			ghRepositories: []*github.Repository{
 				{
-					ID:              github.Int64(123),
-					Name:            github.String("testrepo"),
-					FullName:        github.String("testuser/testrepo"),
-					Language:        github.String("Go"),
-					StargazersCount: github.Int(42),
-					GitURL:          github.String("https://git_url"),
-				},
-			},
-			want: []resource.Resource{
-				{
-					Kind:       "GitHubRepository",
-					UUID:       "123",
-					Name:       "testrepo",
-					ExternalID: "testuser/testrepo",
-					MetaData: []resource.MetaData{
-						{Key: "Language", Value: "Go"},
-						{Key: "Stars", Value: "42"},
+					Name: github.String("repo1"),
+					Owner: &github.User{
+						Login:   github.String("shaharia-lab"),
+						Name:    github.String("Shaharia Lab"),
+						Company: github.String("Shaharia Lab"),
+					},
+					GitURL:          github.String("https://github.com/shaharia-lab/teredix"),
+					Description:     github.String("This is a test repository"),
+					Homepage:        github.String("https://github.com/shaharia-lab/teredix"),
+					Language:        github.String("go"),
+					Topics:          []string{"teredix", "go", "github", "repository"},
+					StargazersCount: github.Int(1),
+					Organization: &github.Organization{
+						Login: github.String("shaharia-lab"),
+						Name:  github.String("Shaharia Lab"),
 					},
 				},
 			},
+			expectedTotalResource: 1,
 			expectedMetaDataKeys: []string{
-				"GitHub-Repo-Language",
-				"GitHub-Repo-Stars",
-				"GitHub-Repo-Homepage",
-				"GitHub-Repo-Organization",
-				"GitHub-Owner",
-				"GitHub-Company",
-				"GitHub-Repo-Topic",
-				"Scanner-Label",
-				"GitHub-Repo-Git-URL",
+				fieldCompany,
+				fieldHomepage,
+				fieldLanguage,
+				fieldOrg,
+				fieldStars,
+				fieldGitURL,
+				fieldOwnerName,
+				fieldOwnerLogin,
+				fieldTopics,
 			},
-		},
-		{
-			name:                 "returns empty resource list on error",
-			user:                 "testuser",
-			ghRepositories:       []*github.Repository{},
-			want:                 []resource.Resource{},
-			expectedMetaDataKeys: []string{},
 		},
 	}
 
@@ -103,26 +104,9 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			mockClient := new(GitHubClientMock)
 			mockClient.On("ListRepositories", mock.Anything, mock.Anything, mock.Anything).Return(tc.ghRepositories, nil)
 
-			resourceChannel := make(chan resource.Resource, len(tc.ghRepositories))
-			var res []resource.Resource
-
-			go func() {
-				s := NewGitHubRepositoryScanner("test", mockClient, tc.user)
-				s.Scan(resourceChannel)
-				close(resourceChannel)
-			}()
-
-			for r := range resourceChannel {
-				res = append(res, r)
-			}
-
-			for _, r := range res {
-				for _, md := range r.MetaData {
-					assert.True(t, containsValue(tc.expectedMetaDataKeys, md.Key))
-				}
-			}
-
-			assert.Equal(t, len(tc.ghRepositories), len(res))
+			res := RunScannerForTests(NewGitHubRepositoryScanner("test", mockClient, "something", tc.sourceFields))
+			assert.Equal(t, tc.expectedTotalResource, len(res))
+			util.CheckIfMetaKeysExistsInResources(t, res, tc.expectedMetaDataKeys)
 		})
 	}
 }

@@ -3,7 +3,9 @@ package scanner
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
@@ -12,12 +14,30 @@ import (
 	"github.com/google/go-github/v50/github"
 )
 
+const (
+	fieldCompany    = "company"
+	fieldHomepage   = "homepage"
+	fieldLanguage   = "language"
+	fieldOrg        = "organization"
+	fieldStars      = "stars"
+	fieldGitURL     = "git_url"
+	fieldOwnerName  = "owner_name"
+	fieldOwnerLogin = "owner_login"
+	fieldTopics     = "topics"
+)
+
+// MetaDataMapper map the fields
+type MetaDataMapper struct {
+	field string
+	value func() string
+}
+
 // GitHubClient present interface to build GitHub client
 type GitHubClient interface {
 	ListRepositories(ctx context.Context, user string, opts *github.RepositoryListOptions) ([]*github.Repository, error)
 }
 
-// GitHubRepositoryClient github repository client
+// GitHubRepositoryClient GitHub repository client
 type GitHubRepositoryClient struct {
 	client *github.Client
 }
@@ -56,11 +76,12 @@ type GitHubRepositoryScanner struct {
 	ghClient GitHubClient
 	user     string
 	name     string
+	fields   []string
 }
 
 // NewGitHubRepositoryScanner construct a new GitHub repository scanner
-func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string) *GitHubRepositoryScanner {
-	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name}
+func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string, fields []string) *GitHubRepositoryScanner {
+	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name, fields: fields}
 }
 
 // Scan scans GitHub to get the list of repositories as resources
@@ -82,54 +103,62 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 }
 
 func (r *GitHubRepositoryScanner) mapToResource(repo *github.Repository) resource.Resource {
-	repoMeta := []resource.MetaData{
-		{
-			Key:   "GitHub-Repo-Language",
-			Value: repo.GetLanguage(),
-		},
-		{
-			Key:   "GitHub-Repo-Stars",
-			Value: fmt.Sprintf("%d", repo.GetStargazersCount()),
-		},
-		{
-			Key:   pkg.MetaKeyScannerLabel,
-			Value: r.name,
-		},
-		{
-			Key:   "GitHub-Repo-Git-URL",
-			Value: repo.GetGitURL(),
-		},
-		{
-			Key:   "GitHub-Repo-Homepage",
-			Value: repo.GetHomepage(),
-		},
-		{
-			Key:   "GitHub-Repo-Organization",
-			Value: repo.GetOrganization().GetLogin(),
-		},
-		{
-			Key:   "GitHub-Owner",
-			Value: repo.GetOwner().GetLogin(),
-		},
-		{
-			Key:   "GitHub-Company",
-			Value: repo.GetOwner().GetCompany(),
-		},
+	var repoMeta []resource.MetaData
+	for _, mapper := range r.fieldMapper(repo) {
+		if util.IsFieldExistsInConfig(mapper.field, r.fields) {
+			val := mapper.value()
+			if val != "" {
+				repoMeta = append(repoMeta, resource.MetaData{Key: mapper.field, Value: val})
+			}
+		}
 	}
 
-	for _, t := range repo.Topics {
-		repoMeta = append(repoMeta, resource.MetaData{
-			Key:   "GitHub-Repo-Topic",
-			Value: t,
-		})
-	}
-
-	re := resource.Resource{
+	return resource.Resource{
 		Kind:       pkg.ResourceKindGitHubRepository,
 		UUID:       util.GenerateUUID(),
 		Name:       repo.GetFullName(),
 		ExternalID: repo.GetFullName(),
 		MetaData:   repoMeta,
 	}
-	return re
+}
+
+func (r *GitHubRepositoryScanner) fieldMapper(repo *github.Repository) []MetaDataMapper {
+	return []MetaDataMapper{
+		{fieldCompany, func() string {
+			if repo.GetOwner() != nil {
+				return repo.GetOwner().GetCompany()
+			}
+			return ""
+		}},
+		{fieldLanguage, repo.GetLanguage},
+		{fieldHomepage, repo.GetHomepage},
+		{fieldOrg, func() string {
+			if repo.GetOrganization() != nil {
+				return repo.GetOrganization().GetName()
+			}
+			return ""
+		}},
+		{fieldStars, func() string { return strconv.Itoa(repo.GetStargazersCount()) }},
+		{fieldGitURL, repo.GetGitURL},
+		{fieldOwnerName, func() string {
+			if repo.GetOwner() != nil {
+				return repo.GetOwner().GetName()
+			}
+			return ""
+		}},
+		{fieldOwnerLogin, func() string {
+			if repo.GetOwner() != nil {
+				return repo.GetOwner().GetLogin()
+			}
+			return ""
+		}},
+		{fieldTopics, func() string {
+			topics, err := json.Marshal(repo.Topics)
+			if err == nil {
+				return string(topics)
+			}
+
+			return ""
+		}},
+	}
 }

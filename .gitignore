@@ -5,4 +5,4 @@
 docker-compose.yml
 
 config.yaml
-coverage.out
+coverage_*.out
