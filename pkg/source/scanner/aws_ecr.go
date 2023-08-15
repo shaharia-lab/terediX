@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
@@ -71,45 +72,9 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 
 		// Loop through repositories and their tags
 		for _, repository := range resp.Repositories {
-			res := resource.Resource{
-				Name:       *repository.RepositoryName,
-				Kind:       pkg.ResourceKindAWSECR,
-				UUID:       util.GenerateUUID(),
-				ExternalID: *repository.RepositoryArn,
-				MetaData: []resource.MetaData{
-					{
-						Key:   "AWS-ECR-Repository-Name",
-						Value: *repository.RepositoryName,
-					},
-					{
-						Key:   "AWS-ECR-Repository-Arn",
-						Value: *repository.RepositoryArn,
-					},
-					{
-						Key:   "AWS-ECR-Registry-Id",
-						Value: *repository.RegistryId,
-					},
-					{
-						Key:   "AWS-ECR-Repository-URI",
-						Value: *repository.RepositoryUri,
-					},
-					{
-						Key:   pkg.MetaKeyScannerLabel,
-						Value: a.SourceName,
-					},
-				},
-			}
-
-			tags, err := util.GetAWSResourceTagByARN(context.Background(), a.ResourceTaggingService, *repository.RepositoryArn)
+			res, err := a.mapToResource(repository)
 			if err != nil {
 				return err
-			}
-
-			for tagKey, tagValue := range tags {
-				res.MetaData = append(res.MetaData, resource.MetaData{
-					Key:   fmt.Sprintf("AWS-ECR-%s", tagKey),
-					Value: tagValue,
-				})
 			}
 
 			resourceChannel <- res
@@ -124,4 +89,48 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	return nil
+}
+
+func (a *AWSECR) mapToResource(repository ecrTypes.Repository) (resource.Resource, error) {
+	res := resource.Resource{
+		Name:       *repository.RepositoryName,
+		Kind:       pkg.ResourceKindAWSECR,
+		UUID:       util.GenerateUUID(),
+		ExternalID: *repository.RepositoryArn,
+		MetaData: []resource.MetaData{
+			{
+				Key:   "AWS-ECR-Repository-Name",
+				Value: *repository.RepositoryName,
+			},
+			{
+				Key:   "AWS-ECR-Repository-Arn",
+				Value: *repository.RepositoryArn,
+			},
+			{
+				Key:   "AWS-ECR-Registry-Id",
+				Value: *repository.RegistryId,
+			},
+			{
+				Key:   "AWS-ECR-Repository-URI",
+				Value: *repository.RepositoryUri,
+			},
+			{
+				Key:   pkg.MetaKeyScannerLabel,
+				Value: a.SourceName,
+			},
+		},
+	}
+
+	tags, err := util.GetAWSResourceTagByARN(context.Background(), a.ResourceTaggingService, *repository.RepositoryArn)
+	if err != nil {
+		return resource.Resource{}, err
+	}
+
+	for tagKey, tagValue := range tags {
+		res.MetaData = append(res.MetaData, resource.MetaData{
+			Key:   fmt.Sprintf("AWS-ECR-%s", tagKey),
+			Value: tagValue,
+		})
+	}
+	return res, nil
 }
