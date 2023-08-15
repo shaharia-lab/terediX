@@ -87,7 +87,7 @@ func TestAWSEC2_Scan_Return_Data_Successfully(t *testing.T) {
 	}
 
 	mc.On("DescribeInstances", mock.Anything, mock.Anything, mock.Anything).Return(instanceOutput, nil)
-	a := NewAWSEC2("test-source", "us-west-2", "1234567890", mc)
+	a := NewAWSEC2("test-source", "us-west-2", "1234567890", mc, []string{})
 
 	resCh := make(chan resource.Resource, 1)
 	err := a.Scan(resCh)
@@ -112,7 +112,7 @@ func TestAWSEC2_Scan_Return_Error(t *testing.T) {
 	mc := new(Ec2ClientMock)
 
 	mc.On("DescribeInstances", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("failed to fetch"))
-	a := NewAWSEC2("test-source", "us-west-2", "1234567890", mc)
+	a := NewAWSEC2("test-source", "us-west-2", "1234567890", mc, []string{})
 
 	resCh := make(chan resource.Resource, 1)
 	err := a.Scan(resCh)
