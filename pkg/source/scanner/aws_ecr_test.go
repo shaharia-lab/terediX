@@ -4,10 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/shaharia-lab/teredix/pkg"
-	"github.com/shaharia-lab/teredix/pkg/resource"
-
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
+	"github.com/shaharia-lab/teredix/pkg/util"
 
 	"github.com/aws/aws-sdk-go/aws"
 
@@ -150,117 +148,75 @@ func (_m *ResourceTaggingServiceClientMock) GetResources(_a0 context.Context, _a
 }
 
 func TestAWSECR_Scan(t *testing.T) {
-	// create mock ECR client
-	mockEcrClient := new(EcrClientMock)
-
-	// Create a mock client
-	mockSvc := new(ResourceTaggingServiceClientMock)
-
-	expectedOutput := &resourcegroupstaggingapi.GetResourcesOutput{
-		ResourceTagMappingList: []types.ResourceTagMapping{
-			{
-				Tags: []types.Tag{
-					{
-						Key:   aws.String("Environment"),
-						Value: aws.String("prod"),
-					},
-					{
-						Key:   aws.String("Owner"),
-						Value: aws.String("john@example.com"),
-					},
-				},
+	testCases := []struct {
+		name                  string
+		sourceFields          []string
+		awsECRRepositories    []ecrTypes.Repository
+		awsECRTags            []types.Tag
+		expectedTotalResource int
+		expectedMetaDataKeys  []string
+	}{
+		{
+			name: "returns resources",
+			sourceFields: []string{
+				ecrFieldRepositoryName,
+				ecrFieldRepositoryUri,
+				ecrFieldArn,
+				ecrFieldRegistryId,
+				ecrFieldTags,
 			},
-		},
-	}
-
-	mockSvc.On("GetResources", mock.Anything, mock.Anything, mock.Anything).Return(expectedOutput, nil)
-
-	// create an instance of AWSECR that uses the mock ECR client
-	awsecr := NewAWSECR("test-source", "us-west-2", "xxx", mockEcrClient, mockSvc)
-
-	// Define mock output
-	mockOutput := &ecr.DescribeRepositoriesOutput{
-		Repositories: []ecrTypes.Repository{
-			{
-				RepositoryUri:  aws.String("something"),
-				RepositoryName: &[]string{"test-repo"}[0],
-				RegistryId:     &[]string{"1234567890"}[0],
-				RepositoryArn:  &[]string{"arn:aws:ecr:us-west-2:1234567890:repository/test-repo"}[0],
-			},
-		},
-	}
-	mockEcrClient.On("DescribeRepositories", mock.Anything, mock.Anything).Return(mockOutput, nil)
-
-	// set expectations on the mock ECR client's DescribeImages method
-	mockEcrClient.On("DescribeImages",
-		mock.Anything,
-		mock.Anything,
-		mock.Anything,
-	).Return(
-		&ecr.DescribeImagesOutput{
-			ImageDetails: []ecrTypes.ImageDetail{
+			awsECRRepositories: []ecrTypes.Repository{
 				{
-					ImageDigest: aws.String("sha256:1234567890"),
-					ImageTags:   []string{"tag1", "tag2", "tag3"},
+					RepositoryUri:  aws.String("something"),
+					RepositoryName: &[]string{"test-repo"}[0],
+					RegistryId:     &[]string{"1234567890"}[0],
+					RepositoryArn:  &[]string{"arn:aws:ecr:us-west-2:1234567890:repository/test-repo"}[0],
 				},
 			},
-		}, nil,
-	)
-
-	// create channel for resource output
-	resourceChannel := make(chan resource.Resource, 1)
-
-	// run Scan method
-	err := awsecr.Scan(resourceChannel)
-
-	// assert no errors occurred
-	assert.Nil(t, err)
-
-	// assert expected resource was sent to resource channel
-	expectedResource := resource.Resource{
-		Name:       "test-repo",
-		Kind:       pkg.ResourceKindAWSECR,
-		UUID:       "arn:aws:ecr:us-west-2:1234567890:repository/test-repo",
-		ExternalID: "arn:aws:ecr:us-west-2:1234567890:repository/test-repo",
-		MetaData: []resource.MetaData{
-			{
-				Key:   "AWS-ECR-Repository-Name",
-				Value: "test-repo",
+			awsECRTags: []types.Tag{
+				{
+					Key:   aws.String("Environment"),
+					Value: aws.String("prod"),
+				},
 			},
-			{
-				Key:   "AWS-ECR-Image-Digest",
-				Value: "sha256:1234567890",
-			},
-			{
-				Key:   "AWS-ECR-Image-Tag",
-				Value: "tag1",
-			},
-			{
-				Key:   "AWS-ECR-Image-Tag",
-				Value: "tag1",
-			},
-			{
-				Key:   "AWS-ECR-Image-Tag",
-				Value: "tag2",
-			},
-			{
-				Key:   "AWS-ECR-Image-Tag",
-				Value: "tag3",
-			},
-			{
-				Key:   pkg.MetaKeyScannerLabel,
-				Value: "tag3",
+			expectedTotalResource: 1,
+			expectedMetaDataKeys: []string{
+				ecrFieldRepositoryName,
+				ecrFieldRepositoryUri,
+				ecrFieldArn,
+				ecrFieldRegistryId,
+				"tag_Environment",
 			},
 		},
 	}
 
-	receivedResource := <-resourceChannel
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// create mock ECR client
+			mockEcrClient := new(EcrClientMock)
+			// Define mock output
+			mockOutput := &ecr.DescribeRepositoriesOutput{
+				Repositories: tc.awsECRRepositories,
+			}
+			mockEcrClient.On("DescribeRepositories", mock.Anything, mock.Anything).Return(mockOutput, nil)
 
-	assert.Equal(t, len(expectedResource.MetaData), len(receivedResource.MetaData))
-	assert.Equal(t, expectedResource.Kind, receivedResource.Kind)
-	assert.Equal(t, expectedResource.Name, receivedResource.Name)
-	assert.Equal(t, expectedResource.ExternalID, receivedResource.ExternalID)
+			// Create a mock client
+			mockSvc := new(ResourceTaggingServiceClientMock)
 
-	// assert that all expected calls to mock ECR client's methods were made
-	//mockEcrClient.AssertExpectations(t)
+			expectedOutput := &resourcegroupstaggingapi.GetResourcesOutput{
+				ResourceTagMappingList: []types.ResourceTagMapping{
+					{
+						Tags: tc.awsECRTags,
+					},
+				},
+			}
+
+			mockSvc.On("GetResources", mock.Anything, mock.Anything, mock.Anything).Return(expectedOutput, nil)
+			// create an instance of AWSECR that uses the mock ECR client
+			res := RunScannerForTests(NewAWSECR("test-source", "us-west-2", "xxx", mockEcrClient, mockSvc, tc.sourceFields))
+			assert.Equal(t, tc.expectedTotalResource, len(res))
+			util.CheckIfMetaKeysExistsInResources(t, res, tc.expectedMetaDataKeys)
+		})
+
+	}
 }

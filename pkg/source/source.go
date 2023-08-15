@@ -105,6 +105,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 					s.Configuration["account_id"],
 					ecr.NewFromConfig(buildAWSConfig(s)),
 					resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(s)),
+					s.Fields,
 				),
 			})
 		}

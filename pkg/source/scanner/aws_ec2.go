@@ -133,20 +133,6 @@ func (a *AWSEC2) mapToResource(instance types.Instance) resource.Resource {
 	}
 }
 
-func safeDereference(s *string) string {
-	if s != nil {
-		return *s
-	}
-	return ""
-}
-
-func stringValueOrDefault(s string) string {
-	if s != "" {
-		return s
-	}
-	return ""
-}
-
 func (a *AWSEC2) fieldMapper(instance types.Instance) []MetaDataMapper {
 	var fieldMapper []MetaDataMapper
 

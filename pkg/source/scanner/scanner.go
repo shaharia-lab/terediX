@@ -35,3 +35,17 @@ func RunScannerForTests(scanner Scanner) []resource.Resource {
 	}
 	return res
 }
+
+func safeDereference(s *string) string {
+	if s != nil {
+		return *s
+	}
+	return ""
+}
+
+func stringValueOrDefault(s string) string {
+	if s != "" {
+		return s
+	}
+	return ""
+}
