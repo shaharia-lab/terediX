@@ -21,7 +21,7 @@ const (
 
 	fieldInstanceID        = "instanceId"
 	fieldImageID           = "imageId"
-	fieldPrivateDnsName    = "privateDnsName"
+	fieldPrivateDNSName    = "privateDNSName"
 	fieldInstanceType      = "instanceType"
 	fieldArchitecture      = "architecture"
 	fieldInstanceLifecycle = "instanceLifecycle"
@@ -149,7 +149,7 @@ func (a *AWSEC2) fieldMapper(instance types.Instance) []MetaDataMapper {
 
 			return ""
 		}},
-		{fieldPrivateDnsName, func() string {
+		{fieldPrivateDNSName, func() string {
 			if instance.PrivateDnsName != nil {
 				return *instance.PrivateDnsName
 			}

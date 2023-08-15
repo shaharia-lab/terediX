@@ -64,7 +64,7 @@ func TestAWSEC2_Scan(t *testing.T) {
 			sourceFields: []string{
 				fieldInstanceID,
 				fieldImageID,
-				fieldPrivateDnsName,
+				fieldPrivateDNSName,
 				fieldInstanceType,
 				fieldArchitecture,
 				fieldInstanceLifecycle,
@@ -102,7 +102,7 @@ func TestAWSEC2_Scan(t *testing.T) {
 			expectedMetaDataKeys: []string{
 				fieldInstanceID,
 				fieldImageID,
-				fieldPrivateDnsName,
+				fieldPrivateDNSName,
 				fieldInstanceType,
 				fieldArchitecture,
 				fieldInstanceLifecycle,
