@@ -305,6 +305,9 @@
         },
         "configuration": {
           "$ref": "#/definitions/source.aws_common.configuration"
+        },
+        "fields": {
+          "$ref": "#/definitions/source.aws_ec2.fields"
         }
       },
       "required": ["type", "configuration"]
@@ -347,6 +350,25 @@
         }
       },
       "required": ["access_key", "secret_key", "session_token", "region", "account_id"]
+    },
+    "source.aws_ec2.fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "instance_id",
+          "image_id",
+          "private_dns_name",
+          "instance_type",
+          "architecture",
+          "instance_lifecycle",
+          "instance_state",
+          "vpc_id",
+          "tags"
+        ]
+      },
+      "uniqueItems": true,
+      "additionalItems": false
     },
     "storage.postgresql": {
       "type": "object",

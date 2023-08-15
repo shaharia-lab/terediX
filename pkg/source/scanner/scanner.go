@@ -10,6 +10,12 @@ type Scanner interface {
 	Scan(resourceChannel chan resource.Resource) error
 }
 
+// MetaDataMapper map the fields
+type MetaDataMapper struct {
+	field string
+	value func() string
+}
+
 // RunScannerForTests initiates a scan using the provided scanner and collects
 // the resources it discovers into a slice. This function is specifically
 // designed to help with testing, allowing you to run a scanner and easily

@@ -26,12 +26,6 @@ const (
 	fieldTopics     = "topics"
 )
 
-// MetaDataMapper map the fields
-type MetaDataMapper struct {
-	field string
-	value func() string
-}
-
 // GitHubClient present interface to build GitHub client
 type GitHubClient interface {
 	ListRepositories(ctx context.Context, user string, opts *github.RepositoryListOptions) ([]*github.Repository, error)

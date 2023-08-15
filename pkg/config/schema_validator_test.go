@@ -77,7 +77,22 @@ source:
     configuration: *aws_conf
   aws_ec2_one:
     type: aws_ec2
-    configuration: *aws_conf
+    configuration:
+      access_key: "xxxx"
+      secret_key: "xxxx"
+      session_token: "xxxx"
+      region: "x"
+      account_id: "xxx"
+    fields:
+      - instance_id
+      - image_id
+      - private_dns_name
+      - instance_type
+      - architecture
+      - instance_lifecycle
+      - instance_state
+      - vpc_id
+      - tags
   aws_ecr_example:
     type: aws_ecr
     configuration: *aws_conf
@@ -96,7 +111,7 @@ relations:
 			expectError: false,
 		},
 		{
-			name: "Valid YAML against JSON schema",
+			name: "Invalid YAML against JSON schema",
 			yamlContent: `
 ---
 organization:

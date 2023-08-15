@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/util"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -51,60 +51,85 @@ func (_m *Ec2ClientMock) DescribeInstances(ctx context.Context, params *ec2.Desc
 	return r0, r1
 }
 
-func TestAWSEC2_Scan_Return_Data_Successfully(t *testing.T) {
-	// Setup
-	mc := new(Ec2ClientMock)
-	instanceOutput := &ec2.DescribeInstancesOutput{
-		Reservations: []types.Reservation{
-			{
-				Instances: []types.Instance{
-					{
-						InstanceId:     aws.String("i-1234567890"),
-						ImageId:        aws.String("ami-1234567890"),
-						PrivateDnsName: aws.String("ip-10-0-0-1.us-west-2.compute.internal"),
-						InstanceType:   types.InstanceTypeT2Micro,
-						Architecture:   types.ArchitectureValuesI386,
-						State: &types.InstanceState{
-							Name: types.InstanceStateNameRunning,
+func TestAWSEC2_Scan(t *testing.T) {
+	testCases := []struct {
+		name                  string
+		sourceFields          []string
+		awsEc2Instances       []types.Instance
+		expectedTotalResource int
+		expectedMetaDataKeys  []string
+	}{
+		{
+			name: "returns resources",
+			sourceFields: []string{
+				fieldInstanceID,
+				fieldImageID,
+				fieldPrivateDNSName,
+				fieldInstanceType,
+				fieldArchitecture,
+				fieldInstanceLifecycle,
+				fieldInstanceState,
+				fieldVpcID,
+				fieldTags,
+			},
+			awsEc2Instances: []types.Instance{
+				{
+					InstanceId:        aws.String("i-1234567890"),
+					ImageId:           aws.String("ami-1234567890"),
+					PrivateDnsName:    aws.String("ip-10-0-0-1.us-west-2.compute.internal"),
+					InstanceType:      types.InstanceTypeT2Micro,
+					Architecture:      types.ArchitectureValuesI386,
+					InstanceLifecycle: "scheduled",
+					State: &types.InstanceState{
+						Name: types.InstanceStateNameRunning,
+					},
+					VpcId: aws.String("vpc-1234567890"),
+					Tags: []types.Tag{
+						{
+							Key:   aws.String("Name"),
+							Value: aws.String("test-instance"),
 						},
-						VpcId: aws.String("vpc-1234567890"),
-						Tags: []types.Tag{
-							{
-								Key:   aws.String("Name"),
-								Value: aws.String("test-instance"),
-							},
-						},
-						SecurityGroups: []types.GroupIdentifier{
-							{
-								GroupId:   aws.String("sg-1234567890"),
-								GroupName: aws.String("test-security-group"),
-							},
+					},
+					SecurityGroups: []types.GroupIdentifier{
+						{
+							GroupId:   aws.String("sg-1234567890"),
+							GroupName: aws.String("test-security-group"),
 						},
 					},
 				},
 			},
+			expectedTotalResource: 1,
+			expectedMetaDataKeys: []string{
+				fieldInstanceID,
+				fieldImageID,
+				fieldPrivateDNSName,
+				fieldInstanceType,
+				fieldArchitecture,
+				fieldInstanceLifecycle,
+				fieldInstanceState,
+				fieldVpcID,
+				"tag_Name",
+			},
 		},
 	}
 
-	mc.On("DescribeInstances", mock.Anything, mock.Anything, mock.Anything).Return(instanceOutput, nil)
-	a := NewAWSEC2("test-source", "us-west-2", "1234567890", mc)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mc := new(Ec2ClientMock)
+			instanceOutput := &ec2.DescribeInstancesOutput{
+				Reservations: []types.Reservation{
+					{
+						Instances: tc.awsEc2Instances,
+					},
+				},
+			}
+			mc.On("DescribeInstances", mock.Anything, mock.Anything, mock.Anything).Return(instanceOutput, nil)
 
-	resCh := make(chan resource.Resource, 1)
-	err := a.Scan(resCh)
-	assert.NoError(t, err)
-
-	res := <-resCh
-	assert.Equal(t, "i-1234567890", res.UUID)
-	assert.Equal(t, pkg.ResourceKindAWSEC2, res.Kind)
-	assert.Equal(t, "i-1234567890", res.ExternalID)
-	assert.Len(t, res.MetaData, 10)
-
-	/*// Case 2: Error
-	mc.DescribeInstancesFn = func(ctx context.Context, params *ec2.DescribeInstancesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
-		return nil, errors.New("test-error")
+			res := RunScannerForTests(NewAWSEC2("test-source", "us-west-2", "1234567890", mc, tc.sourceFields))
+			assert.Equal(t, tc.expectedTotalResource, len(res))
+			util.CheckIfMetaKeysExistsInResources(t, res, tc.expectedMetaDataKeys)
+		})
 	}
-	err = a.Scan(resCh)
-	assert.Error(t, err)*/
 }
 
 func TestAWSEC2_Scan_Return_Error(t *testing.T) {
@@ -112,7 +137,7 @@ func TestAWSEC2_Scan_Return_Error(t *testing.T) {
 	mc := new(Ec2ClientMock)
 
 	mc.On("DescribeInstances", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("failed to fetch"))
-	a := NewAWSEC2("test-source", "us-west-2", "1234567890", mc)
+	a := NewAWSEC2("test-source", "us-west-2", "1234567890", mc, []string{})
 
 	resCh := make(chan resource.Resource, 1)
 	err := a.Scan(resCh)

@@ -4,9 +4,11 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/util"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
@@ -16,6 +18,16 @@ import (
 
 const (
 	perPage = 100
+
+	fieldInstanceID        = "instanceId"
+	fieldImageID           = "imageId"
+	fieldPrivateDNSName    = "privateDNSName"
+	fieldInstanceType      = "instanceType"
+	fieldArchitecture      = "architecture"
+	fieldInstanceLifecycle = "instanceLifecycle"
+	fieldInstanceState     = "instanceState"
+	fieldVpcID             = "vpcId"
+	fieldTags              = "tags"
 )
 
 // Ec2Client build aws client
@@ -29,15 +41,17 @@ type AWSEC2 struct {
 	Ec2Client  Ec2Client
 	Region     string
 	AccountID  string
+	Fields     []string
 }
 
 // NewAWSEC2 construct AWS EC2 source
-func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2Client) *AWSEC2 {
+func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2Client, fields []string) *AWSEC2 {
 	return &AWSEC2{
 		SourceName: sourceName,
 		Ec2Client:  ec2Client,
 		Region:     region,
 		AccountID:  accountID,
+		Fields:     fields,
 	}
 }
 
@@ -100,61 +114,65 @@ func (a *AWSEC2) makeAPICallToAWS(nextToken string) (*ec2.DescribeInstancesOutpu
 }
 
 func (a *AWSEC2) mapToResource(instance types.Instance) resource.Resource {
-	res := resource.Resource{
+	var repoMeta []resource.MetaData
+	for _, mapper := range a.fieldMapper(instance) {
+		if util.IsFieldExistsInConfig(mapper.field, a.Fields) || strings.Contains(mapper.field, "tag_") {
+			val := mapper.value()
+			if val != "" {
+				repoMeta = append(repoMeta, resource.MetaData{Key: mapper.field, Value: val})
+			}
+		}
+	}
+
+	return resource.Resource{
 		Name:       *instance.InstanceId,
 		Kind:       pkg.ResourceKindAWSEC2,
 		UUID:       *instance.InstanceId,
 		ExternalID: *instance.InstanceId,
-		MetaData: []resource.MetaData{
-			{
-				Key:   "AWS-EC2-Instance-ID",
-				Value: *instance.InstanceId,
-			},
-			{
-				Key:   "AWS-EC2-Image-ID",
-				Value: *instance.ImageId,
-			},
-			{
-				Key:   "AWS-EC2-PrivateDnsName",
-				Value: *instance.PrivateDnsName,
-			},
-			{
-				Key:   "AWS-EC2-InstanceType",
-				Value: string(instance.InstanceType),
-			},
-			{
-				Key:   "AWS-EC2-Architecture",
-				Value: string(instance.Architecture),
-			},
-			{
-				Key:   "AWS-EC2-InstanceLifecycle",
-				Value: string(instance.InstanceLifecycle),
-			},
-			{
-				Key:   "AWS-EC2-InstanceState",
-				Value: string(instance.State.Name),
-			},
-			{
-				Key:   "AWS-EC2-VpcId",
-				Value: *instance.VpcId,
-			},
-		},
+		MetaData:   repoMeta,
+	}
+}
+
+func safeDereference(s *string) string {
+	if s != nil {
+		return *s
+	}
+	return ""
+}
+
+func stringValueOrDefault(s string) string {
+	if s != "" {
+		return s
+	}
+	return ""
+}
+
+func (a *AWSEC2) fieldMapper(instance types.Instance) []MetaDataMapper {
+	var fieldMapper []MetaDataMapper
+
+	mappings := map[string]func() string{
+		fieldInstanceID:        func() string { return safeDereference(instance.InstanceId) },
+		fieldImageID:           func() string { return safeDereference(instance.ImageId) },
+		fieldPrivateDNSName:    func() string { return safeDereference(instance.PrivateDnsName) },
+		fieldInstanceType:      func() string { return stringValueOrDefault(string(instance.InstanceType)) },
+		fieldArchitecture:      func() string { return stringValueOrDefault(string(instance.Architecture)) },
+		fieldInstanceLifecycle: func() string { return stringValueOrDefault(string(instance.InstanceLifecycle)) },
+		fieldInstanceState:     func() string { return stringValueOrDefault(string(instance.State.Name)) },
+		fieldVpcID:             func() string { return safeDereference(instance.VpcId) },
 	}
 
-	for _, tag := range instance.Tags {
-		metaData := resource.MetaData{
-			Key:   fmt.Sprintf("AWS-EC2-%s", *tag.Key),
-			Value: *tag.Value,
-		}
-		res.MetaData = append(res.MetaData, metaData)
+	for field, fn := range mappings {
+		fieldMapper = append(fieldMapper, MetaDataMapper{field: field, value: fn})
 	}
 
-	for _, sg := range instance.SecurityGroups {
-		metaData := resource.MetaData{
-			Key:   fmt.Sprintf("AWS-EC2-Security-Group-%s", *sg.GroupId),
-			Value: *sg.GroupName,
+	if util.IsFieldExistsInConfig(fieldTags, a.Fields) {
+		for _, tag := range instance.Tags {
+			fieldMapper = append(fieldMapper, MetaDataMapper{
+				field: fmt.Sprintf("tag_%s", safeDereference(tag.Key)),
+				value: func() string { return safeDereference(tag.Value) },
+			})
 		}
-		res.MetaData = append(res.MetaData, metaData)
 	}
-	return res
+
+	return fieldMapper
 }

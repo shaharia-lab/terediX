@@ -92,7 +92,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 		if s.Type == pkg.SourceTypeAWSEC2 {
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
-				Scanner: scanner.NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2v2.NewFromConfig(buildAWSConfig(s))),
+				Scanner: scanner.NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2v2.NewFromConfig(buildAWSConfig(s)), s.Fields),
 			})
 		}
 
