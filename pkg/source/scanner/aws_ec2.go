@@ -4,6 +4,7 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
@@ -115,7 +116,7 @@ func (a *AWSEC2) makeAPICallToAWS(nextToken string) (*ec2.DescribeInstancesOutpu
 func (a *AWSEC2) mapToResource(instance types.Instance) resource.Resource {
 	var repoMeta []resource.MetaData
 	for _, mapper := range a.fieldMapper(instance) {
-		if util.IsFieldExistsInConfig(mapper.field, a.Fields) {
+		if util.IsFieldExistsInConfig(mapper.field, a.Fields) || strings.Contains(mapper.field, "tag_") {
 			val := mapper.value()
 			if val != "" {
 				repoMeta = append(repoMeta, resource.MetaData{Key: mapper.field, Value: val})
