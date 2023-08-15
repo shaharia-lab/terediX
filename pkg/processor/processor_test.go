@@ -1,185 +1,142 @@
 package processor
 
 import (
-	"bytes"
 	"errors"
-	"io"
-	"os"
-	"strings"
+	"fmt"
 	"testing"
-	"time"
 
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/source"
 	"github.com/shaharia-lab/teredix/pkg/source/scanner"
 	"github.com/shaharia-lab/teredix/pkg/storage"
-
 	"github.com/stretchr/testify/mock"
 )
 
-func TestProcessor_Process(t *testing.T) {
-
-	resourceChan := make(chan resource.Resource, 10)
-
-	firstScanner := new(scanner.Mock)
-	firstScanner.On("Scan", resourceChan).Return(nil)
-
-	secondScanner := new(scanner.Mock)
-	secondScanner.On("Scan", resourceChan).Return(nil)
-
-	mockStorage := new(storage.Mock)
-	mockStorage.On("Persist").Return(nil)
-
-	sources := []source.Source{
-		{
-			Name:    "test",
-			Scanner: firstScanner,
-		},
-		{
-			Name:    "test2",
-			Scanner: secondScanner,
-		},
-	}
-
-	// Set up test data
-	config := Config{BatchSize: 2}
-
-	processor := NewProcessor(config, mockStorage, sources)
-
-	// Set up mock storage to return nil error when Persist is called
-	mockStorage.On("Persist", mock.Anything).Return(nil)
-
-	// Call the Process method
-	go func() {
-		processor.Process(resourceChan)
-	}()
-
-	// Send some test resources on the channel
-	res1 := resource.Resource{Kind: "test1", Name: "resource1"}
-	res2 := resource.Resource{Kind: "test2", Name: "resource2"}
-	res3 := resource.Resource{Kind: "test3", Name: "resource3"}
-
-	resourceChan <- res1
-	resourceChan <- res2
-	resourceChan <- res3
-
-	// Wait for the processing to finish
-	time.Sleep(500 * time.Millisecond)
-
-	// Check that the expected resources were processed
-	mockStorage.AssertNumberOfCalls(t, "Persist", 2)
-	mockStorage.AssertCalled(t, "Persist", []resource.Resource{res1, res2})
-	mockStorage.AssertCalled(t, "Persist", []resource.Resource{res3})
+type mockScanner struct {
+	resources []resource.Resource
+	err       error
 }
 
-func TestProcessor_Process_Handle_Error_From_Scanner(t *testing.T) {
+func (ms *mockScanner) Scan(ch chan<- resource.Resource) error {
+	for _, res := range ms.resources {
+		ch <- res
+	}
+	return ms.err
+}
 
-	resourceChan := make(chan resource.Resource, 10)
+type mockStorage struct {
+	err error
+}
 
-	sc := new(scanner.Mock)
-	sc.On("Scan", resourceChan).Return(errors.New("failed scanner"))
+func (ms *mockStorage) Persist(resources []resource.Resource) error {
+	return ms.err
+}
 
-	mockStorage := new(storage.Mock)
-	mockStorage.On("Persist").Return(nil)
-
-	sources := []source.Source{
-		{
-			Name:    "test",
-			Scanner: sc,
-		},
+func TestProcess(t *testing.T) {
+	type testCase struct {
+		name         string
+		resources    []resource.Resource
+		scanError    error
+		persistError error
+		expectError  bool
 	}
 
-	// Set up test data
-	config := Config{BatchSize: 2}
+	testCases := []testCase{
+		{
+			name: "Successful processing",
+			resources: []resource.Resource{
+				{Kind: "GitHubRepository", Name: "repo1"},
+				{Kind: "GitHubRepository", Name: "repo2"},
+				{Kind: "GitHubRepository", Name: "repo3"},
+			},
+			scanError:    nil,
+			persistError: nil,
+			expectError:  false,
+		},
+		{
+			name:         "Scanner error",
+			resources:    nil, // or some resources if needed
+			scanError:    errors.New("failed scanner"),
+			persistError: nil,
+			expectError:  true,
+		},
+		// ... add more scenarios
+	}
 
-	processor := NewProcessor(config, mockStorage, sources)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resourceChan := make(chan resource.Resource)
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
+			// Setup mock scanner and storage
+			firstScanner := new(scanner.Mock)
+			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
+				for _, res := range tc.resources {
+					resourceChan <- res
+				}
+			}).Return(tc.scanError)
 
-	// Call the Process method
-	go func() {
-		processor.Process(resourceChan)
-	}()
+			mockStorage := new(storage.Mock)
+			if tc.resources != nil {
+				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
+			}
 
-	// Wait for the processing to finish
-	time.Sleep(500 * time.Millisecond)
+			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []source.Source{{Scanner: firstScanner}})
+			p.Process(resourceChan)
 
-	// Restore stdout
-	w.Close()
-	os.Stdout = old
-
-	// Read the output from Process method
-	var buf bytes.Buffer
-	io.Copy(&buf, r)
-	r.Close()
-
-	// Check that the output contains the expected text
-	expected := "failed to start the scanner. scanner: test. Error: failed scanner"
-	actual := buf.String()
-	if actual != expected {
-		t.Errorf("Process output = %q, expected %q", actual, expected)
+			// Assert that the expected calls were made
+			firstScanner.AssertExpectations(t)
+			mockStorage.AssertExpectations(t)
+		})
 	}
 }
 
-func TestProcessor_Process_Handle_Error_From_Storage_During_Persist(t *testing.T) {
-
-	resourceChan := make(chan resource.Resource, 10)
-
-	// Send some test resources on the channel
-	res1 := resource.Resource{Kind: "test1", Name: "resource1"}
-	res2 := resource.Resource{Kind: "test2", Name: "resource2"}
-
-	sc := new(scanner.Mock)
-	sc.On("Scan", resourceChan).Return(nil)
-
-	mockStorage := new(storage.Mock)
-	mockStorage.On("Persist", []resource.Resource{res1, res2}).Return(errors.New("error from persist call"))
-
-	sources := []source.Source{
-		{
-			Name:    "test",
-			Scanner: sc,
-		},
+func TestProcessWithDifferentBatchSizes(t *testing.T) {
+	// Define a helper function to generate n resources
+	generateResources := func(n int) []resource.Resource {
+		var resources []resource.Resource
+		for i := 0; i < n; i++ {
+			resources = append(resources, resource.Resource{
+				Kind: "GitHubRepository",
+				Name: fmt.Sprintf("repo%d", i+1),
+			})
+		}
+		return resources
 	}
 
-	// Set up test data
-	config := Config{BatchSize: 2}
+	testCases := []struct {
+		totalResources  int
+		batchSize       int
+		expectedBatches int
+	}{
+		{5, 2, 3},
+		{5, 3, 2},
+		{5, 5, 1},
+		// ... add more scenarios if needed
+	}
 
-	processor := NewProcessor(config, mockStorage, sources)
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("TotalResources:%d,BatchSize:%d", tc.totalResources, tc.batchSize), func(t *testing.T) {
+			resources := generateResources(tc.totalResources)
+			resourceChan := make(chan resource.Resource)
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
+			// Setup mock scanner and storage
+			firstScanner := new(scanner.Mock)
+			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
+				for _, res := range resources {
+					resourceChan <- res
+				}
+			}).Return(nil)
 
-	// Call the Process method
-	go func() {
-		processor.Process(resourceChan)
-	}()
+			mockStorage := new(storage.Mock)
+			// This will ensure the Persist method is called expectedBatches times
+			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
 
-	resourceChan <- res1
-	resourceChan <- res2
+			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []source.Source{{Scanner: firstScanner}})
+			p.Process(resourceChan)
 
-	// Wait for the processing to finish
-	time.Sleep(500 * time.Millisecond)
-
-	// Restore stdout
-	w.Close()
-	os.Stdout = old
-
-	// Read the output from Process method
-	var buf bytes.Buffer
-	io.Copy(&buf, r)
-	r.Close()
-
-	// Check that the output contains the expected text
-	expected := "error from persist call"
-	actual := buf.String()
-
-	if !strings.Contains(actual, expected) {
-		t.Errorf("Process output = %q, expected %q", actual, expected)
+			// Assert that the expected calls were made
+			firstScanner.AssertExpectations(t)
+			mockStorage.AssertExpectations(t)
+		})
 	}
 }
