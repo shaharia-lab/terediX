@@ -124,65 +124,13 @@ func (a *AWSEC2) mapToResource(instance types.Instance) resource.Resource {
 		}
 	}
 
-	res := resource.Resource{
+	return resource.Resource{
 		Name:       *instance.InstanceId,
 		Kind:       pkg.ResourceKindAWSEC2,
 		UUID:       *instance.InstanceId,
 		ExternalID: *instance.InstanceId,
-		MetaData: []resource.MetaData{
-			{
-				Key:   "AWS-EC2-Instance-ID",
-				Value: *instance.InstanceId,
-			},
-			{
-				Key:   "AWS-EC2-Image-ID",
-				Value: *instance.ImageId,
-			},
-			{
-				Key:   "AWS-EC2-PrivateDnsName",
-				Value: *instance.PrivateDnsName,
-			},
-			{
-				Key:   "AWS-EC2-InstanceType",
-				Value: string(instance.InstanceType),
-			},
-			{
-				Key:   "AWS-EC2-Architecture",
-				Value: string(instance.Architecture),
-			},
-			{
-				Key:   "AWS-EC2-InstanceLifecycle",
-				Value: string(instance.InstanceLifecycle),
-			},
-			{
-				Key:   "AWS-EC2-InstanceState",
-				Value: string(instance.State.Name),
-			},
-			{
-				Key:   "AWS-EC2-VpcId",
-				Value: *instance.VpcId,
-			},
-		},
+		MetaData:   repoMeta,
 	}
-
-	for _, tag := range instance.Tags {
-		metaData := resource.MetaData{
-			Key:   fmt.Sprintf("AWS-EC2-%s", *tag.Key),
-			Value: *tag.Value,
-		}
-		res.MetaData = append(res.MetaData, metaData)
-	}
-
-	for _, sg := range instance.SecurityGroups {
-		metaData := resource.MetaData{
-			Key:   fmt.Sprintf("AWS-EC2-Security-Group-%s", *sg.GroupId),
-			Value: *sg.GroupName,
-		}
-		res.MetaData = append(res.MetaData, metaData)
-	}
-
-	res.MetaData = append(res.MetaData, repoMeta...)
-	return res
 }
 
 func (a *AWSEC2) fieldMapper(instance types.Instance) []MetaDataMapper {
