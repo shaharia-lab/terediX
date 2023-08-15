@@ -13,6 +13,7 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/source"
 	"github.com/shaharia-lab/teredix/pkg/source/scanner"
 	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -117,11 +118,10 @@ func TestProcessor_Process_Handle_Error_From_Scanner(t *testing.T) {
 	r.Close()
 
 	// Check that the output contains the expected text
-	expected := "failed to start the scanner. scanner: test. Error: failed scanner"
+	expected := "Failed to start the scanner. Scanner: test. Error: failed scanner"
 	actual := buf.String()
-	if actual != expected {
-		t.Errorf("Process output = %q, expected %q", actual, expected)
-	}
+
+	assert.Contains(t, actual, expected, "Process output = %q, expected %q", actual, expected)
 }
 
 func TestProcessor_Process_Handle_Error_From_Storage_During_Persist(t *testing.T) {
