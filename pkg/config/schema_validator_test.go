@@ -92,6 +92,7 @@ source:
       - instance_lifecycle
       - instance_state
       - vpc_id
+      - tags
   aws_ecr_example:
     type: aws_ecr
     configuration: *aws_conf
@@ -110,7 +111,7 @@ relations:
 			expectError: false,
 		},
 		{
-			name: "Valid YAML against JSON schema",
+			name: "Invalid YAML against JSON schema",
 			yamlContent: `
 ---
 organization:
