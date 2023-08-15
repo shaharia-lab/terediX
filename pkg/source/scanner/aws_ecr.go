@@ -3,10 +3,8 @@ package scanner
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
-	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
@@ -75,9 +73,38 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 
 		// Loop through repositories and their tags
 		for _, repository := range resp.Repositories {
-			res, err := a.mapToResource(repository)
-			if err != nil {
-				return err
+
+			mappings := map[string]func() string{
+				ecrFieldRepositoryName: func() string { return stringValueOrDefault(*repository.RepositoryName) },
+				ecrFieldArn:            func() string { return stringValueOrDefault(*repository.RepositoryArn) },
+				ecrFieldRegistryId:     func() string { return stringValueOrDefault(*repository.RegistryId) },
+				ecrFieldRepositoryUri:  func() string { return stringValueOrDefault(*repository.RepositoryUri) },
+			}
+
+			getTags := func() []types.Tag {
+				tags, err := util.GetAWSResourceTagByARN(context.Background(), a.ResourceTaggingService, *repository.RepositoryArn)
+				if err != nil {
+					return []types.Tag{}
+				}
+
+				var tt []types.Tag
+				for key, val := range tags {
+					tt = append(tt, types.Tag{
+						Key:   aws.String(key),
+						Value: aws.String(val),
+					})
+				}
+
+				return tt
+			}
+
+			fm := NewFieldMapper(mappings, getTags, a.Fields)
+			res := resource.Resource{
+				Name:       *repository.RepositoryName,
+				Kind:       pkg.ResourceKindAWSECR,
+				UUID:       util.GenerateUUID(),
+				ExternalID: *repository.RepositoryArn,
+				MetaData:   fm.getResourceMetaData(),
 			}
 
 			resourceChannel <- res
@@ -92,54 +119,4 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	return nil
-}
-
-func (a *AWSECR) mapToResource(repository ecrTypes.Repository) (resource.Resource, error) {
-	var repoMeta []resource.MetaData
-	for _, mapper := range a.fieldMapper(repository) {
-		if util.IsFieldExistsInConfig(mapper.field, a.Fields) || strings.Contains(mapper.field, "tag_") {
-			val := mapper.value()
-			if val != "" {
-				repoMeta = append(repoMeta, resource.MetaData{Key: mapper.field, Value: val})
-			}
-		}
-	}
-
-	return resource.Resource{
-		Name:       *repository.RepositoryName,
-		Kind:       pkg.ResourceKindAWSECR,
-		UUID:       util.GenerateUUID(),
-		ExternalID: *repository.RepositoryArn,
-		MetaData:   repoMeta,
-	}, nil
-}
-
-func (a *AWSECR) fieldMapper(repository ecrTypes.Repository) []MetaDataMapper {
-	var fieldMapper []MetaDataMapper
-
-	mappings := map[string]func() string{
-		ecrFieldRepositoryName: func() string { return stringValueOrDefault(*repository.RepositoryName) },
-		ecrFieldArn:            func() string { return stringValueOrDefault(*repository.RepositoryArn) },
-		ecrFieldRegistryId:     func() string { return stringValueOrDefault(*repository.RegistryId) },
-		ecrFieldRepositoryUri:  func() string { return stringValueOrDefault(*repository.RepositoryUri) },
-	}
-
-	for field, fn := range mappings {
-		fieldMapper = append(fieldMapper, MetaDataMapper{field: field, value: fn})
-	}
-
-	if util.IsFieldExistsInConfig(fieldTags, a.Fields) {
-		tags, err := util.GetAWSResourceTagByARN(context.Background(), a.ResourceTaggingService, *repository.RepositoryArn)
-		if err != nil {
-			return fieldMapper
-		}
-		for key, val := range tags {
-			fieldMapper = append(fieldMapper, MetaDataMapper{
-				field: fmt.Sprintf("tag_%s", key),
-				value: func() string { return stringValueOrDefault(val) },
-			})
-		}
-	}
-
-	return fieldMapper
 }

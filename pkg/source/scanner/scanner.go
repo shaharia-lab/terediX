@@ -2,7 +2,12 @@
 package scanner
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/util"
 )
 
 // Scanner interface to build different scanner
@@ -48,4 +53,46 @@ func stringValueOrDefault(s string) string {
 		return s
 	}
 	return ""
+}
+
+type FieldMapper struct {
+	mappings map[string]func() string
+	tags     func() []types.Tag
+	fields   []string
+}
+
+func NewFieldMapper(mappings map[string]func() string, tags func() []types.Tag, fields []string) *FieldMapper {
+	return &FieldMapper{
+		mappings: mappings,
+		tags:     tags,
+		fields:   fields,
+	}
+}
+
+func (f *FieldMapper) getResourceMetaData() []resource.MetaData {
+	var fieldMapper []MetaDataMapper
+	for field, fn := range f.mappings {
+		fieldMapper = append(fieldMapper, MetaDataMapper{field: field, value: fn})
+	}
+
+	if util.IsFieldExistsInConfig(fieldTags, f.fields) {
+		for _, tag := range f.tags() {
+			fieldMapper = append(fieldMapper, MetaDataMapper{
+				field: fmt.Sprintf("tag_%s", *tag.Key),
+				value: func() string { return stringValueOrDefault(*tag.Value) },
+			})
+		}
+	}
+
+	var resMeta []resource.MetaData
+	for _, mapper := range fieldMapper {
+		if util.IsFieldExistsInConfig(mapper.field, f.fields) || strings.Contains(mapper.field, "tag_") {
+			val := mapper.value()
+			if val != "" {
+				resMeta = append(resMeta, resource.MetaData{Key: mapper.field, Value: val})
+			}
+		}
+	}
+
+	return resMeta
 }
