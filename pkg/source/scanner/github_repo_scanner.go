@@ -26,6 +26,12 @@ const (
 	fieldTopics     = "topics"
 )
 
+// MetaDataMapper map the fields
+type MetaDataMapper struct {
+	field string
+	value func() string
+}
+
 // GitHubClient present interface to build GitHub client
 type GitHubClient interface {
 	ListRepositories(ctx context.Context, user string, opts *github.RepositoryListOptions) ([]*github.Repository, error)
@@ -98,52 +104,61 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 
 func (r *GitHubRepositoryScanner) mapToResource(repo *github.Repository) resource.Resource {
 	var repoMeta []resource.MetaData
-
-	if util.IsFieldExistsInConfig(fieldCompany, r.fields) && repo.GetOwner() != nil && repo.GetOwner().GetCompany() != "" {
-		repoMeta = append(repoMeta, resource.MetaData{Key: fieldCompany, Value: repo.GetOwner().GetCompany()})
-	}
-
-	if util.IsFieldExistsInConfig(fieldLanguage, r.fields) && repo.GetLanguage() != "" {
-		repoMeta = append(repoMeta, resource.MetaData{Key: fieldLanguage, Value: repo.GetLanguage()})
-	}
-
-	if util.IsFieldExistsInConfig(fieldHomepage, r.fields) && repo.GetHomepage() != "" {
-		repoMeta = append(repoMeta, resource.MetaData{Key: fieldHomepage, Value: repo.GetHomepage()})
-	}
-
-	if util.IsFieldExistsInConfig(fieldOrg, r.fields) && repo.GetOrganization() != nil && repo.GetOrganization().GetName() != "" {
-		repoMeta = append(repoMeta, resource.MetaData{Key: fieldOrg, Value: repo.GetOrganization().GetName()})
-	}
-
-	if util.IsFieldExistsInConfig(fieldStars, r.fields) {
-		repoMeta = append(repoMeta, resource.MetaData{Key: fieldStars, Value: strconv.Itoa(repo.GetStargazersCount())})
-	}
-
-	if util.IsFieldExistsInConfig(fieldGitURL, r.fields) && repo.GetGitURL() != "" {
-		repoMeta = append(repoMeta, resource.MetaData{Key: fieldGitURL, Value: repo.GetGitURL()})
-	}
-
-	if util.IsFieldExistsInConfig(fieldOwnerName, r.fields) && repo.GetOwner() != nil && repo.GetOwner().GetName() != "" {
-		repoMeta = append(repoMeta, resource.MetaData{Key: fieldOwnerName, Value: repo.GetOwner().GetName()})
-	}
-
-	if util.IsFieldExistsInConfig(fieldOwnerLogin, r.fields) && repo.GetOwner() != nil && repo.GetOwner().GetLogin() != "" {
-		repoMeta = append(repoMeta, resource.MetaData{Key: fieldOwnerLogin, Value: repo.GetOwner().GetLogin()})
-	}
-
-	if util.IsFieldExistsInConfig(fieldTopics, r.fields) && len(repo.Topics) > 0 {
-		topics, err := json.Marshal(repo.Topics)
-		if err == nil {
-			repoMeta = append(repoMeta, resource.MetaData{Key: fieldTopics, Value: string(topics)})
+	for _, mapper := range r.fieldMapper(repo) {
+		if util.IsFieldExistsInConfig(mapper.field, r.fields) {
+			val := mapper.value()
+			if val != "" {
+				repoMeta = append(repoMeta, resource.MetaData{Key: mapper.field, Value: val})
+			}
 		}
 	}
 
-	re := resource.Resource{
+	return resource.Resource{
 		Kind:       pkg.ResourceKindGitHubRepository,
 		UUID:       util.GenerateUUID(),
 		Name:       repo.GetFullName(),
 		ExternalID: repo.GetFullName(),
 		MetaData:   repoMeta,
 	}
-	return re
+}
+
+func (r *GitHubRepositoryScanner) fieldMapper(repo *github.Repository) []MetaDataMapper {
+	return []MetaDataMapper{
+		{fieldCompany, func() string {
+			if repo.GetOwner() != nil {
+				return repo.GetOwner().GetCompany()
+			}
+			return ""
+		}},
+		{fieldLanguage, repo.GetLanguage},
+		{fieldHomepage, repo.GetHomepage},
+		{fieldOrg, func() string {
+			if repo.GetOrganization() != nil {
+				return repo.GetOrganization().GetName()
+			}
+			return ""
+		}},
+		{fieldStars, func() string { return strconv.Itoa(repo.GetStargazersCount()) }},
+		{fieldGitURL, repo.GetGitURL},
+		{fieldOwnerName, func() string {
+			if repo.GetOwner() != nil {
+				return repo.GetOwner().GetName()
+			}
+			return ""
+		}},
+		{fieldOwnerLogin, func() string {
+			if repo.GetOwner() != nil {
+				return repo.GetOwner().GetLogin()
+			}
+			return ""
+		}},
+		{fieldTopics, func() string {
+			topics, err := json.Marshal(repo.Topics)
+			if err == nil {
+				return string(topics)
+			}
+
+			return ""
+		}},
+	}
 }
