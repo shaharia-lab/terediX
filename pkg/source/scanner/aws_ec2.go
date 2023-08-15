@@ -133,77 +133,43 @@ func (a *AWSEC2) mapToResource(instance types.Instance) resource.Resource {
 	}
 }
 
+func safeDereference(s *string) string {
+	if s != nil {
+		return *s
+	}
+	return ""
+}
+
+func stringValueOrDefault(s string) string {
+	if s != "" {
+		return s
+	}
+	return ""
+}
+
 func (a *AWSEC2) fieldMapper(instance types.Instance) []MetaDataMapper {
-	fieldMapper := []MetaDataMapper{
-		{fieldInstanceID, func() string {
-			if instance.InstanceId != nil {
-				return *instance.InstanceId
-			}
+	var fieldMapper []MetaDataMapper
 
-			return ""
-		}},
-		{fieldImageID, func() string {
-			if instance.ImageId != nil {
-				return *instance.ImageId
-			}
+	mappings := map[string]func() string{
+		fieldInstanceID:        func() string { return safeDereference(instance.InstanceId) },
+		fieldImageID:           func() string { return safeDereference(instance.ImageId) },
+		fieldPrivateDNSName:    func() string { return safeDereference(instance.PrivateDnsName) },
+		fieldInstanceType:      func() string { return stringValueOrDefault(string(instance.InstanceType)) },
+		fieldArchitecture:      func() string { return stringValueOrDefault(string(instance.Architecture)) },
+		fieldInstanceLifecycle: func() string { return stringValueOrDefault(string(instance.InstanceLifecycle)) },
+		fieldInstanceState:     func() string { return stringValueOrDefault(string(instance.State.Name)) },
+		fieldVpcID:             func() string { return safeDereference(instance.VpcId) },
+	}
 
-			return ""
-		}},
-		{fieldPrivateDNSName, func() string {
-			if instance.PrivateDnsName != nil {
-				return *instance.PrivateDnsName
-			}
-
-			return ""
-		}},
-		{fieldInstanceType, func() string {
-			it := string(instance.InstanceType)
-			if it != "" {
-				return it
-			}
-
-			return ""
-		}},
-		{fieldArchitecture, func() string {
-			ia := string(instance.Architecture)
-			if ia != "" {
-				return ia
-			}
-
-			return ""
-		}},
-		{fieldInstanceLifecycle, func() string {
-			il := string(instance.InstanceLifecycle)
-			if il != "" {
-				return il
-			}
-
-			return ""
-		}},
-		{fieldInstanceState, func() string {
-			is := string(instance.State.Name)
-			if is != "" {
-				return is
-			}
-
-			return ""
-		}},
-		{fieldVpcID, func() string {
-			if instance.VpcId != nil {
-				return *instance.VpcId
-			}
-
-			return ""
-		}},
+	for field, fn := range mappings {
+		fieldMapper = append(fieldMapper, MetaDataMapper{field: field, value: fn})
 	}
 
 	if util.IsFieldExistsInConfig(fieldTags, a.Fields) {
 		for _, tag := range instance.Tags {
 			fieldMapper = append(fieldMapper, MetaDataMapper{
-				field: fmt.Sprintf("tag_%s", *tag.Key),
-				value: func() string {
-					return *tag.Value
-				},
+				field: fmt.Sprintf("tag_%s", safeDereference(tag.Key)),
+				value: func() string { return safeDereference(tag.Value) },
 			})
 		}
 	}
