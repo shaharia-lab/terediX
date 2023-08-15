@@ -41,8 +41,8 @@ func (p *PostgreSQL) Prepare() error {
         PRIMARY KEY(resource_id, related_resource_id)
     );
 
-	CREATE INDEX metadata_key_idx ON metadata (key);
-	CREATE INDEX metadata_value_idx ON metadata (value);
+	CREATE INDEX IF NOT EXISTS metadata_key_idx ON metadata (key);
+	CREATE INDEX IF NOT EXISTS metadata_value_idx ON metadata (value);
 `
 
 	_, err := p.DB.Exec(sqlString)
