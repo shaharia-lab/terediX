@@ -55,12 +55,15 @@ func stringValueOrDefault(s string) string {
 	return ""
 }
 
+// FieldMapper is a structure that helps in mapping various fields
+// and tags to resource.MetaData structures.
 type FieldMapper struct {
-	mappings map[string]func() string
-	tags     func() []types.Tag
-	fields   []string
+	mappings map[string]func() string // Map of field names to their corresponding value functions.
+	tags     func() []types.Tag       // Function that retrieves a list of tags.
+	fields   []string                 // List of fields to consider during the mapping.
 }
 
+// NewFieldMapper initializes and returns a new instance of FieldMapper.
 func NewFieldMapper(mappings map[string]func() string, tags func() []types.Tag, fields []string) *FieldMapper {
 	return &FieldMapper{
 		mappings: mappings,
@@ -69,6 +72,13 @@ func NewFieldMapper(mappings map[string]func() string, tags func() []types.Tag, 
 	}
 }
 
+// getResourceMetaData constructs and returns a list of resource.MetaData based on
+// the FieldMapper's mappings and tags. Only fields specified in the FieldMapper's
+// 'fields' slice or having the "tag_" prefix are considered.
+//
+// For each field in mappings, the associated function is called to retrieve its value.
+// Additionally, if tags are specified in the configuration, they are appended with
+// the "tag_" prefix and included in the final resource.MetaData list.
 func (f *FieldMapper) getResourceMetaData() []resource.MetaData {
 	var fieldMapper []MetaDataMapper
 	for field, fn := range f.mappings {

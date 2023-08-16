@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
@@ -90,69 +91,60 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 	}
 
 	for _, repo := range repos {
-		resourceChannel <- r.mapToResource(repo)
+		resourceChannel <- resource.Resource{
+			Kind:       pkg.ResourceKindGitHubRepository,
+			UUID:       util.GenerateUUID(),
+			Name:       repo.GetFullName(),
+			ExternalID: repo.GetFullName(),
+			MetaData:   r.getMetaData(repo),
+		}
 	}
 
 	return nil
 }
 
-func (r *GitHubRepositoryScanner) mapToResource(repo *github.Repository) resource.Resource {
-	var repoMeta []resource.MetaData
-	for _, mapper := range r.fieldMapper(repo) {
-		if util.IsFieldExistsInConfig(mapper.field, r.fields) {
-			val := mapper.value()
-			if val != "" {
-				repoMeta = append(repoMeta, resource.MetaData{Key: mapper.field, Value: val})
-			}
-		}
-	}
-
-	return resource.Resource{
-		Kind:       pkg.ResourceKindGitHubRepository,
-		UUID:       util.GenerateUUID(),
-		Name:       repo.GetFullName(),
-		ExternalID: repo.GetFullName(),
-		MetaData:   repoMeta,
-	}
-}
-
-func (r *GitHubRepositoryScanner) fieldMapper(repo *github.Repository) []MetaDataMapper {
-	return []MetaDataMapper{
-		{fieldCompany, func() string {
+func (r *GitHubRepositoryScanner) getMetaData(repo *github.Repository) []resource.MetaData {
+	mappings := map[string]func() string{
+		fieldCompany: func() string {
 			if repo.GetOwner() != nil {
 				return repo.GetOwner().GetCompany()
 			}
 			return ""
-		}},
-		{fieldLanguage, repo.GetLanguage},
-		{fieldHomepage, repo.GetHomepage},
-		{fieldOrg, func() string {
+		},
+		fieldLanguage: repo.GetLanguage,
+		fieldHomepage: repo.GetHomepage,
+		fieldOrg: func() string {
 			if repo.GetOrganization() != nil {
 				return repo.GetOrganization().GetName()
 			}
 			return ""
-		}},
-		{fieldStars, func() string { return strconv.Itoa(repo.GetStargazersCount()) }},
-		{fieldGitURL, repo.GetGitURL},
-		{fieldOwnerName, func() string {
+		},
+		fieldStars:  func() string { return strconv.Itoa(repo.GetStargazersCount()) },
+		fieldGitURL: repo.GetGitURL,
+		fieldOwnerName: func() string {
 			if repo.GetOwner() != nil {
 				return repo.GetOwner().GetName()
 			}
 			return ""
-		}},
-		{fieldOwnerLogin, func() string {
+		},
+		fieldOwnerLogin: func() string {
 			if repo.GetOwner() != nil {
 				return repo.GetOwner().GetLogin()
 			}
 			return ""
-		}},
-		{fieldTopics, func() string {
+		},
+		fieldTopics: func() string {
 			topics, err := json.Marshal(repo.Topics)
 			if err == nil {
 				return string(topics)
 			}
 
 			return ""
-		}},
+		},
 	}
+
+	fm := NewFieldMapper(mappings, func() []types.Tag {
+		return []types.Tag{}
+	}, r.fields)
+	return fm.getResourceMetaData()
 }
