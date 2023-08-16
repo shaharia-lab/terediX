@@ -32,7 +32,7 @@ func TestGetResourceMetaData(t *testing.T) {
 			inputMapper: NewFieldMapper(
 				map[string]func() string{"field1": mockMappingFunc},
 				mockTagsFunc,
-				[]string{"field1", "tags"},
+				[]string{"field1", fieldTags},
 			),
 			expectedOutput: []resource.MetaData{
 				{Key: "field1", Value: "value"},
