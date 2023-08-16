@@ -70,6 +70,7 @@ func TestBuildSources(t *testing.T) {
 		"xxxx",
 		ecr.NewFromConfig(awsConfig),
 		resourcegroupstaggingapi.NewFromConfig(awsConfig),
+		[]string{},
 	)
 
 	expectedSources := []Source{

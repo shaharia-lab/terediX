@@ -3,14 +3,23 @@ package scanner
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
+)
+
+const (
+	ecrFieldRepositoryName = "repositoryName"
+	ecrFieldArn            = "repositoryArn"
+	ecrFieldRegistryID     = "registryID"
+	ecrFieldRepositoryURI  = "repositoryURI"
+	ecrFieldTags           = "tags"
 )
 
 // EcrClient build aws client
@@ -27,16 +36,18 @@ type AWSECR struct {
 	Region                 string
 	AccountID              string
 	ResourceTaggingService util.ResourceTaggingServiceClient
+	Fields                 []string
 }
 
 // NewAWSECR construct AWS ECR source
-func NewAWSECR(sourceName string, region string, accountID string, ecrClient EcrClient, resourceTaggingService util.ResourceTaggingServiceClient) *AWSECR {
+func NewAWSECR(sourceName string, region string, accountID string, ecrClient EcrClient, resourceTaggingService util.ResourceTaggingServiceClient, fields []string) *AWSECR {
 	return &AWSECR{
 		SourceName:             sourceName,
 		ECRClient:              ecrClient,
 		Region:                 region,
 		AccountID:              accountID,
 		ResourceTaggingService: resourceTaggingService,
+		Fields:                 fields,
 	}
 }
 
@@ -68,40 +79,7 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 				Kind:       pkg.ResourceKindAWSECR,
 				UUID:       util.GenerateUUID(),
 				ExternalID: *repository.RepositoryArn,
-				MetaData: []resource.MetaData{
-					{
-						Key:   "AWS-ECR-Repository-Name",
-						Value: *repository.RepositoryName,
-					},
-					{
-						Key:   "AWS-ECR-Repository-Arn",
-						Value: *repository.RepositoryArn,
-					},
-					{
-						Key:   "AWS-ECR-Registry-Id",
-						Value: *repository.RegistryId,
-					},
-					{
-						Key:   "AWS-ECR-Repository-URI",
-						Value: *repository.RepositoryUri,
-					},
-					{
-						Key:   pkg.MetaKeyScannerLabel,
-						Value: a.SourceName,
-					},
-				},
-			}
-
-			tags, err := util.GetAWSResourceTagByARN(context.Background(), a.ResourceTaggingService, *repository.RepositoryArn)
-			if err != nil {
-				return err
-			}
-
-			for tagKey, tagValue := range tags {
-				res.MetaData = append(res.MetaData, resource.MetaData{
-					Key:   fmt.Sprintf("AWS-ECR-%s", tagKey),
-					Value: tagValue,
-				})
+				MetaData:   a.getMetaData(repository),
 			}
 
 			resourceChannel <- res
@@ -116,4 +94,32 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	return nil
+}
+
+func (a *AWSECR) getMetaData(repository ecrTypes.Repository) []resource.MetaData {
+	mappings := map[string]func() string{
+		ecrFieldRepositoryName: func() string { return stringValueOrDefault(*repository.RepositoryName) },
+		ecrFieldArn:            func() string { return stringValueOrDefault(*repository.RepositoryArn) },
+		ecrFieldRegistryID:     func() string { return stringValueOrDefault(*repository.RegistryId) },
+		ecrFieldRepositoryURI:  func() string { return stringValueOrDefault(*repository.RepositoryUri) },
+	}
+
+	getTags := func() []types.Tag {
+		tags, err := util.GetAWSResourceTagByARN(context.Background(), a.ResourceTaggingService, *repository.RepositoryArn)
+		if err != nil {
+			return []types.Tag{}
+		}
+
+		var tt []types.Tag
+		for key, val := range tags {
+			tt = append(tt, types.Tag{
+				Key:   aws.String(key),
+				Value: aws.String(val),
+			})
+		}
+
+		return tt
+	}
+
+	return NewFieldMapper(mappings, getTags, a.Fields).getResourceMetaData()
 }

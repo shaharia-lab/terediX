@@ -2,7 +2,12 @@
 package scanner
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/util"
 )
 
 // Scanner interface to build different scanner
@@ -34,4 +39,70 @@ func RunScannerForTests(scanner Scanner) []resource.Resource {
 		res = append(res, r)
 	}
 	return res
+}
+
+func safeDereference(s *string) string {
+	if s != nil {
+		return *s
+	}
+	return ""
+}
+
+func stringValueOrDefault(s string) string {
+	if s != "" {
+		return s
+	}
+	return ""
+}
+
+// FieldMapper is a structure that helps in mapping various fields
+// and tags to resource.MetaData structures.
+type FieldMapper struct {
+	mappings map[string]func() string // Map of field names to their corresponding value functions.
+	tags     func() []types.Tag       // Function that retrieves a list of tags.
+	fields   []string                 // List of fields to consider during the mapping.
+}
+
+// NewFieldMapper initializes and returns a new instance of FieldMapper.
+func NewFieldMapper(mappings map[string]func() string, tags func() []types.Tag, fields []string) *FieldMapper {
+	return &FieldMapper{
+		mappings: mappings,
+		tags:     tags,
+		fields:   fields,
+	}
+}
+
+// getResourceMetaData constructs and returns a list of resource.MetaData based on
+// the FieldMapper's mappings and tags. Only fields specified in the FieldMapper's
+// 'fields' slice or having the "tag_" prefix are considered.
+//
+// For each field in mappings, the associated function is called to retrieve its value.
+// Additionally, if tags are specified in the configuration, they are appended with
+// the "tag_" prefix and included in the final resource.MetaData list.
+func (f *FieldMapper) getResourceMetaData() []resource.MetaData {
+	var fieldMapper []MetaDataMapper
+	for field, fn := range f.mappings {
+		fieldMapper = append(fieldMapper, MetaDataMapper{field: field, value: fn})
+	}
+
+	if util.IsFieldExistsInConfig(fieldTags, f.fields) {
+		for _, tag := range f.tags() {
+			fieldMapper = append(fieldMapper, MetaDataMapper{
+				field: fmt.Sprintf("tag_%s", *tag.Key),
+				value: func() string { return stringValueOrDefault(*tag.Value) },
+			})
+		}
+	}
+
+	var resMeta []resource.MetaData
+	for _, mapper := range fieldMapper {
+		if util.IsFieldExistsInConfig(mapper.field, f.fields) || strings.Contains(mapper.field, "tag_") {
+			val := mapper.value()
+			if val != "" {
+				resMeta = append(resMeta, resource.MetaData{Key: mapper.field, Value: val})
+			}
+		}
+	}
+
+	return resMeta
 }

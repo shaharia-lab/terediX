@@ -96,6 +96,12 @@ source:
   aws_ecr_example:
     type: aws_ecr
     configuration: *aws_conf
+    fields:
+      - repository_name
+      - repository_uri
+      - registry_id
+      - arn
+      - tags
 relations:
   criteria:
     - name: "file-system-rule1"
