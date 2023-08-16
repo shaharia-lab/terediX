@@ -160,9 +160,9 @@ func TestAWSECR_Scan(t *testing.T) {
 			name: "returns resources",
 			sourceFields: []string{
 				ecrFieldRepositoryName,
-				ecrFieldRepositoryUri,
+				ecrFieldRepositoryURI,
 				ecrFieldArn,
-				ecrFieldRegistryId,
+				ecrFieldRegistryID,
 				ecrFieldTags,
 			},
 			awsECRRepositories: []ecrTypes.Repository{
@@ -182,9 +182,9 @@ func TestAWSECR_Scan(t *testing.T) {
 			expectedTotalResource: 1,
 			expectedMetaDataKeys: []string{
 				ecrFieldRepositoryName,
-				ecrFieldRepositoryUri,
+				ecrFieldRepositoryURI,
 				ecrFieldArn,
-				ecrFieldRegistryId,
+				ecrFieldRegistryID,
 				"tag_Environment",
 			},
 		},

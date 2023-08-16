@@ -17,8 +17,8 @@ import (
 const (
 	ecrFieldRepositoryName = "repositoryName"
 	ecrFieldArn            = "repositoryArn"
-	ecrFieldRegistryId     = "registryId"
-	ecrFieldRepositoryUri  = "repositoryUri"
+	ecrFieldRegistryID     = "registryID"
+	ecrFieldRepositoryURI  = "repositoryURI"
 	ecrFieldTags           = "tags"
 )
 
@@ -100,8 +100,8 @@ func (a *AWSECR) getMetaData(repository ecrTypes.Repository) []resource.MetaData
 	mappings := map[string]func() string{
 		ecrFieldRepositoryName: func() string { return stringValueOrDefault(*repository.RepositoryName) },
 		ecrFieldArn:            func() string { return stringValueOrDefault(*repository.RepositoryArn) },
-		ecrFieldRegistryId:     func() string { return stringValueOrDefault(*repository.RegistryId) },
-		ecrFieldRepositoryUri:  func() string { return stringValueOrDefault(*repository.RepositoryUri) },
+		ecrFieldRegistryID:     func() string { return stringValueOrDefault(*repository.RegistryId) },
+		ecrFieldRepositoryURI:  func() string { return stringValueOrDefault(*repository.RepositoryUri) },
 	}
 
 	getTags := func() []types.Tag {
