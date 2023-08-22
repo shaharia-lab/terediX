@@ -9,6 +9,10 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/util"
 )
 
+const (
+	fieldTags = "tags"
+)
+
 // Scanner interface to build different scanner
 type Scanner interface {
 	Scan(resourceChannel chan resource.Resource) error

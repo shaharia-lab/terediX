@@ -24,7 +24,6 @@ const (
 	fieldInstanceLifecycle = "instanceLifecycle"
 	fieldInstanceState     = "instanceState"
 	fieldVpcID             = "vpcId"
-	fieldTags              = "tags"
 )
 
 // Ec2Client build aws client
