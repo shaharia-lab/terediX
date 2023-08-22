@@ -53,5 +53,5 @@ dist: clean build
 
 validate_json_schema: clean build
 	$(MKDIR) $(DIST_DIR)
-	$(BUILD_DIR)/$(APP_NAME) validate --config ./pkg/cmd/testdata/valid_config.yaml
-	$(BUILD_DIR)/$(APP_NAME) validate --config ./pkg/config/testdata/valid_config.yaml
+	$(BUILD_DIR)/$(APP_NAME) validate --config ./cmd/testdata/valid_config.yaml
+	$(BUILD_DIR)/$(APP_NAME) validate --config ./config/testdata/valid_config.yaml
