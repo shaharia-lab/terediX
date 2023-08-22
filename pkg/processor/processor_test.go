@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/source"
-	"github.com/shaharia-lab/teredix/pkg/source/scanner"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/stretchr/testify/mock"
 )
