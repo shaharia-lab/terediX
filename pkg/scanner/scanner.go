@@ -20,6 +20,7 @@ type MetaDataMapper struct {
 	value func() string
 }
 
+// ResourceTag represents a tag on any resource.
 type ResourceTag struct {
 	Key   string
 	Value string
