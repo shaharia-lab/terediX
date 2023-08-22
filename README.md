@@ -284,18 +284,12 @@ source:
       session_token: "xxxx"
       region: "x"
       account_id: "xxx
+    fields:
+      - instance_id
+      - region
+      - arn
+      - tags
 ```
-
-#### Available metadata for AWS RDS Instance
-
-| Meta Key             | Description                                                                                          |
-|----------------------|------------------------------------------------------------------------------------------------------|
-| AWS-RDS-Instance-ID  | Name of the RDS instance                                                                             |
-| Scanner-Label        | Name of the source configured in config.yaml file                                                    |
-| AWS-RDS-Region       | Region name of AWS RDS source                                                                        |
-| AWS-ARN              | AWS ARN for the RDS instance                                                                         |
-| AWS-RDS-Tag-{tagKey} | Every tag key associated with the source will be added as metadata. {tagKey} is the tag key from RDS |
-
 
 ### 📦 AWS S3
 
