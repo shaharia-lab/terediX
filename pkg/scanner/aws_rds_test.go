@@ -1,10 +1,12 @@
 package scanner
 
 import (
+	"context"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/service/rds"
+	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,36 +17,29 @@ type RdsClientMock struct {
 	mock.Mock
 }
 
-// DescribeDBInstancesPages provides a mock function with given fields: _a0, _a1
-func (_m *RdsClientMock) DescribeDBInstancesPages(_a0 *rds.DescribeDBInstancesInput, _a1 func(*rds.DescribeDBInstancesOutput, bool) bool) error {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*rds.DescribeDBInstancesInput, func(*rds.DescribeDBInstancesOutput, bool) bool) error); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		r0 = ret.Error(0)
+// DescribeDBInstances provides a mock function with given fields: _a0, _a1, _a2
+func (_m *RdsClientMock) DescribeDBInstances(_a0 context.Context, _a1 *rds.DescribeDBInstancesInput, _a2 ...func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error) {
+	_va := make([]interface{}, len(_a2))
+	for _i := range _a2 {
+		_va[_i] = _a2[_i]
 	}
+	var _ca []interface{}
+	_ca = append(_ca, _a0, _a1)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
-	return r0
-}
-
-// ListTagsForResource provides a mock function with given fields: _a0
-func (_m *RdsClientMock) ListTagsForResource(_a0 *rds.ListTagsForResourceInput) (*rds.ListTagsForResourceOutput, error) {
-	ret := _m.Called(_a0)
-
-	var r0 *rds.ListTagsForResourceOutput
-	if rf, ok := ret.Get(0).(func(*rds.ListTagsForResourceInput) *rds.ListTagsForResourceOutput); ok {
-		r0 = rf(_a0)
+	var r0 *rds.DescribeDBInstancesOutput
+	if rf, ok := ret.Get(0).(func(context.Context, *rds.DescribeDBInstancesInput, ...func(*rds.Options)) *rds.DescribeDBInstancesOutput); ok {
+		r0 = rf(_a0, _a1, _a2...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*rds.ListTagsForResourceOutput)
+			r0 = ret.Get(0).(*rds.DescribeDBInstancesOutput)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*rds.ListTagsForResourceInput) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(context.Context, *rds.DescribeDBInstancesInput, ...func(*rds.Options)) error); ok {
+		r1 = rf(_a0, _a1, _a2...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,7 +51,7 @@ func TestAWSRDS_Scan(t *testing.T) {
 	testCases := []struct {
 		name                  string
 		sourceFields          []string
-		rdsInstances          []*rds.DBInstance
+		rdsInstances          []types.DBInstance
 		expectedTotalResource int
 		expectedMetaDataKeys  []string
 	}{
@@ -68,9 +63,9 @@ func TestAWSRDS_Scan(t *testing.T) {
 				rdsFieldARN,
 				rdsFieldRegion,
 			},
-			rdsInstances: []*rds.DBInstance{
-				{DBInstanceIdentifier: aws.String("instance1"), TagList: []*rds.Tag{{Key: aws.String("Environment"), Value: aws.String("Production")}}},
-				{DBInstanceIdentifier: aws.String("instance2"), TagList: []*rds.Tag{{Key: aws.String("Environment"), Value: aws.String("Production")}}},
+			rdsInstances: []types.DBInstance{
+				{DBInstanceIdentifier: aws.String("instance1"), TagList: []types.Tag{{Key: aws.String("Environment"), Value: aws.String("Production")}}},
+				{DBInstanceIdentifier: aws.String("instance2"), TagList: []types.Tag{{Key: aws.String("Environment"), Value: aws.String("Production")}}},
 			},
 			expectedTotalResource: 2,
 			expectedMetaDataKeys: []string{
@@ -84,12 +79,15 @@ func TestAWSRDS_Scan(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			rdsClientMock := new(RdsClientMock)
-			rdsClientMock.On("DescribeDBInstancesPages", mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
-				fn := args.Get(1).(func(*rds.DescribeDBInstancesOutput, bool) bool)
-				for _, rdsInstance := range tt.rdsInstances {
-					fn(&rds.DescribeDBInstancesOutput{DBInstances: []*rds.DBInstance{rdsInstance}}, false)
-				}
-			})
+			rdsInput := &rds.DescribeDBInstancesInput{}
+
+			mockOutput := &rds.DescribeDBInstancesOutput{
+				DBInstances: tt.rdsInstances,
+			}
+
+			// Return mockOutput as a result of the DescribeDBInstances method
+			rdsClientMock.On("DescribeDBInstances", mock.Anything, rdsInput, mock.Anything).Return(mockOutput, nil)
+
 			res := RunScannerForTests(NewAWSRDS("source-name", "us-east-1", "123456789012", rdsClientMock, []string{rdsFieldInstanceID, rdsFieldTags, rdsFieldARN, rdsFieldRegion}))
 
 			assert.Equal(t, tt.expectedTotalResource, len(res))

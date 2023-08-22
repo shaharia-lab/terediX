@@ -75,6 +75,11 @@ source:
   aws_rds_one:
     type: aws_rds
     configuration: *aws_conf
+    fields:
+      - instance_id
+      - region
+      - arn
+      - tags
   aws_ec2_one:
     type: aws_ec2
     configuration:

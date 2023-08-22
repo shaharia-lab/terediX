@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
@@ -143,8 +142,8 @@ func (r *GitHubRepositoryScanner) getMetaData(repo *github.Repository) []resourc
 		},
 	}
 
-	fm := NewFieldMapper(mappings, func() []types.Tag {
-		return []types.Tag{}
+	fm := NewFieldMapper(mappings, func() []ResourceTag {
+		return []ResourceTag{}
 	}, r.fields)
 	return fm.getResourceMetaData()
 }

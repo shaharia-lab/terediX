@@ -4,8 +4,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 )
 
@@ -21,8 +19,8 @@ func TestGetResourceMetaData(t *testing.T) {
 	mockMappingFunc := func() string {
 		return "value"
 	}
-	mockTagsFunc := func() []types.Tag {
-		return []types.Tag{{Key: aws.String("tagKey"), Value: aws.String("tagValue")}}
+	mockTagsFunc := func() []ResourceTag {
+		return []ResourceTag{{Key: "tagKey", Value: "tagValue"}}
 	}
 
 	// Your data provider test cases

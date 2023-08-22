@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
 )
@@ -19,6 +18,11 @@ type Scanner interface {
 type MetaDataMapper struct {
 	field string
 	value func() string
+}
+
+type ResourceTag struct {
+	Key   string
+	Value string
 }
 
 // RunScannerForTests initiates a scan using the provided scanner and collects
@@ -59,12 +63,12 @@ func stringValueOrDefault(s string) string {
 // and tags to resource.MetaData structures.
 type FieldMapper struct {
 	mappings map[string]func() string // Map of field names to their corresponding value functions.
-	tags     func() []types.Tag       // Function that retrieves a list of tags.
+	tags     func() []ResourceTag     // Function that retrieves a list of tags.
 	fields   []string                 // List of fields to consider during the mapping.
 }
 
 // NewFieldMapper initializes and returns a new instance of FieldMapper.
-func NewFieldMapper(mappings map[string]func() string, tags func() []types.Tag, fields []string) *FieldMapper {
+func NewFieldMapper(mappings map[string]func() string, tags func() []ResourceTag, fields []string) *FieldMapper {
 	return &FieldMapper{
 		mappings: mappings,
 		tags:     tags,
@@ -88,8 +92,8 @@ func (f *FieldMapper) getResourceMetaData() []resource.MetaData {
 	if util.IsFieldExistsInConfig(fieldTags, f.fields) {
 		for _, tag := range f.tags() {
 			fieldMapper = append(fieldMapper, MetaDataMapper{
-				field: fmt.Sprintf("tag_%s", *tag.Key),
-				value: func() string { return stringValueOrDefault(*tag.Value) },
+				field: fmt.Sprintf("tag_%s", tag.Key),
+				value: func() string { return stringValueOrDefault(tag.Value) },
 			})
 		}
 	}
