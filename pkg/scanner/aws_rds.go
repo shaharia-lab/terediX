@@ -4,6 +4,7 @@ package scanner
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
@@ -13,8 +14,12 @@ import (
 )
 
 const (
-	apiCallInitialBackoff = 5
-	apiCallMaxRetries     = 5
+	rdsFieldInstanceID = "instanceID"
+	rdsFieldRegion     = "region"
+	rdsFieldARN        = "arn"
+	rdsFieldTags       = "tags"
+
+	rdsARNFormat = "arn:aws:rds:%s:%s:db:%s"
 )
 
 // RdsClient build aws client
@@ -29,15 +34,17 @@ type AWSRDS struct {
 	RdsClient  RdsClient
 	Region     string
 	AccountID  string
+	Fields     []string
 }
 
 // NewAWSRDS construct AWS S3 source
-func NewAWSRDS(sourceName string, region string, accountID string, rdsClient RdsClient) *AWSRDS {
+func NewAWSRDS(sourceName string, region string, accountID string, rdsClient RdsClient, fields []string) *AWSRDS {
 	return &AWSRDS{
 		SourceName: sourceName,
 		RdsClient:  rdsClient,
 		Region:     region,
 		AccountID:  accountID,
+		Fields:     fields,
 	}
 }
 
@@ -57,16 +64,6 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 	for _, rdsInstance := range rdsInstances {
 		instanceID := aws.StringValue(rdsInstance.DBInstanceIdentifier)
 
-		// Retry request with exponential backoff if it fails due to rate limiting
-		var tagResult *rds.ListTagsForResourceOutput
-		err := util.RetryWithExponentialBackoff(func() error {
-			var err error
-			tagResult, err = a.RdsClient.ListTagsForResource(&rds.ListTagsForResourceInput{
-				ResourceName: aws.String(fmt.Sprintf("arn:aws:rds:%s:%s:db:%s", a.Region, a.AccountID, instanceID)),
-			})
-			return err
-		}, apiCallMaxRetries, apiCallInitialBackoff)
-
 		if err != nil {
 			return fmt.Errorf("failed to get tags for RDS instance %s. error: %w", instanceID, err)
 		}
@@ -77,31 +74,35 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 			Name:        instanceID,
 			ExternalID:  instanceID,
 			RelatedWith: nil,
-			MetaData: []resource.MetaData{
-				{
-					Key:   "AWS-RDS-Instance-ID",
-					Value: instanceID,
-				},
-				{
-					Key:   "AWS-RDS-Region",
-					Value: a.Region,
-				},
-				{
-					Key:   "AWS-ARN",
-					Value: fmt.Sprintf("arn:aws:rds:%s:%s:db:%s", a.Region, a.AccountID, instanceID),
-				},
-			},
-		}
-
-		for _, tag := range tagResult.TagList {
-			r.MetaData = append(r.MetaData, resource.MetaData{
-				Key:   fmt.Sprintf("AWS-RDS-Tag-%s", aws.StringValue(tag.Key)),
-				Value: aws.StringValue(tag.Value),
-			})
+			MetaData:    a.getMetaData(rdsInstance),
 		}
 
 		resourceChannel <- r
 	}
 
 	return nil
+}
+
+func (a *AWSRDS) getMetaData(rdsInstance *rds.DBInstance) []resource.MetaData {
+	mappings := map[string]func() string{
+		rdsFieldInstanceID: func() string { return aws.StringValue(rdsInstance.DBInstanceIdentifier) },
+		rdsFieldARN: func() string {
+			return fmt.Sprintf(rdsARNFormat, a.Region, a.AccountID, aws.StringValue(rdsInstance.DBInstanceIdentifier))
+		},
+		rdsFieldRegion: func() string { return a.Region },
+	}
+
+	getTags := func() []types.Tag {
+		var tt []types.Tag
+		for _, tag := range rdsInstance.TagList {
+			tt = append(tt, types.Tag{
+				Key:   aws.String(aws.StringValue(tag.Key)),
+				Value: aws.String(aws.StringValue(tag.Value)),
+			})
+		}
+
+		return tt
+	}
+
+	return NewFieldMapper(mappings, getTags, a.Fields).getResourceMetaData()
 }

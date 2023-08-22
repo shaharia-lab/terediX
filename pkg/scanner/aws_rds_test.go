@@ -3,10 +3,10 @@ package scanner
 import (
 	"testing"
 
-	"github.com/shaharia-lab/teredix/pkg/resource"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -54,23 +54,31 @@ func (_m *RdsClientMock) ListTagsForResource(_a0 *rds.ListTagsForResourceInput) 
 
 func TestAWSRDS_Scan(t *testing.T) {
 	testCases := []struct {
-		name          string
-		rdsInstances  []*rds.DBInstance
-		tags          []*rds.Tag
-		expectedError error
-		expectedCount int
+		name                  string
+		sourceFields          []string
+		rdsInstances          []*rds.DBInstance
+		expectedTotalResource int
+		expectedMetaDataKeys  []string
 	}{
 		{
 			name: "successfully list RDS instances and map resources",
+			sourceFields: []string{
+				rdsFieldInstanceID,
+				rdsFieldTags,
+				rdsFieldARN,
+				rdsFieldRegion,
+			},
 			rdsInstances: []*rds.DBInstance{
-				{DBInstanceIdentifier: aws.String("instance1")},
-				{DBInstanceIdentifier: aws.String("instance2")},
+				{DBInstanceIdentifier: aws.String("instance1"), TagList: []*rds.Tag{{Key: aws.String("Environment"), Value: aws.String("Production")}}},
+				{DBInstanceIdentifier: aws.String("instance2"), TagList: []*rds.Tag{{Key: aws.String("Environment"), Value: aws.String("Production")}}},
 			},
-			tags: []*rds.Tag{
-				{Key: aws.String("Environment"), Value: aws.String("Production")},
+			expectedTotalResource: 2,
+			expectedMetaDataKeys: []string{
+				rdsFieldInstanceID,
+				"tag_Environment",
+				rdsFieldARN,
+				rdsFieldRegion,
 			},
-			expectedError: nil,
-			expectedCount: 2,
 		},
 	}
 	for _, tt := range testCases {
@@ -82,27 +90,10 @@ func TestAWSRDS_Scan(t *testing.T) {
 					fn(&rds.DescribeDBInstancesOutput{DBInstances: []*rds.DBInstance{rdsInstance}}, false)
 				}
 			})
+			res := RunScannerForTests(NewAWSRDS("source-name", "us-east-1", "123456789012", rdsClientMock, []string{rdsFieldInstanceID, rdsFieldTags, rdsFieldARN, rdsFieldRegion}))
 
-			rdsClientMock.On("ListTagsForResource", mock.Anything).Return(&rds.ListTagsForResourceOutput{TagList: tt.tags}, nil)
-
-			resourceChannel := make(chan resource.Resource, len(tt.rdsInstances))
-			var res []resource.Resource
-
-			go func() {
-				// Create an RDS scanner and scan
-				a := NewAWSRDS("source-name", "us-east-1", "123456789012", rdsClientMock)
-				a.Scan(resourceChannel)
-
-				close(resourceChannel)
-			}()
-
-			for r := range resourceChannel {
-				res = append(res, r)
-			}
-
-			if len(res) != tt.expectedCount {
-				t.Errorf("unexpected number of resources: got %d, want %d", len(res), tt.expectedCount)
-			}
+			assert.Equal(t, tt.expectedTotalResource, len(res))
+			util.CheckIfMetaKeysExistsInResources(t, res, tt.expectedMetaDataKeys)
 		})
 	}
 }
