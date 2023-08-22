@@ -5,7 +5,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/shaharia-lab/teredix/pkg/cmd"
+	"github.com/shaharia-lab/teredix/cmd"
 )
 
 func main() {

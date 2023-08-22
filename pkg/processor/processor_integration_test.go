@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const fileSystemSourceIntegrationTestRootDirectory = "cmd/testdata"
+const fileSystemSourceIntegrationTestRootDirectory = "config/testdata"
 
 const yamlContent = `
 ---
