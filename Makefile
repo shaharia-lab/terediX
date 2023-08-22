@@ -36,10 +36,10 @@ test:
 	$(GOTEST) ./...
 
 test-unit:
-	$(GOTEST) ./... -coverprofile=coverage_unit.out
+	$(GOTEST) -race -covermode=atomic ./... -coverprofile=coverage_unit.out
 
 test-integration:
-	$(GOTEST) -tags integration -cover ./... -coverprofile=coverage_integration.out
+	$(GOTEST) -tags integration -race -covermode=atomic -cover ./... -coverprofile=coverage_integration.out
 
 mod:
 	$(GOMOD) download
