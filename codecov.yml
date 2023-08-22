@@ -1,0 +1,10 @@
+ignore:
+  - ".github/**"
+  - "ci/**"
+  - "**/*_test.go"
+  - "**/*_test.go"
+  - "**/vendor/**"
+  - "**/testdata/*"
+  - "**/*.yaml"
+  - "**/*.yml"
+  - "**/*_mock.go"
