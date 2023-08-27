@@ -13,6 +13,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
+const (
+	s3fieldBucketName = "bucketName"
+	s3fieldRegion     = "region"
+	s3fieldARN        = "arn"
+	s3fieldTags       = "tags"
+
+	s3ARNFormat = "arn:aws:s3:::%s"
+)
+
 // AWSS3Client build aws client
 type AWSS3Client interface {
 	ListBuckets(listBucketInput *s3.ListBucketsInput) (*s3.ListBucketsOutput, error)
@@ -45,51 +54,48 @@ func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	for _, bucket := range result.Buckets {
-		resourceChannel <- a.mapToResource(bucket)
+		resourceChannel <- resource.Resource{
+			Kind:        pkg.ResourceKindAWSS3,
+			UUID:        util.GenerateUUID(),
+			Name:        aws.StringValue(bucket.Name),
+			ExternalID:  aws.StringValue(bucket.Name),
+			RelatedWith: nil,
+			MetaData:    a.getMetaData(bucket),
+		}
 	}
 
 	return nil
 }
 
-func (a *AWSS3) mapToResource(bucket *s3.Bucket) resource.Resource {
-	res := resource.Resource{
-		Kind:        pkg.ResourceKindAWSS3,
-		UUID:        util.GenerateUUID(),
-		Name:        aws.StringValue(bucket.Name),
-		ExternalID:  aws.StringValue(bucket.Name),
-		RelatedWith: nil,
-		MetaData: []resource.MetaData{
-			{
-				Key:   "AWS-S3-Bucket-Name",
-				Value: aws.StringValue(bucket.Name),
-			},
-			{
-				Key:   pkg.MetaKeyScannerLabel,
-				Value: a.SourceName,
-			},
-			{
-				Key:   "AWS-S3-Region",
-				Value: a.Region,
-			},
-			{
-				Key:   "AWS-ARN",
-				Value: fmt.Sprintf("arn:aws:s3:::%s", aws.StringValue(bucket.Name)),
-			},
+func (a *AWSS3) getMetaData(bucket *s3.Bucket) []resource.MetaData {
+	mappings := map[string]func() string{
+		s3fieldBucketName: func() string { return aws.StringValue(bucket.Name) },
+		s3fieldARN: func() string {
+			return fmt.Sprintf(s3ARNFormat, aws.StringValue(bucket.Name))
 		},
+		s3fieldRegion: func() string { return a.Region },
 	}
 
-	bucketName := aws.StringValue(bucket.Name)
+	getTags := func() []ResourceTag {
+		var tt []ResourceTag
 
-	tagResult, _ := a.S3Client.GetBucketTagging(&s3.GetBucketTaggingInput{
-		Bucket: aws.String(bucketName),
-	})
+		if util.IsFieldExistsInConfig(s3fieldTags, a.Fields) == false {
+			return tt
+		}
 
-	for _, tag := range tagResult.TagSet {
-		res.MetaData = append(res.MetaData, resource.MetaData{
-			Key:   fmt.Sprintf("AWS-S3-Tag-%s", aws.StringValue(tag.Key)),
-			Value: aws.StringValue(tag.Value),
+		tagResult, _ := a.S3Client.GetBucketTagging(&s3.GetBucketTaggingInput{
+			Bucket: aws.String(aws.StringValue(bucket.Name)),
 		})
+
+		for _, tag := range tagResult.TagSet {
+			tt = append(tt, ResourceTag{
+				Key:   aws.StringValue(tag.Key),
+				Value: aws.StringValue(tag.Value),
+			})
+		}
+
+		return tt
 	}
 
-	return res
+	return NewFieldMapper(mappings, getTags, a.Fields).getResourceMetaData()
 }

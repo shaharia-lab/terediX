@@ -74,6 +74,7 @@ source:
       account_id: "xxx"
     fields:
       - bucket_name
+      - region
       - arn
       - tags
   aws_rds_one:

@@ -3,7 +3,7 @@ package scanner
 import (
 	"testing"
 
-	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -63,23 +63,29 @@ func (_m *AWSS3ClientMock) ListBuckets(listBucketInput *s3.ListBucketsInput) (*s
 
 func TestAWSS3_Scan(t *testing.T) {
 	testCases := []struct {
-		name          string
-		buckets       []*s3.Bucket
-		tags          []*s3.Tag
-		expectedError error
-		expectedCount int
+		name                  string
+		sourceFields          []string
+		buckets               []*s3.Bucket
+		tags                  []*s3.Tag
+		expectedTotalResource int
+		expectedMetaDataKeys  []string
 	}{
 		{
 			name: "successfully list buckets and map resources",
+			sourceFields: []string{
+				s3fieldRegion,
+				s3fieldARN,
+				s3fieldBucketName,
+			},
 			buckets: []*s3.Bucket{
 				{Name: aws.String("bucket1")},
 				{Name: aws.String("bucket2")},
 			},
 			tags: []*s3.Tag{
-				{Key: aws.String("Environment"), Value: aws.String("Production")},
+				{Key: aws.String("tag1"), Value: aws.String("value1")},
 			},
-			expectedError: nil,
-			expectedCount: 2,
+			expectedTotalResource: 2,
+			expectedMetaDataKeys:  []string{s3fieldRegion, s3fieldARN, s3fieldBucketName, "tag_tag1"},
 		},
 	}
 	for _, tt := range testCases {
@@ -88,24 +94,9 @@ func TestAWSS3_Scan(t *testing.T) {
 			s3ClientMock.On("ListBuckets", mock.Anything).Return(&s3.ListBucketsOutput{Buckets: tt.buckets}, nil)
 			s3ClientMock.On("GetBucketTagging", mock.Anything).Return(&s3.GetBucketTaggingOutput{TagSet: tt.tags}, nil)
 
-			resourceChannel := make(chan resource.Resource, len(tt.buckets))
-			var res []resource.Resource
+			resources := RunScannerForTests(NewAWSS3("source-name", "us-east-1", s3ClientMock, []string{}))
 
-			go func() {
-				// Create an FsScanner for the temporary directory and scan it
-				a := NewAWSS3("source-name", "us-east-1", s3ClientMock, []string{})
-				a.Scan(resourceChannel)
-
-				close(resourceChannel)
-			}()
-
-			for r := range resourceChannel {
-				res = append(res, r)
-			}
-
-			if len(res) != tt.expectedCount {
-				t.Errorf("unexpected number of resources: got %d, want %d", len(res), tt.expectedCount)
-			}
+			assert.Equal(t, tt.expectedTotalResource, len(resources))
 		})
 	}
 }

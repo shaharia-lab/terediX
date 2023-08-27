@@ -292,6 +292,7 @@
         "type": "string",
         "enum": [
           "bucket_name",
+          "region",
           "arn",
           "tags"
         ]

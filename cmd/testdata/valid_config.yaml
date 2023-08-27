@@ -93,6 +93,7 @@ source:
     configuration: *aws_conf
     fields:
       - bucket_name
+      - region
       - arn
       - tags
 relations:
