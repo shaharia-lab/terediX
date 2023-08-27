@@ -88,6 +88,13 @@ source:
       - region
       - arn
       - tags
+  aws_s3_one:
+    type: aws_s3
+    configuration: *aws_conf
+    fields:
+      - bucket_name
+      - arn
+      - tags
 relations:
   criteria:
     - name: "file-system-rule1"

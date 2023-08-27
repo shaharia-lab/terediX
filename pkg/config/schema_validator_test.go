@@ -72,6 +72,10 @@ source:
       session_token: "xxxx"
       region: "x"
       account_id: "xxx"
+    fields:
+      - bucket_name
+      - arn
+      - tags
   aws_rds_one:
     type: aws_rds
     configuration: *aws_conf
