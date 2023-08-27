@@ -70,7 +70,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 			newSession, _ := session.NewSession(awsCnf)
 			s3Client := s3.New(newSession)
 
-			awsS3 := scanner.NewAWSS3(sourceKey, s.Configuration["region"], s3Client)
+			awsS3 := scanner.NewAWSS3(sourceKey, s.Configuration["region"], s3Client, []string{})
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: awsS3,

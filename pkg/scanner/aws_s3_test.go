@@ -93,7 +93,7 @@ func TestAWSS3_Scan(t *testing.T) {
 
 			go func() {
 				// Create an FsScanner for the temporary directory and scan it
-				a := NewAWSS3("source-name", "us-east-1", s3ClientMock)
+				a := NewAWSS3("source-name", "us-east-1", s3ClientMock, []string{})
 				a.Scan(resourceChannel)
 
 				close(resourceChannel)

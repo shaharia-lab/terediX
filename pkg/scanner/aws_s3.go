@@ -24,14 +24,16 @@ type AWSS3 struct {
 	SourceName string
 	S3Client   AWSS3Client
 	Region     string
+	Fields     []string
 }
 
 // NewAWSS3 construct AWS S3 source
-func NewAWSS3(sourceName string, region string, s3Client AWSS3Client) *AWSS3 {
+func NewAWSS3(sourceName string, region string, s3Client AWSS3Client, fields []string) *AWSS3 {
 	return &AWSS3{
 		SourceName: sourceName,
 		S3Client:   s3Client,
 		Region:     region,
+		Fields:     fields,
 	}
 }
 
