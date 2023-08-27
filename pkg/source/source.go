@@ -20,12 +20,7 @@ import (
 	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/go-github/v50/github"
 	"golang.org/x/oauth2"
 )
@@ -66,9 +61,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 		}
 
 		if s.Type == pkg.SourceTypeAWSS3 {
-			awsCnf := aws.NewConfig().WithRegion(s.Configuration["region"]).WithCredentials(credentials.NewStaticCredentials(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"]))
-			newSession, _ := session.NewSession(awsCnf)
-			s3Client := s3.New(newSession)
+			s3Client := s3.NewFromConfig(buildAWSConfig(s))
 
 			awsS3 := scanner.NewAWSS3(sourceKey, s.Configuration["region"], s3Client, s.Fields)
 			finalSources = append(finalSources, Source{

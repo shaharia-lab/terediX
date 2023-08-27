@@ -2,15 +2,17 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 const (
@@ -24,8 +26,8 @@ const (
 
 // AWSS3Client build aws client
 type AWSS3Client interface {
-	ListBuckets(listBucketInput *s3.ListBucketsInput) (*s3.ListBucketsOutput, error)
-	GetBucketTagging(bucketTaggingInput *s3.GetBucketTaggingInput) (*s3.GetBucketTaggingOutput, error)
+	ListBuckets(ctx context.Context, params *s3.ListBucketsInput, optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
+	GetBucketTagging(ctx context.Context, params *s3.GetBucketTaggingInput, optFns ...func(*s3.Options)) (*s3.GetBucketTaggingOutput, error)
 }
 
 // AWSS3 AWS S3 source
@@ -48,17 +50,18 @@ func NewAWSS3(sourceName string, region string, s3Client AWSS3Client, fields []s
 
 // Scan discover resource and send to resource channel
 func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
-	result, err := a.S3Client.ListBuckets(nil)
+	// List all S3 buckets
+	output, err := a.S3Client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
-		return fmt.Errorf("failed to list buckets. error: %w", err)
+		return fmt.Errorf("unable to list buckets: %w", err)
 	}
 
-	for _, bucket := range result.Buckets {
+	for _, bucket := range output.Buckets {
 		resourceChannel <- resource.Resource{
 			Kind:        pkg.ResourceKindAWSS3,
 			UUID:        util.GenerateUUID(),
-			Name:        aws.StringValue(bucket.Name),
-			ExternalID:  aws.StringValue(bucket.Name),
+			Name:        aws.ToString(bucket.Name),
+			ExternalID:  aws.ToString(bucket.Name),
 			RelatedWith: nil,
 			MetaData:    a.getMetaData(bucket),
 		}
@@ -67,11 +70,11 @@ func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
 	return nil
 }
 
-func (a *AWSS3) getMetaData(bucket *s3.Bucket) []resource.MetaData {
+func (a *AWSS3) getMetaData(bucket types.Bucket) []resource.MetaData {
 	mappings := map[string]func() string{
-		s3fieldBucketName: func() string { return aws.StringValue(bucket.Name) },
+		s3fieldBucketName: func() string { return aws.ToString(bucket.Name) },
 		s3fieldARN: func() string {
-			return fmt.Sprintf(s3ARNFormat, aws.StringValue(bucket.Name))
+			return fmt.Sprintf(s3ARNFormat, aws.ToString(bucket.Name))
 		},
 		s3fieldRegion: func() string { return a.Region },
 	}
@@ -83,14 +86,14 @@ func (a *AWSS3) getMetaData(bucket *s3.Bucket) []resource.MetaData {
 			return tt
 		}
 
-		tagResult, _ := a.S3Client.GetBucketTagging(&s3.GetBucketTaggingInput{
-			Bucket: aws.String(aws.StringValue(bucket.Name)),
+		tagResult, _ := a.S3Client.GetBucketTagging(context.TODO(), &s3.GetBucketTaggingInput{
+			Bucket: aws.String(aws.ToString(bucket.Name)),
 		})
 
 		for _, tag := range tagResult.TagSet {
 			tt = append(tt, ResourceTag{
-				Key:   aws.StringValue(tag.Key),
-				Value: aws.StringValue(tag.Value),
+				Key:   aws.ToString(tag.Key),
+				Value: aws.ToString(tag.Value),
 			})
 		}
 
