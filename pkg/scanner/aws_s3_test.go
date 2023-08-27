@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -92,6 +93,7 @@ func TestAWSS3_Scan(t *testing.T) {
 				s3fieldRegion,
 				s3fieldARN,
 				s3fieldBucketName,
+				s3fieldTags,
 			},
 			buckets: []types.Bucket{
 				{Name: aws.String("bucket1")},
@@ -108,11 +110,12 @@ func TestAWSS3_Scan(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s3ClientMock := new(AWSS3ClientMock)
 			s3ClientMock.On("ListBuckets", mock.Anything, mock.Anything, mock.Anything).Return(&s3.ListBucketsOutput{Buckets: tt.buckets}, nil)
-			s3ClientMock.On("GetBucketTagging", mock.Anything).Return(&s3.GetBucketTaggingOutput{TagSet: tt.tags}, nil)
+			s3ClientMock.On("GetBucketTagging", mock.Anything, mock.Anything, mock.Anything).Return(&s3.GetBucketTaggingOutput{TagSet: tt.tags}, nil)
 
-			resources := RunScannerForTests(NewAWSS3("source-name", "us-east-1", s3ClientMock, []string{}))
+			resources := RunScannerForTests(NewAWSS3("source-name", "us-east-1", s3ClientMock, tt.sourceFields))
 
 			assert.Equal(t, tt.expectedTotalResource, len(resources))
+			util.CheckIfMetaKeysExistsInResources(t, resources, tt.expectedMetaDataKeys)
 		})
 	}
 }
