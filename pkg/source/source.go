@@ -10,14 +10,12 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 
-	aws2 "github.com/aws/aws-sdk-go-v2/aws"
-
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 
-	ec2v2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-
-	configv2 "github.com/aws/aws-sdk-go-v2/config"
-	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -83,7 +81,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 		if s.Type == pkg.SourceTypeAWSEC2 {
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
-				Scanner: scanner.NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2v2.NewFromConfig(buildAWSConfig(s)), s.Fields),
+				Scanner: scanner.NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2.NewFromConfig(buildAWSConfig(s)), s.Fields),
 			})
 		}
 
@@ -104,9 +102,9 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 	return finalSources
 }
 
-func buildAWSConfig(s config.Source) aws2.Config {
-	cfg, _ := configv2.LoadDefaultConfig(context.TODO())
-	awsCredentials := credentialsv2.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
+func buildAWSConfig(s config.Source) aws.Config {
+	cfg, _ := awsConfig.LoadDefaultConfig(context.TODO())
+	awsCredentials := credentials.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
 
 	cfg.Credentials = awsCredentials
 	cfg.Region = s.Configuration["region"]
