@@ -24,7 +24,6 @@ const (
 	fieldInstanceLifecycle = "instanceLifecycle"
 	fieldInstanceState     = "instanceState"
 	fieldVpcID             = "vpcId"
-	fieldTags              = "tags"
 )
 
 // Ec2Client build aws client
@@ -97,8 +96,15 @@ func (a *AWSEC2) getMetaData(instance types.Instance) []resource.MetaData {
 		fieldInstanceState:     func() string { return stringValueOrDefault(string(instance.State.Name)) },
 		fieldVpcID:             func() string { return safeDereference(instance.VpcId) },
 	}
-	return NewFieldMapper(mappings, func() []types.Tag {
-		return instance.Tags
+	return NewFieldMapper(mappings, func() []ResourceTag {
+		var tags []ResourceTag
+		for _, tag := range instance.Tags {
+			tags = append(tags, ResourceTag{
+				Key:   *tag.Key,
+				Value: *tag.Value,
+			})
+		}
+		return tags
 	}, a.Fields).getResourceMetaData()
 }
 

@@ -18,7 +18,7 @@ import (
 
 	configv2 "github.com/aws/aws-sdk-go-v2/config"
 	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/aws/aws-sdk-go-v2/service/rds"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -78,11 +78,9 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 		}
 
 		if s.Type == pkg.SourceTypeAWSRDS {
-			awsCnf := aws.NewConfig().WithRegion(s.Configuration["region"]).WithCredentials(credentials.NewStaticCredentials(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"]))
-			newSession, _ := session.NewSession(awsCnf)
-			rdsClient := rds.New(newSession)
+			rdsClient := rds.NewFromConfig(buildAWSConfig(s))
 
-			awsS3 := scanner.NewAWSRDS(sourceKey, s.Configuration["region"], s.Configuration["account_id"], rdsClient)
+			awsS3 := scanner.NewAWSRDS(sourceKey, s.Configuration["region"], s.Configuration["account_id"], rdsClient, s.Fields)
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: awsS3,

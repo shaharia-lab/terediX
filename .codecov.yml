@@ -1,0 +1,14 @@
+coverage:
+  range: 80..100
+  round: down
+  precision: 2
+ignore:
+  - ".github/**"
+  - "ci/**"
+  - "**/*_test.go"
+  - "**/*_test.go"
+  - "**/vendor/**"
+  - "**/testdata/*"
+  - "**/*.yaml"
+  - "**/*.yml"
+  - "**/*_mock.go"

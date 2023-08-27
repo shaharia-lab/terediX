@@ -292,22 +292,9 @@
         },
         "configuration": {
           "$ref": "#/definitions/source.aws_common.configuration"
-        }
-      },
-      "required": ["type", "configuration"]
-    },
-    "source.aws_ec2": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["aws_ec2"]
-        },
-        "configuration": {
-          "$ref": "#/definitions/source.aws_common.configuration"
         },
         "fields": {
-          "$ref": "#/definitions/source.aws_ec2.fields"
+          "$ref": "#/definitions/source.aws_rds.fields"
         }
       },
       "required": ["type", "configuration", "fields"]
@@ -325,6 +312,36 @@
           "instance_lifecycle",
           "instance_state",
           "vpc_id",
+          "tags"
+        ]
+      },
+      "uniqueItems": true,
+      "additionalItems": false
+    },
+    "source.aws_ec2": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["aws_ec2"]
+        },
+        "configuration": {
+          "$ref": "#/definitions/source.aws_common.configuration"
+        },
+        "fields": {
+          "$ref": "#/definitions/source.aws_ec2.fields"
+        }
+      },
+      "required": ["type", "configuration", "fields"]
+    },
+    "source.aws_rds.fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "instance_id",
+          "region",
+          "arn",
           "tags"
         ]
       },

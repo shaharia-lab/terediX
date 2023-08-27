@@ -4,7 +4,6 @@ package scanner
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
@@ -104,17 +103,17 @@ func (a *AWSECR) getMetaData(repository ecrTypes.Repository) []resource.MetaData
 		ecrFieldRepositoryURI:  func() string { return stringValueOrDefault(*repository.RepositoryUri) },
 	}
 
-	getTags := func() []types.Tag {
+	getTags := func() []ResourceTag {
 		tags, err := util.GetAWSResourceTagByARN(context.Background(), a.ResourceTaggingService, *repository.RepositoryArn)
 		if err != nil {
-			return []types.Tag{}
+			return []ResourceTag{}
 		}
 
-		var tt []types.Tag
+		var tt []ResourceTag
 		for key, val := range tags {
-			tt = append(tt, types.Tag{
-				Key:   aws.String(key),
-				Value: aws.String(val),
+			tt = append(tt, ResourceTag{
+				Key:   key,
+				Value: val,
 			})
 		}
 
