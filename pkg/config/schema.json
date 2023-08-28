@@ -379,7 +379,7 @@
           "$ref": "#/definitions/source.aws_ecr.fields"
         }
       },
-      "required": ["type", "configuration"]
+      "required": ["type", "configuration", "fields"]
     },
     "source.aws_ecr.fields": {
       "type": "array",
