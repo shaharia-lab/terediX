@@ -279,9 +279,26 @@
         },
         "configuration": {
           "$ref": "#/definitions/source.aws_common.configuration"
+        },
+        "fields": {
+          "$ref": "#/definitions/source.aws_s3.fields"
         }
       },
-      "required": ["type", "configuration"]
+      "required": ["type", "configuration", "fields"]
+    },
+    "source.aws_s3.fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "bucket_name",
+          "region",
+          "arn",
+          "tags"
+        ]
+      },
+      "uniqueItems": true,
+      "additionalItems": false
     },
     "source.aws_rds": {
       "type": "object",
