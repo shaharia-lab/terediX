@@ -17,8 +17,8 @@ type MetaData struct {
 	Value string
 }
 
-// NewResource construct new resource
-func NewResource(kind, uuid, name, externalID string, scanner string) Resource {
+// NewResourceV1 construct new resource
+func NewResourceV1(kind, uuid, name, externalID string, scanner string) Resource {
 	return Resource{
 		Kind:       kind,
 		UUID:       uuid,

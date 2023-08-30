@@ -45,7 +45,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 		hostname = ""
 	}
 
-	rootResource := resource.NewResource("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
+	rootResource := resource.NewResourceV1("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
 
 	if util.IsFieldExistsInConfig(fileSystemFieldRootDirectory, s.fields) {
 		rootResource.AddMetaData(fileSystemFieldRootDirectory, s.rootDirectory)
@@ -60,7 +60,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	resourceChannel <- rootResource
 
 	for _, f := range files {
-		nr := resource.NewResource("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
+		nr := resource.NewResourceV1("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
 		nr.AddRelation(rootResource)
 
 		nr.AddMetaData("Scanner-Label", s.name)
