@@ -7,33 +7,31 @@ import (
 )
 
 func TestResource_AddRelation(t *testing.T) {
-	res1 := NewResourceV1("test", "1", "test-resource-1", "test-id", "test-scanner")
-	res2 := NewResourceV1("test", "2", "test-resource-2", "test-id", "test-scanner")
+	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", "1.0.0")
+	res2 := NewResource("test", "test-resource-2", "test-id2", "test-scanner", "1.0.0")
 
 	res1.AddRelation(res2)
 
 	assert.Len(t, res1.RelatedWith, 1)
 	assert.Equal(t, "test", res1.RelatedWith[0].Kind)
-	assert.Equal(t, "2", res1.RelatedWith[0].UUID)
+	assert.Equal(t, "test-id2", res1.RelatedWith[0].ExternalID)
 }
 
 func TestResource_AddMetaData(t *testing.T) {
-	res1 := NewResourceV1("test", "1", "test-resource-1", "test-id", "test-scanner")
+	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", "1.0.0")
 
 	res1.AddMetaData("key1", "value1")
 	res1.AddMetaData("key2", "value2")
 
-	assert.Len(t, res1.MetaData, 3)
-	assert.Equal(t, "Scanner", res1.MetaData[0].Key)
-	assert.Equal(t, "test-scanner", res1.MetaData[0].Value)
-	assert.Equal(t, "key1", res1.MetaData[1].Key)
-	assert.Equal(t, "value1", res1.MetaData[1].Value)
-	assert.Equal(t, "key2", res1.MetaData[2].Key)
-	assert.Equal(t, "value2", res1.MetaData[2].Value)
+	assert.Len(t, res1.MetaData, 2)
+	assert.Equal(t, "key1", res1.MetaData[0].Key)
+	assert.Equal(t, "value1", res1.MetaData[0].Value)
+	assert.Equal(t, "key2", res1.MetaData[1].Key)
+	assert.Equal(t, "value2", res1.MetaData[1].Value)
 }
 
 func TestResource_FindMetaValue(t *testing.T) {
-	res1 := NewResourceV1("test", "1", "test-resource-1", "test-id", "test-scanner")
+	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", "1.0.0")
 
 	res1.AddMetaData("key1", "value1")
 	res1.AddMetaData("key2", "value2")

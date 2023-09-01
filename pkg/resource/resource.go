@@ -7,6 +7,12 @@ import (
 	"github.com/google/uuid"
 )
 
+// MetaData resource metadata
+type MetaData struct {
+	Key   string
+	Value string
+}
+
 // Resource represent resource
 type Resource struct {
 	Kind        string
@@ -18,12 +24,6 @@ type Resource struct {
 	scanner     string
 	fetchedAt   time.Time
 	version     string
-}
-
-// MetaData resource metadata
-type MetaData struct {
-	Key   string
-	Value string
 }
 
 // NewResource instantiate new resource
@@ -41,23 +41,6 @@ func NewResource(kind, name, externalID, scannerName, version string) Resource {
 
 func (r *Resource) GetScanner() string {
 	return r.scanner
-}
-
-// NewResourceV1 construct new resource
-func NewResourceV1(kind, uuid, name, externalID string, scanner string) Resource {
-	return Resource{
-		Kind:       kind,
-		UUID:       uuid,
-		Name:       name,
-		ExternalID: externalID,
-		MetaData: []MetaData{
-			{
-				Key:   "Scanner",
-				Value: scanner,
-			},
-		},
-		RelatedWith: []Resource{},
-	}
 }
 
 // AddRelation build relation between resources
