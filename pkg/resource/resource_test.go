@@ -20,8 +20,10 @@ func TestResource_AddRelation(t *testing.T) {
 func TestResource_AddMetaData(t *testing.T) {
 	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", "1.0.0")
 
-	res1.AddMetaData("key1", "value1")
-	res1.AddMetaData("key2", "value2")
+	res1.AddMetaDataMultiple(map[string]string{
+		"key1": "value1",
+		"key2": "value2",
+	})
 
 	assert.Len(t, res1.MetaData, 2)
 	assert.Equal(t, "key1", res1.MetaData[0].Key)
@@ -33,8 +35,10 @@ func TestResource_AddMetaData(t *testing.T) {
 func TestResource_FindMetaValue(t *testing.T) {
 	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", "1.0.0")
 
-	res1.AddMetaData("key1", "value1")
-	res1.AddMetaData("key2", "value2")
+	res1.AddMetaDataMultiple(map[string]string{
+		"key1": "value1",
+		"key2": "value2",
+	})
 
 	value := res1.FindMetaValue("key1")
 	assert.Equal(t, "value1", value)
