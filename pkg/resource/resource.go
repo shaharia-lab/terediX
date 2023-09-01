@@ -2,7 +2,6 @@
 package resource
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,6 +15,9 @@ type Resource struct {
 	ExternalID  string
 	RelatedWith []Resource
 	MetaData    []MetaData
+	scanner     string
+	fetchedAt   time.Time
+	version     string
 }
 
 // MetaData resource metadata
@@ -24,27 +26,21 @@ type MetaData struct {
 	Value string
 }
 
+// NewResource instantiate new resource
 func NewResource(kind, name, externalID, scannerName, version string) Resource {
 	return Resource{
 		Kind:       kind,
 		Name:       name,
 		UUID:       uuid.New().String(),
 		ExternalID: externalID,
-		MetaData: []MetaData{
-			{
-				Key:   "_scanner",
-				Value: scannerName,
-			},
-			{
-				Key:   "_fetched_at",
-				Value: strconv.FormatInt(time.Now().UTC().Unix(), 10),
-			},
-			{
-				Key:   "_version",
-				Value: version,
-			},
-		},
+		version:    version,
+		scanner:    scannerName,
+		fetchedAt:  time.Now().UTC(),
 	}
+}
+
+func (r *Resource) GetScanner() string {
+	return r.scanner
 }
 
 // NewResourceV1 construct new resource

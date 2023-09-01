@@ -37,9 +37,8 @@ func TestFsScanner_ScanV2(t *testing.T) {
 				"filex.txt": "file1 content",
 			},
 			expectedResourceCount: 2,
-			expectedMetaDataCount: 4,
+			expectedMetaDataCount: 2,
 			expectedMetaDataKeys: []string{
-				"Scanner-Label",
 				fileSystemFieldMachineHost,
 				fileSystemFieldRootDirectory,
 			},
@@ -58,9 +57,8 @@ func TestFsScanner_ScanV2(t *testing.T) {
 				"filex.txt":        "file1 content",
 			},
 			expectedResourceCount: 3,
-			expectedMetaDataCount: 4,
+			expectedMetaDataCount: 2,
 			expectedMetaDataKeys: []string{
-				"Scanner-Label",
 				fileSystemFieldMachineHost,
 				fileSystemFieldRootDirectory,
 			},
@@ -75,22 +73,12 @@ func TestFsScanner_ScanV2(t *testing.T) {
 				t.Errorf(err.Error())
 			}
 
-			resourceChannel := make(chan resource.Resource)
-			var res []resource.Resource
-
-			go func() {
-				// Create an FsScanner for the temporary directory and scan it
-				scanner := NewFsScanner("scanner_name", tmpDir, []string{"rootDirectory", "machineHost"})
-				scanner.Scan(resourceChannel)
-				close(resourceChannel)
-			}()
-
-			for r := range resourceChannel {
-				res = append(res, r)
-			}
+			res := RunScannerForTests(NewFsScanner("scanner_name", tmpDir, []string{"rootDirectory", "machineHost"}))
 
 			assert.Equal(t, tt.expectedResourceCount, len(res), fmt.Sprintf("expected %d resource, but got %d resource", tt.expectedResourceCount, len(res)))
 			assert.Equal(t, tt.expectedMetaDataCount, len(res[0].MetaData))
+
+			fmt.Printf("%v", res[0].MetaData)
 
 			for k, v := range res {
 				exists, missingKeys := checkKeysInMetaData(v, tt.expectedMetaDataKeys)
