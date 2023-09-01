@@ -1,6 +1,13 @@
 // Package resource represents resources
 package resource
 
+import (
+	"strconv"
+	"time"
+
+	"github.com/google/uuid"
+)
+
 // Resource represent resource
 type Resource struct {
 	Kind        string
@@ -15,6 +22,29 @@ type Resource struct {
 type MetaData struct {
 	Key   string
 	Value string
+}
+
+func NewResource(kind, name, externalID, scannerName, version string) Resource {
+	return Resource{
+		Kind:       kind,
+		Name:       name,
+		UUID:       uuid.New().String(),
+		ExternalID: externalID,
+		MetaData: []MetaData{
+			{
+				Key:   "_scanner",
+				Value: scannerName,
+			},
+			{
+				Key:   "_fetched_at",
+				Value: strconv.FormatInt(time.Now().UTC().Unix(), 10),
+			},
+			{
+				Key:   "_version",
+				Value: version,
+			},
+		},
+	}
 }
 
 // NewResourceV1 construct new resource
@@ -39,8 +69,18 @@ func (r *Resource) AddRelation(relatedResource Resource) {
 	r.RelatedWith = append(r.RelatedWith, relatedResource)
 }
 
-// AddMetaData adds meta data for each resource
+// AddMetaData adds or updates meta data for each resource
 func (r *Resource) AddMetaData(key, value string) {
+	// Loop through existing MetaData to see if key already exists
+	for i, metaData := range r.MetaData {
+		if metaData.Key == key {
+			// If key exists, update its value and return
+			r.MetaData[i].Value = value
+			return
+		}
+	}
+
+	// If the key doesn't exist, add it to MetaData
 	r.MetaData = append(r.MetaData, MetaData{
 		Key:   key,
 		Value: value,
@@ -55,4 +95,15 @@ func (r *Resource) FindMetaValue(key string) string {
 		}
 	}
 	return ""
+}
+
+func mapToMetaData(metaMap map[string]string) []MetaData {
+	var metaData []MetaData
+	for k, v := range metaMap {
+		metaData = append(metaData, MetaData{
+			Key:   k,
+			Value: v,
+		})
+	}
+	return metaData
 }
