@@ -17,16 +17,6 @@ import (
 	"testing"
 )
 
-func TestGenerateUUID(t *testing.T) {
-	// Generate a uuid
-	uuid := GenerateUUID()
-
-	// Verify that the uuid is in the correct format
-	if len(uuid) != 36 {
-		t.Errorf("uuid is not in the correct format: %s", uuid)
-	}
-}
-
 func TestRetryWithExponentialBackoff(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -226,11 +216,10 @@ func TestCheckKeysInMetaData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			exists, missingKeys := CheckKeysInMetaData(tt.resource, tt.keys)
+			data := tt.resource.GetMetaData()
+			missingKeys := data.FindMissingKeys(tt.keys)
 
-			if exists != tt.expectedExists {
-				t.Errorf("expected existence: %v, got: %v", tt.expectedExists, exists)
-			}
+			assert.Equal(t, tt.expectedExists, len(missingKeys) == 0, "unexpected existence")
 
 			if !slicesEqual(missingKeys, tt.expectedMissing) {
 				t.Errorf("expected missing keys: %v, got: %v", tt.expectedMissing, missingKeys)

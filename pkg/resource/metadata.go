@@ -57,3 +57,15 @@ func (ml *MetaDataLists) Find(key string) *MetaData {
 
 	return nil
 }
+
+func (ml *MetaDataLists) FindMissingKeys(keys []string) []string {
+	var missingKeys []string
+
+	for _, key := range keys {
+		if ml.Find(key) == nil {
+			missingKeys = append(missingKeys, key)
+		}
+	}
+
+	return missingKeys
+}
