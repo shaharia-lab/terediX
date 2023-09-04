@@ -83,25 +83,16 @@ func IsFieldExistsInConfig(value string, fields []string) bool {
 // CheckKeysInMetaData Checks if all the keys in the given list exist in the MetaData of a Resource
 // Returns a boolean indicating if all keys exist and a slice of missing keys
 func CheckKeysInMetaData(resource resource.Resource, keys []string) (bool, []string) {
-	missingKeys := []string{}
+	var missingKeys []string
 
+	data := resource.GetMetaData()
 	for _, key := range keys {
-		if !MetaKeyExists(resource, key) {
+		if data.Find(key) == nil {
 			missingKeys = append(missingKeys, key)
 		}
 	}
 
 	return len(missingKeys) == 0, missingKeys
-}
-
-// MetaKeyExists Helper function to check if a single key exists in metaData
-func MetaKeyExists(resource resource.Resource, key string) bool {
-	for _, md := range resource.GetMetaData() {
-		if md.Key == key {
-			return true
-		}
-	}
-	return false
 }
 
 // CheckIfMetaKeysExistsInResources Checks if all the keys in the given list exist in the metaData of all the Resources

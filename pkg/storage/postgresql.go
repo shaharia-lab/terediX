@@ -89,7 +89,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 			}
 
 			// Insert or update the metadata
-			for _, meta := range res.GetMetaData() {
+			for _, meta := range res.GetMetaData().MetaData {
 				_, err = metadataStmt.Exec(id, meta.Key, meta.Value)
 				if err != nil {
 					return err
