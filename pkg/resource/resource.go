@@ -13,10 +13,12 @@ type MetaData struct {
 	Value string
 }
 
+// MetaDataLists list of metadata
 type MetaDataLists struct {
 	MetaData []MetaData
 }
 
+// IsExists checks if metadata exists
 func (ml *MetaDataLists) IsExists(key string) bool {
 	for _, metaData := range ml.MetaData {
 		if metaData.Key == key {
