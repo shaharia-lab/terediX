@@ -45,8 +45,8 @@ func TestProcess(t *testing.T) {
 		{
 			name: "Successful processing",
 			resources: []resource.Resource{
-				resource.NewResource("GitHubRepository", "repo1", "externalID", "scannerName", "1.0.0"),
-				resource.NewResource("GitHubRepository", "repo1", "externalID", "scannerName", "1.0.0"),
+				resource.NewResource("GitHubRepository", "repo1", "externalID", "scannerName", "1"),
+				resource.NewResource("GitHubRepository", "repo1", "externalID", "scannerName", "1"),
 			},
 			scanError:    nil,
 			persistError: nil,
@@ -94,7 +94,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 	generateResources := func(n int) []resource.Resource {
 		var resources []resource.Resource
 		for i := 0; i < n; i++ {
-			resources = append(resources, resource.NewResource("GitHubRepository", fmt.Sprintf("repo%d", i+1), "externalID", "scannerName", "1.0.0"))
+			resources = append(resources, resource.NewResource("GitHubRepository", fmt.Sprintf("repo%d", i+1), "externalID", "scannerName", "1"))
 		}
 		return resources
 	}

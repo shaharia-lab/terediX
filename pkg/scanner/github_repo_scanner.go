@@ -88,7 +88,7 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 	}
 
 	for _, repo := range repos {
-		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, "1.0.0")
+		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, "1")
 		res.AddMetaData(r.getMetaData(repo))
 		resourceChannel <- res
 	}
