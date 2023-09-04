@@ -18,12 +18,12 @@ import (
 )
 
 func TestGenerateUUID(t *testing.T) {
-	// Generate a UUID
+	// Generate a uuid
 	uuid := GenerateUUID()
 
-	// Verify that the UUID is in the correct format
+	// Verify that the uuid is in the correct format
 	if len(uuid) != 36 {
-		t.Errorf("UUID is not in the correct format: %s", uuid)
+		t.Errorf("uuid is not in the correct format: %s", uuid)
 	}
 }
 

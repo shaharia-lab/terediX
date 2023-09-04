@@ -12,7 +12,7 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/resource"
 )
 
-// GenerateUUID generate v4 UUID
+// GenerateUUID generate v4 uuid
 func GenerateUUID() string {
 	u := uuid.New()
 	return u.String()

@@ -57,10 +57,10 @@ func (ml *MetaDataLists) Find(key string) *MetaData {
 
 // Resource represent resource
 type Resource struct {
-	Kind        string
-	UUID        string
-	Name        string
-	ExternalID  string
+	kind        string
+	uuid        string
+	name        string
+	externalID  string
 	RelatedWith []Resource
 	MetaData    []MetaData
 	scanner     string
@@ -71,10 +71,10 @@ type Resource struct {
 // NewResource instantiate new resource
 func NewResource(kind, name, externalID, scannerName, version string) Resource {
 	return Resource{
-		Kind:       kind,
-		Name:       name,
-		UUID:       uuid.New().String(),
-		ExternalID: externalID,
+		kind:       kind,
+		name:       name,
+		uuid:       uuid.New().String(),
+		externalID: externalID,
 		version:    version,
 		scanner:    scannerName,
 		fetchedAt:  time.Now().UTC(),
@@ -82,7 +82,7 @@ func NewResource(kind, name, externalID, scannerName, version string) Resource {
 }
 
 func (r *Resource) SetUUID(uuid string) {
-	r.UUID = uuid
+	r.uuid = uuid
 }
 
 func (r *Resource) GetScanner() string {
@@ -102,19 +102,19 @@ func (r *Resource) GetMetaData() []MetaData {
 }
 
 func (r *Resource) GetKind() string {
-	return r.Kind
+	return r.kind
 }
 
 func (r *Resource) GetExternalID() string {
-	return r.ExternalID
+	return r.externalID
 }
 
 func (r *Resource) GetUUID() string {
-	return r.UUID
+	return r.uuid
 }
 
 func (r *Resource) GetName() string {
-	return r.Name
+	return r.name
 }
 
 func (r *Resource) GetRelatedResources() []Resource {

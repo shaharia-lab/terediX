@@ -49,28 +49,14 @@ func TestPostgreSQL_Persist(t *testing.T) {
 	resourcesStmt := mock.ExpectPrepare(`INSERT INTO resources`)
 	metadataStmt := mock.ExpectPrepare(`INSERT INTO metadata`)
 
-	resources := []resource.Resource{
-		{
-			Kind:       "resource1",
-			UUID:       "uuid1",
-			Name:       "name1",
-			ExternalID: "external_id1",
-			MetaData: []resource.MetaData{
-				{
-					Key:   "key1",
-					Value: "value1",
-				},
-			},
-			RelatedWith: []resource.Resource{
-				{
-					Kind:       "resource2",
-					UUID:       "uuid2",
-					Name:       "name2",
-					ExternalID: "external_id2",
-				},
-			},
-		},
+	r1 := resource.NewResource("resource1", "name1", "external_id1", "", "")
+	r1.SetUUID("uuid1")
+	r1.AddMetaDataMultiple(map[string]string{"key1": "value1"})
+	r1.RelatedWith = []resource.Resource{
+		resource.NewResource("resource2", "name2", "external_id2", "", ""),
 	}
+
+	resources := []resource.Resource{r1}
 
 	// mock Persist statement results
 	resourcesStmt.ExpectQuery().WithArgs("resource1", "uuid1", "name1", "external_id1").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
@@ -114,7 +100,7 @@ func TestPostgreSQL_Find(t *testing.T) {
 			expectedResourceCount: 0,
 		},
 		{
-			name:                  "find by resource ExternalID",
+			name:                  "find by resource externalID",
 			resourceFilter:        ResourceFilter{ExternalID: "external_id1"},
 			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.external_id`,
 			expectedResourceCount: 0,

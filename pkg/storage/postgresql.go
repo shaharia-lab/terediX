@@ -148,7 +148,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 		// Create a resource object if it doesn't exist in the slice yet
 		var res *resource.Resource
 		for i := range resources {
-			if resources[i].UUID == uuid {
+			if resources[i].GetUUID() == uuid {
 				res = &resources[i]
 				break
 			}
