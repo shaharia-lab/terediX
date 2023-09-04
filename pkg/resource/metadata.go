@@ -1,3 +1,4 @@
+// Package resource represents resources
 package resource
 
 // MetaData resource metadata

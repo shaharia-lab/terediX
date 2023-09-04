@@ -21,12 +21,15 @@ func (p *PostgreSQL) Prepare() error {
 	sqlString := `
     CREATE TABLE IF NOT EXISTS resources (
         id SERIAL PRIMARY KEY,
+        source text NOT NULL,
         kind TEXT NOT NULL,
-        uuid TEXT NOT NULL,
+        uuid TEXT NOT NULL UNIQUE,
         name TEXT NOT NULL,
         external_id TEXT NOT NULL UNIQUE,
+        version TEXT NOT NULL DEFAULT '1.0.0',
         discovered_at TIMESTAMP NOT NULL DEFAULT NOW()
     );
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_resources_on_conflict ON resources (kind, uuid, external_id, version);
 
     CREATE TABLE IF NOT EXISTS metadata (
         resource_id INTEGER REFERENCES resources(id),
@@ -57,7 +60,7 @@ func (p *PostgreSQL) Prepare() error {
 func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 	return p.runInTransaction(func(tx *sql.Tx) error {
 		// Prepare the SQL statements
-		resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id) VALUES ($1, $2, $3, $4) ON CONFLICT (external_id) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name RETURNING id")
+		resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id, source, version) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (kind, uuid, external_id, version) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name, source = excluded.source, version = excluded.version RETURNING id")
 		if err != nil {
 			return err
 		}
@@ -83,7 +86,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 		for _, res := range resources {
 			// Insert or update the resource
 			var id int
-			err := resourcesStmt.QueryRow(res.GetKind(), res.GetUUID(), res.GetName(), res.GetExternalID()).Scan(&id)
+			err := resourcesStmt.QueryRow(res.GetKind(), res.GetUUID(), res.GetName(), res.GetExternalID(), res.GetScanner(), res.GetVersion()).Scan(&id)
 			if err != nil {
 				return err
 			}
