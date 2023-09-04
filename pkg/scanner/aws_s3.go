@@ -58,14 +58,14 @@ func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
 
 	for _, bucket := range output.Buckets {
 		res := resource.NewResource(pkg.ResourceKindAWSS3, aws.ToString(bucket.Name), aws.ToString(bucket.Name), a.SourceName, "")
-		res.MetaData = a.getMetaData(bucket)
+		res.AddMetaData(a.getMetaData(bucket))
 		resourceChannel <- res
 	}
 
 	return nil
 }
 
-func (a *AWSS3) getMetaData(bucket types.Bucket) []resource.MetaData {
+func (a *AWSS3) getMetaData(bucket types.Bucket) map[string]string {
 	mappings := map[string]func() string{
 		s3fieldBucketName: func() string { return aws.ToString(bucket.Name) },
 		s3fieldARN: func() string {

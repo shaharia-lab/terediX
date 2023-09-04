@@ -11,7 +11,7 @@ import (
 type getResourceMetaDataTestCase struct {
 	name           string
 	inputMapper    *FieldMapper
-	expectedOutput []resource.MetaData
+	expectedOutput map[string]string
 }
 
 func TestGetResourceMetaData(t *testing.T) {
@@ -32,9 +32,9 @@ func TestGetResourceMetaData(t *testing.T) {
 				mockTagsFunc,
 				[]string{"field1", fieldTags},
 			),
-			expectedOutput: []resource.MetaData{
-				{Key: "field1", Value: "value"},
-				{Key: "tag_tagKey", Value: "tagValue"},
+			expectedOutput: map[string]string{
+				"field1":     "value",
+				"tag_tagKey": "tagValue",
 			},
 		},
 	}

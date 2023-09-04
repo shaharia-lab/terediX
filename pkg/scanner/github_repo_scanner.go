@@ -89,14 +89,14 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 
 	for _, repo := range repos {
 		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, "")
-		res.MetaData = r.getMetaData(repo)
+		res.AddMetaData(r.getMetaData(repo))
 		resourceChannel <- res
 	}
 
 	return nil
 }
 
-func (r *GitHubRepositoryScanner) getMetaData(repo *github.Repository) []resource.MetaData {
+func (r *GitHubRepositoryScanner) getMetaData(repo *github.Repository) map[string]string {
 	mappings := map[string]func() string{
 		fieldCompany: func() string {
 			if repo.GetOwner() != nil {

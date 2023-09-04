@@ -53,7 +53,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	resourceMeta := NewFieldMapper(mappings, nil, s.fields).getResourceMetaData()
-	rootResource.MetaData = resourceMeta
+	rootResource.AddMetaData(resourceMeta)
 
 	resourceChannel <- rootResource
 
@@ -61,7 +61,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 		//nr := resource.NewResourceV1("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
 		nr := resource.NewResource("FilePath", s.name, f.Path, s.name, "1.0.0")
 		nr.AddRelation(rootResource)
-		nr.MetaData = resourceMeta
+		nr.AddMetaData(resourceMeta)
 
 		resourceChannel <- nr
 	}

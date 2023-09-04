@@ -81,7 +81,7 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 	return nil
 }
 
-func (a *AWSEC2) getMetaData(instance types.Instance) []resource.MetaData {
+func (a *AWSEC2) getMetaData(instance types.Instance) map[string]string {
 	mappings := map[string]func() string{
 		fieldInstanceID:        func() string { return safeDereference(instance.InstanceId) },
 		fieldImageID:           func() string { return safeDereference(instance.ImageId) },

@@ -67,7 +67,7 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 	return nil
 }
 
-func (a *AWSRDS) getMetaData(rdsInstance types.DBInstance) []resource.MetaData {
+func (a *AWSRDS) getMetaData(rdsInstance types.DBInstance) map[string]string {
 	mappings := map[string]func() string{
 		rdsFieldInstanceID: func() string { return aws.StringValue(rdsInstance.DBInstanceIdentifier) },
 		rdsFieldARN: func() string {

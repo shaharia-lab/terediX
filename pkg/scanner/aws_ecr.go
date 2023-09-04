@@ -74,7 +74,7 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 		// Loop through repositories and their tags
 		for _, repository := range resp.Repositories {
 			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, "")
-			res.MetaData = a.getMetaData(repository)
+			res.AddMetaData(a.getMetaData(repository))
 			resourceChannel <- res
 		}
 
@@ -89,7 +89,7 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 	return nil
 }
 
-func (a *AWSECR) getMetaData(repository ecrTypes.Repository) []resource.MetaData {
+func (a *AWSECR) getMetaData(repository ecrTypes.Repository) map[string]string {
 	mappings := map[string]func() string{
 		ecrFieldRepositoryName: func() string { return stringValueOrDefault(*repository.RepositoryName) },
 		ecrFieldArn:            func() string { return stringValueOrDefault(*repository.RepositoryArn) },
