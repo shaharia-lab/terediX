@@ -7,11 +7,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/google/go-github/v50/github"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/util"
-
-	"github.com/google/go-github/v50/github"
 )
 
 const (
@@ -90,13 +88,9 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 	}
 
 	for _, repo := range repos {
-		resourceChannel <- resource.Resource{
-			Kind:       pkg.ResourceKindGitHubRepository,
-			UUID:       util.GenerateUUID(),
-			Name:       repo.GetFullName(),
-			ExternalID: repo.GetFullName(),
-			MetaData:   r.getMetaData(repo),
-		}
+		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, "")
+		res.MetaData = r.getMetaData(repo)
+		resourceChannel <- res
 	}
 
 	return nil

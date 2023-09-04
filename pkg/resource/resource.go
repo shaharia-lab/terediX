@@ -81,6 +81,10 @@ func NewResource(kind, name, externalID, scannerName, version string) Resource {
 	}
 }
 
+func (r *Resource) SetUUID(uuid string) {
+	r.UUID = uuid
+}
+
 func (r *Resource) GetScanner() string {
 	return r.scanner
 }
@@ -110,7 +114,7 @@ func (r *Resource) GetUUID() string {
 }
 
 func (r *Resource) GetName() string {
-	return r.UUID
+	return r.Name
 }
 
 func (r *Resource) GetRelatedResources() []Resource {

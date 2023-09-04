@@ -73,14 +73,8 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 
 		// Loop through repositories and their tags
 		for _, repository := range resp.Repositories {
-			res := resource.Resource{
-				Name:       *repository.RepositoryName,
-				Kind:       pkg.ResourceKindAWSECR,
-				UUID:       util.GenerateUUID(),
-				ExternalID: *repository.RepositoryArn,
-				MetaData:   a.getMetaData(repository),
-			}
-
+			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, "")
+			res.MetaData = a.getMetaData(repository)
 			resourceChannel <- res
 		}
 

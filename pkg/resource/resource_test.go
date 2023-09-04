@@ -13,7 +13,7 @@ func TestResource_AddRelation(t *testing.T) {
 	res1.AddRelation(res2)
 
 	assert.Len(t, res1.RelatedWith, 1)
-	assert.Equal(t, "test", res1.RelatedWith[0].Kind)
+	assert.Equal(t, "test", res1.RelatedWith[0].GetKind())
 	assert.Equal(t, "test-id2", res1.RelatedWith[0].ExternalID)
 }
 

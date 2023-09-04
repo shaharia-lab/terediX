@@ -5,12 +5,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/rds"
 	types "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/util"
-
-	"github.com/aws/aws-sdk-go-v2/service/rds"
 
 	"github.com/aws/aws-sdk-go/aws"
 )
@@ -60,14 +58,8 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 			return fmt.Errorf("failed to get tags for RDS instance %s. error: %w", instanceID, err)
 		}
 
-		r := resource.Resource{
-			Kind:        pkg.ResourceKindAWSRDS,
-			UUID:        util.GenerateUUID(),
-			Name:        instanceID,
-			ExternalID:  instanceID,
-			RelatedWith: nil,
-			MetaData:    a.getMetaData(rdsInstance),
-		}
+		r := resource.NewResource(pkg.ResourceKindAWSRDS, instanceID, instanceID, a.SourceName, "")
+		r.MetaData = a.getMetaData(rdsInstance)
 
 		resourceChannel <- r
 	}

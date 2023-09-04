@@ -71,7 +71,7 @@ func (p *Processor) processResources(resourceChan <-chan resource.Resource) {
 	var resources []resource.Resource
 
 	for res := range resourceChan {
-		fmt.Println("Received resource:", res.Kind, res.Name)
+		fmt.Println("Received resource:", res.GetKind(), res.Name)
 		resources = append(resources, res)
 
 		if p.shouldProcessBatch(resources) {
@@ -106,7 +106,7 @@ func (p *Processor) processBatch(resources []resource.Resource) error {
 	fmt.Println("\nProcessing batch of", len(resources), "resources...")
 
 	for _, res := range resources {
-		fmt.Println(emoji.Sprintf(":check_mark: Processed resource: [ %s ] - %s", res.Kind, res.Name))
+		fmt.Println(emoji.Sprintf(":check_mark: Processed resource: [ %s ] - %s", res.GetKind(), res.Name))
 	}
 
 	if err := p.Storage.Persist(resources); err != nil {

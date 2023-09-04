@@ -83,7 +83,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 		for _, res := range resources {
 			// Insert or update the resource
 			var id int
-			err := resourcesStmt.QueryRow(res.Kind, res.UUID, res.Name, res.ExternalID).Scan(&id)
+			err := resourcesStmt.QueryRow(res.GetKind(), res.GetUUID(), res.GetName(), res.GetExternalID()).Scan(&id)
 			if err != nil {
 				return err
 			}
@@ -288,10 +288,15 @@ func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 
 	// Loop through the result set and create Resource objects
 	for rows.Next() {
-		r := resource.Resource{}
-		if err := rows.Scan(&r.Kind, &r.UUID, &r.Name, &r.ExternalID); err != nil {
+		var k string
+		var u string
+		var n string
+		var eid string
+		if err := rows.Scan(&k, &u, &n, &eid); err != nil {
 			return nil, err
 		}
+		r := resource.NewResource(k, n, eid, "", "")
+		r.SetUUID(u)
 		resources = append(resources, r)
 	}
 	if err := rows.Err(); err != nil {
