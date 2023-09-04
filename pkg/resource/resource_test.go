@@ -25,7 +25,7 @@ func TestResource_AddMetaData(t *testing.T) {
 	})
 
 	data := res1.GetMetaData()
-	assert.Len(t, data.MetaData, 2)
+	assert.Len(t, data.Get(), 2)
 	assert.Equal(t, "value1", data.Find("key1").Value)
 	assert.Equal(t, "value2", data.Find("key2").Value)
 }

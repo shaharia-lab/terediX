@@ -8,12 +8,12 @@ type MetaData struct {
 
 // MetaDataLists list of metadata
 type MetaDataLists struct {
-	MetaData []MetaData
+	data []MetaData
 }
 
 // IsExists checks if metadata exists
 func (ml *MetaDataLists) IsExists(key string) bool {
-	for _, metaData := range ml.MetaData {
+	for _, metaData := range ml.data {
 		if metaData.Key == key {
 			return true
 		}
@@ -22,13 +22,18 @@ func (ml *MetaDataLists) IsExists(key string) bool {
 	return false
 }
 
+// Get checks if metadata exists
+func (ml *MetaDataLists) Get() []MetaData {
+	return ml.data
+}
+
 // Add adds metadata
 func (ml *MetaDataLists) Add(key, value string) {
 	if ml.IsExists(key) {
 		return
 	}
 
-	ml.MetaData = append(ml.MetaData, MetaData{Key: key, Value: value})
+	ml.data = append(ml.data, MetaData{Key: key, Value: value})
 }
 
 // AddMap adds metadata from map
@@ -44,7 +49,7 @@ func (ml *MetaDataLists) Find(key string) *MetaData {
 		return nil
 	}
 
-	for _, v := range ml.MetaData {
+	for _, v := range ml.data {
 		if v.Key == key {
 			return &v
 		}

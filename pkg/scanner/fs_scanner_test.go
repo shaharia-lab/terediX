@@ -76,9 +76,10 @@ func TestFsScanner_ScanV2(t *testing.T) {
 			res := RunScannerForTests(NewFsScanner("scanner_name", tmpDir, []string{"rootDirectory", "machineHost"}))
 
 			assert.Equal(t, tt.expectedResourceCount, len(res), fmt.Sprintf("expected %d resource, but got %d resource", tt.expectedResourceCount, len(res)))
-			assert.Equal(t, tt.expectedMetaDataCount, len(res[0].GetMetaData().MetaData))
+			data := res[0].GetMetaData()
+			assert.Equal(t, tt.expectedMetaDataCount, len(data.Get()))
 
-			fmt.Printf("%v", res[0].GetMetaData())
+			fmt.Printf("%v", data)
 
 			for k, v := range res {
 				exists, missingKeys := checkKeysInMetaData(v, tt.expectedMetaDataKeys)
@@ -123,7 +124,8 @@ func checkKeysInMetaData(resource resource.Resource, keys []string) (bool, []str
 
 // Helper function to check if a single key exists in metaData
 func keyExists(resource resource.Resource, key string) bool {
-	for _, md := range resource.GetMetaData().MetaData {
+	data := resource.GetMetaData()
+	for _, md := range data.Get() {
 		if md.Key == key {
 			return true
 		}

@@ -80,7 +80,7 @@ func IsFieldExistsInConfig(value string, fields []string) bool {
 	return false
 }
 
-// CheckKeysInMetaData Checks if all the keys in the given list exist in the MetaData of a Resource
+// CheckKeysInMetaData Checks if all the keys in the given list exist in the data of a Resource
 // Returns a boolean indicating if all keys exist and a slice of missing keys
 func CheckKeysInMetaData(resource resource.Resource, keys []string) (bool, []string) {
 	var missingKeys []string
