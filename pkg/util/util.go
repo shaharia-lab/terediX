@@ -94,9 +94,9 @@ func CheckKeysInMetaData(resource resource.Resource, keys []string) (bool, []str
 	return len(missingKeys) == 0, missingKeys
 }
 
-// MetaKeyExists Helper function to check if a single key exists in MetaData
+// MetaKeyExists Helper function to check if a single key exists in metaData
 func MetaKeyExists(resource resource.Resource, key string) bool {
-	for _, md := range resource.MetaData {
+	for _, md := range resource.GetMetaData() {
 		if md.Key == key {
 			return true
 		}
@@ -104,7 +104,7 @@ func MetaKeyExists(resource resource.Resource, key string) bool {
 	return false
 }
 
-// CheckIfMetaKeysExistsInResources Checks if all the keys in the given list exist in the MetaData of all the Resources
+// CheckIfMetaKeysExistsInResources Checks if all the keys in the given list exist in the metaData of all the Resources
 func CheckIfMetaKeysExistsInResources(t *testing.T, res []resource.Resource, expectedMetaDataKeys []string) {
 	for k, v := range res {
 		exists, missingKeys := CheckKeysInMetaData(v, expectedMetaDataKeys)

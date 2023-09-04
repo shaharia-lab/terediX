@@ -190,6 +190,17 @@ func TestIsFieldExistsInConfig(t *testing.T) {
 }
 
 func TestCheckKeysInMetaData(t *testing.T) {
+	r1 := resource.NewResource("kind", "uuid", "name", "", "")
+	r1.AddMetaData(map[string]string{
+		"key1": "value1",
+		"key2": "value2",
+	})
+
+	r2 := resource.NewResource("kind", "uuid", "name", "", "")
+	r2.AddMetaData(map[string]string{
+		"key1": "value1",
+	})
+
 	tests := []struct {
 		name            string
 		resource        resource.Resource
@@ -198,24 +209,15 @@ func TestCheckKeysInMetaData(t *testing.T) {
 		expectedMissing []string
 	}{
 		{
-			name: "all keys present",
-			resource: resource.Resource{
-				MetaData: []resource.MetaData{
-					{Key: "key1", Value: "value1"},
-					{Key: "key2", Value: "value2"},
-				},
-			},
+			name:            "all keys present",
+			resource:        r1,
 			keys:            []string{"key1", "key2"},
 			expectedExists:  true,
 			expectedMissing: []string{},
 		},
 		{
-			name: "some keys missing",
-			resource: resource.Resource{
-				MetaData: []resource.MetaData{
-					{Key: "key1", Value: "value1"},
-				},
-			},
+			name:            "some keys missing",
+			resource:        r2,
 			keys:            []string{"key1", "key2"},
 			expectedExists:  false,
 			expectedMissing: []string{"key2"},

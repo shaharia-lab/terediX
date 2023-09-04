@@ -62,7 +62,7 @@ type Resource struct {
 	name        string
 	externalID  string
 	relatedWith []Resource
-	MetaData    []MetaData
+	metaData    []MetaData
 	scanner     string
 	fetchedAt   time.Time
 	version     string
@@ -98,7 +98,7 @@ func (r *Resource) GetFetchedAt() time.Time {
 }
 
 func (r *Resource) GetMetaData() []MetaData {
-	return r.MetaData
+	return r.metaData
 }
 
 func (r *Resource) GetKind() string {
@@ -128,7 +128,7 @@ func (r *Resource) AddRelation(relatedResource Resource) {
 
 func (r *Resource) AddMetaData(metaDataMap map[string]string) {
 	for k, v := range metaDataMap {
-		r.MetaData = append(r.MetaData, MetaData{
+		r.metaData = append(r.metaData, MetaData{
 			Key:   k,
 			Value: v,
 		})
@@ -138,7 +138,7 @@ func (r *Resource) AddMetaData(metaDataMap map[string]string) {
 // AddMetaDataMultiple adds or updates metadata for each resource
 func (r *Resource) AddMetaDataMultiple(metaMap map[string]string) {
 	for k, v := range metaMap {
-		r.MetaData = append(r.MetaData, MetaData{
+		r.metaData = append(r.metaData, MetaData{
 			Key:   k,
 			Value: v,
 		})
@@ -146,7 +146,7 @@ func (r *Resource) AddMetaDataMultiple(metaMap map[string]string) {
 }
 
 func (r *Resource) FindMetaValue(key string) string {
-	for _, v := range r.MetaData {
+	for _, v := range r.metaData {
 		if v.Key == key {
 			return v.Value
 		}

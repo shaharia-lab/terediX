@@ -25,11 +25,11 @@ func TestResource_AddMetaData(t *testing.T) {
 		"key2": "value2",
 	})
 
-	assert.Len(t, res1.MetaData, 2)
-	assert.Equal(t, "key1", res1.MetaData[0].Key)
-	assert.Equal(t, "value1", res1.MetaData[0].Value)
-	assert.Equal(t, "key2", res1.MetaData[1].Key)
-	assert.Equal(t, "value2", res1.MetaData[1].Value)
+	assert.Len(t, res1.metaData, 2)
+	assert.Equal(t, "key1", res1.metaData[0].Key)
+	assert.Equal(t, "value1", res1.metaData[0].Value)
+	assert.Equal(t, "key2", res1.metaData[1].Key)
+	assert.Equal(t, "value2", res1.metaData[1].Value)
 }
 
 func TestResource_FindMetaValue(t *testing.T) {

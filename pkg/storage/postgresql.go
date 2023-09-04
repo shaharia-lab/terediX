@@ -89,7 +89,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 			}
 
 			// Insert or update the metadata
-			for _, meta := range res.MetaData {
+			for _, meta := range res.GetMetaData() {
 				_, err = metadataStmt.Exec(id, meta.Key, meta.Value)
 				if err != nil {
 					return err
@@ -162,9 +162,8 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 
 		// Add metadata to the resource
 		if metaKey != "" && metaValue != "" {
-			res.MetaData = append(res.MetaData, resource.MetaData{
-				Key:   metaKey,
-				Value: metaValue,
+			res.AddMetaData(map[string]string{
+				metaKey: metaValue,
 			})
 		}
 
