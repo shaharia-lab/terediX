@@ -126,6 +126,10 @@ func (r *Resource) AddRelation(relatedResource Resource) {
 	r.relatedWith = append(r.relatedWith, relatedResource)
 }
 
+func (r *Resource) AddMetaData(metaData []MetaData) {
+	r.MetaData = metaData
+}
+
 // AddMetaDataMultiple adds or updates metadata for each resource
 func (r *Resource) AddMetaDataMultiple(metaMap map[string]string) {
 	for k, v := range metaMap {

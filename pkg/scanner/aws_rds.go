@@ -59,7 +59,7 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 		}
 
 		r := resource.NewResource(pkg.ResourceKindAWSRDS, instanceID, instanceID, a.SourceName, "")
-		r.MetaData = a.getMetaData(rdsInstance)
+		r.AddMetaData(a.getMetaData(rdsInstance))
 
 		resourceChannel <- r
 	}
