@@ -172,7 +172,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 		if relatedKind.Valid && relatedKind.String != "" && relatedUUID.String != "" {
 			r := resource.NewResource(relatedKind.String, relatedName.String, relatedExternalID.String, "", "")
 			r.SetUUID(relatedUUID.String)
-			res.RelatedWith = append(res.RelatedWith, r)
+			res.AddRelation(r)
 		}
 	}
 

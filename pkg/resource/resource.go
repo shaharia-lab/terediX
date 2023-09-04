@@ -61,7 +61,7 @@ type Resource struct {
 	uuid        string
 	name        string
 	externalID  string
-	RelatedWith []Resource
+	relatedWith []Resource
 	MetaData    []MetaData
 	scanner     string
 	fetchedAt   time.Time
@@ -118,12 +118,12 @@ func (r *Resource) GetName() string {
 }
 
 func (r *Resource) GetRelatedResources() []Resource {
-	return r.RelatedWith
+	return r.relatedWith
 }
 
 // AddRelation build relation between resources
 func (r *Resource) AddRelation(relatedResource Resource) {
-	r.RelatedWith = append(r.RelatedWith, relatedResource)
+	r.relatedWith = append(r.relatedWith, relatedResource)
 }
 
 // AddMetaDataMultiple adds or updates metadata for each resource

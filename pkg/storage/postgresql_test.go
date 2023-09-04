@@ -52,9 +52,7 @@ func TestPostgreSQL_Persist(t *testing.T) {
 	r1 := resource.NewResource("resource1", "name1", "external_id1", "", "")
 	r1.SetUUID("uuid1")
 	r1.AddMetaDataMultiple(map[string]string{"key1": "value1"})
-	r1.RelatedWith = []resource.Resource{
-		resource.NewResource("resource2", "name2", "external_id2", "", ""),
-	}
+	r1.AddRelation(resource.NewResource("resource2", "name2", "external_id2", "", ""))
 
 	resources := []resource.Resource{r1}
 
