@@ -154,15 +154,10 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 			}
 		}
 		if res == nil {
-			res = &resource.Resource{
-				Kind:        kind,
-				UUID:        uuid,
-				Name:        name,
-				ExternalID:  externalID,
-				MetaData:    []resource.MetaData{},
-				RelatedWith: []resource.Resource{},
-			}
-			resources = append(resources, *res)
+			r := resource.NewResource(kind, name, externalID, "", "")
+			r.SetUUID(uuid)
+			res = &r
+			resources = append(resources, r)
 		}
 
 		// Add metadata to the resource
@@ -175,13 +170,9 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 
 		// Add related resource to the resource
 		if relatedKind.Valid && relatedKind.String != "" && relatedUUID.String != "" {
-			related := resource.Resource{
-				Kind:       relatedKind.String,
-				UUID:       relatedUUID.String,
-				Name:       relatedName.String,
-				ExternalID: relatedExternalID.String,
-			}
-			res.RelatedWith = append(res.RelatedWith, related)
+			r := resource.NewResource(relatedKind.String, relatedName.String, relatedExternalID.String, "", "")
+			r.SetUUID(relatedUUID.String)
+			res.RelatedWith = append(res.RelatedWith, r)
 		}
 	}
 
@@ -272,7 +263,7 @@ func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBu
 
 // GetResources fetch all resources from storage
 func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
-	resources := []resource.Resource{}
+	var resources []resource.Resource
 
 	// Query all resources
 	rows, err := p.DB.Query("SELECT kind, uuid, name, external_id FROM resources")
