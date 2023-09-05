@@ -57,7 +57,7 @@ func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	for _, bucket := range output.Buckets {
-		res := resource.NewResource(pkg.ResourceKindAWSS3, aws.ToString(bucket.Name), aws.ToString(bucket.Name), a.SourceName, "")
+		res := resource.NewResource(pkg.ResourceKindAWSS3, aws.ToString(bucket.Name), aws.ToString(bucket.Name), a.SourceName, 1)
 		res.AddMetaData(a.getMetaData(bucket))
 		resourceChannel <- res
 	}

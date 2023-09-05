@@ -180,13 +180,13 @@ func TestIsFieldExistsInConfig(t *testing.T) {
 }
 
 func TestCheckKeysInMetaData(t *testing.T) {
-	r1 := resource.NewResource("kind", "uuid", "name", "", "")
+	r1 := resource.NewResource("kind", "uuid", "name", "", 1)
 	r1.AddMetaData(map[string]string{
 		"key1": "value1",
 		"key2": "value2",
 	})
 
-	r2 := resource.NewResource("kind", "uuid", "name", "", "")
+	r2 := resource.NewResource("kind", "uuid", "name", "", 1)
 	r2.AddMetaData(map[string]string{
 		"key1": "value1",
 	})

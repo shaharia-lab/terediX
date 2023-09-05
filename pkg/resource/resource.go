@@ -17,11 +17,11 @@ type Resource struct {
 	metaData    MetaDataLists
 	scanner     string
 	fetchedAt   time.Time
-	version     string
+	version     int
 }
 
 // NewResource instantiate new resource
-func NewResource(kind, name, externalID, scannerName, version string) Resource {
+func NewResource(kind, name, externalID, scannerName string, version int) Resource {
 	return Resource{
 		kind:       kind,
 		name:       name,
@@ -44,7 +44,7 @@ func (r *Resource) GetScanner() string {
 }
 
 // GetVersion returns resource version
-func (r *Resource) GetVersion() string {
+func (r *Resource) GetVersion() int {
 	return r.version
 }
 

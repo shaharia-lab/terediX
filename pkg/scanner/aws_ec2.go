@@ -65,7 +65,7 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 		// Loop through instances and their tags
 		for _, reservation := range resp.Reservations {
 			for _, instance := range reservation.Instances {
-				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, "")
+				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, 1)
 				res.AddMetaData(a.getMetaData(instance))
 				resourceChannel <- res
 			}

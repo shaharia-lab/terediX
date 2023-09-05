@@ -7,8 +7,8 @@ import (
 )
 
 func TestResource_AddRelation(t *testing.T) {
-	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", "1")
-	res2 := NewResource("test", "test-resource-2", "test-id2", "test-scanner", "1")
+	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", 1)
+	res2 := NewResource("test", "test-resource-2", "test-id2", "test-scanner", 1)
 
 	res1.AddRelation(res2)
 
@@ -18,7 +18,7 @@ func TestResource_AddRelation(t *testing.T) {
 }
 
 func TestResource_AddMetaData(t *testing.T) {
-	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", "1")
+	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", 1)
 	res1.AddMetaData(map[string]string{
 		"key1": "value1",
 		"key2": "value2",
@@ -31,7 +31,7 @@ func TestResource_AddMetaData(t *testing.T) {
 }
 
 func TestResource_FindMetaValue(t *testing.T) {
-	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", "1")
+	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", 1)
 
 	res1.AddMetaData(map[string]string{
 		"key1": "value1",

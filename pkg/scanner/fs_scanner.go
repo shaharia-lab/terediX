@@ -39,7 +39,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	//rootResource := resource.NewResourceV1("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
-	rootResource := resource.NewResource("FileDirectory", s.name, s.rootDirectory, s.name, "1")
+	rootResource := resource.NewResource("FileDirectory", s.name, s.rootDirectory, s.name, 1)
 
 	mappings := map[string]func() string{
 		fileSystemFieldRootDirectory: func() string { return s.rootDirectory },
@@ -59,7 +59,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 
 	for _, f := range files {
 		//nr := resource.NewResourceV1("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
-		nr := resource.NewResource("FilePath", s.name, f.Path, s.name, "1")
+		nr := resource.NewResource("FilePath", s.name, f.Path, s.name, 1)
 		nr.AddRelation(rootResource)
 		nr.AddMetaData(resourceMeta)
 

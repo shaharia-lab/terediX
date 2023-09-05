@@ -58,7 +58,7 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 			return fmt.Errorf("failed to get tags for RDS instance %s. error: %w", instanceID, err)
 		}
 
-		r := resource.NewResource(pkg.ResourceKindAWSRDS, instanceID, instanceID, a.SourceName, "")
+		r := resource.NewResource(pkg.ResourceKindAWSRDS, instanceID, instanceID, a.SourceName, 1)
 		r.AddMetaData(a.getMetaData(rdsInstance))
 
 		resourceChannel <- r

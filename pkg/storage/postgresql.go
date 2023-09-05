@@ -26,7 +26,7 @@ func (p *PostgreSQL) Prepare() error {
         uuid TEXT NOT NULL UNIQUE,
         name TEXT NOT NULL,
         external_id TEXT NOT NULL UNIQUE,
-        version TEXT NOT NULL DEFAULT '1.0.0',
+        version INT NOT NULL DEFAULT '1',
         discovered_at TIMESTAMP NOT NULL DEFAULT NOW()
     );
 	CREATE UNIQUE INDEX IF NOT EXISTS idx_resources_on_conflict ON resources (kind, uuid, external_id, version);
@@ -158,7 +158,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 			}
 		}
 		if res == nil {
-			r := resource.NewResource(kind, name, externalID, "", "")
+			r := resource.NewResource(kind, name, externalID, "", 1)
 			r.SetUUID(uuid)
 			res = &r
 			resources = append(resources, r)
@@ -173,7 +173,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 
 		// Add related resource to the resource
 		if relatedKind.Valid && relatedKind.String != "" && relatedUUID.String != "" {
-			r := resource.NewResource(relatedKind.String, relatedName.String, relatedExternalID.String, "", "")
+			r := resource.NewResource(relatedKind.String, relatedName.String, relatedExternalID.String, "", 1)
 			r.SetUUID(relatedUUID.String)
 			res.AddRelation(r)
 		}
@@ -289,7 +289,7 @@ func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 		if err := rows.Scan(&k, &u, &n, &eid); err != nil {
 			return nil, err
 		}
-		r := resource.NewResource(k, n, eid, "", "")
+		r := resource.NewResource(k, n, eid, "", 1)
 		r.SetUUID(u)
 		resources = append(resources, r)
 	}
