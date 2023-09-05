@@ -69,7 +69,7 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource, nextResourceVersio
 		// Loop through instances and their tags
 		for _, reservation := range resp.Reservations {
 			for _, instance := range reservation.Instances {
-				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, 1)
+				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, nextResourceVersion)
 				res.AddMetaData(a.getMetaData(instance))
 				resourceChannel <- res
 			}

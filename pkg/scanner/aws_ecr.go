@@ -77,7 +77,7 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource, nextResourceVersio
 
 		// Loop through repositories and their tags
 		for _, repository := range resp.Repositories {
-			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, 1)
+			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, nextResourceVersion)
 			res.AddMetaData(a.getMetaData(repository))
 			resourceChannel <- res
 		}
