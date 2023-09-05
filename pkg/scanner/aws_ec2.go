@@ -51,8 +51,12 @@ func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2
 	}
 }
 
+func (a *AWSEC2) GetKind() string {
+	return pkg.ResourceKindAWSEC2
+}
+
 // Scan discover resource and send to resource channel
-func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
+func (a *AWSEC2) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	pageNum := 0
 	nextToken := ""
 

@@ -31,8 +31,12 @@ func NewFsScanner(name, rootDirectory string, fields []string) *FsScanner {
 	return &FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
 }
 
+func (s *FsScanner) GetKind() string {
+	return "FileSystem"
+}
+
 // Scan scans the file system
-func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
+func (s *FsScanner) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	files, err := s.listFilesRecursive(s.rootDirectory)
 	if err != nil {
 		return nil

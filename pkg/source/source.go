@@ -27,6 +27,7 @@ import (
 type Source struct {
 	Name    string
 	Scanner scanner.Scanner
+	Kind    string
 }
 
 // BuildSources build source based on configuration

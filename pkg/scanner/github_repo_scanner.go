@@ -76,8 +76,12 @@ func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string,
 	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name, fields: fields}
 }
 
+func (r *GitHubRepositoryScanner) GetKind() string {
+	return pkg.ResourceKindGitHubRepository
+}
+
 // Scan scans GitHub to get the list of repositories as resources
-func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) error {
+func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	opt := &github.RepositoryListOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
 	}

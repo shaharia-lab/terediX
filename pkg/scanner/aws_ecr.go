@@ -50,9 +50,13 @@ func NewAWSECR(sourceName string, region string, accountID string, ecrClient Ecr
 	}
 }
 
+func (a *AWSECR) GetKind() string {
+	return pkg.ResourceKindAWSECR
+}
+
 // Scan discover resource and send to resource channel
 // Scan discover resource and send to resource channel
-func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
+func (a *AWSECR) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	// Set initial values for pagination
 	pageNum := 0
 	nextToken := ""

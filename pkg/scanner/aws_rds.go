@@ -47,8 +47,12 @@ func NewAWSRDS(sourceName string, region string, accountID string, rdsClient Rds
 	}
 }
 
+func (a *AWSRDS) GetKind() string {
+	return pkg.ResourceKindAWSRDS
+}
+
 // Scan discover resource and send to resource channel
-func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
+func (a *AWSRDS) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	rdsInstances, err := listAllRDSInstances(a.RdsClient)
 
 	for _, rdsInstance := range rdsInstances {

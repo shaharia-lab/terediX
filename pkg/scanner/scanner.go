@@ -15,7 +15,8 @@ const (
 
 // Scanner interface to build different scanner
 type Scanner interface {
-	Scan(resourceChannel chan resource.Resource) error
+	Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error
+	GetKind() string
 }
 
 // MetaDataMapper map the fields
@@ -40,7 +41,7 @@ func RunScannerForTests(scanner Scanner) []resource.Resource {
 	var res []resource.Resource
 
 	go func() {
-		scanner.Scan(resourceChannel)
+		scanner.Scan(resourceChannel, 1)
 		close(resourceChannel)
 	}()
 

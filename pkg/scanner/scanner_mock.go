@@ -12,15 +12,29 @@ type Mock struct {
 	mock.Mock
 }
 
-// Scan provides a mock function with given fields: resourceChannel
-func (_m *Mock) Scan(resourceChannel chan resource.Resource) error {
-	ret := _m.Called(resourceChannel)
+// Scan provides a mock function with given fields: resourceChannel, nextResourceVersion
+func (_m *Mock) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
+	ret := _m.Called(resourceChannel, nextResourceVersion)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(chan resource.Resource) error); ok {
-		r0 = rf(resourceChannel)
+	if rf, ok := ret.Get(0).(func(chan resource.Resource, int) error); ok {
+		r0 = rf(resourceChannel, nextResourceVersion)
 	} else {
 		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// GetKind provides a mock function with given fields:
+func (_m *Mock) GetKind() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0
