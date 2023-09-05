@@ -352,6 +352,7 @@ func (p *PostgreSQL) runInTransaction(f func(tx *sql.Tx) error) error {
 	return f(tx)
 }
 
+// GetNextVersionForResource get next version for a resource
 func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (error, int) {
 	var version int
 	err := p.DB.QueryRow("SELECT COALESCE(max(version), 0) + 1 FROM resources WHERE source = $1 AND kind = $2", source, kind).Scan(&version)
@@ -362,6 +363,7 @@ func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (error, int)
 	return nil, version
 }
 
+// CleanupOldVersion cleanup old version of resources
 func (p *PostgreSQL) CleanupOldVersion(source, kind string) (int, error) {
 	query := `DELETE FROM resources WHERE (kind, external_id, name, version) NOT IN (
     SELECT kind, external_id, name, max(version)
