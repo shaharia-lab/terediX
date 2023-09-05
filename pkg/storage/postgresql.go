@@ -351,3 +351,12 @@ func (p *PostgreSQL) runInTransaction(f func(tx *sql.Tx) error) error {
 
 	return f(tx)
 }
+
+func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (error, int) {
+	var version int
+	err := p.DB.QueryRow("SELECT max(version) FROM resources WHERE source = $1 AND kind = $2", source, kind).Scan(&version)
+	if err != nil {
+		return err, 0
+	}
+	return nil, version + 1
+}
