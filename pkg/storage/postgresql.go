@@ -25,21 +25,21 @@ func (p *PostgreSQL) Prepare() error {
         kind TEXT NOT NULL,
         uuid TEXT NOT NULL UNIQUE,
         name TEXT NOT NULL,
-        external_id TEXT NOT NULL UNIQUE,
+        external_id TEXT NOT NULL,
         version INT NOT NULL DEFAULT '1',
         discovered_at TIMESTAMP NOT NULL DEFAULT NOW()
     );
 	CREATE UNIQUE INDEX IF NOT EXISTS idx_resources_on_conflict ON resources (kind, uuid, external_id, version);
 
     CREATE TABLE IF NOT EXISTS metadata (
-        resource_id INTEGER REFERENCES resources(id),
+        resource_id INTEGER REFERENCES resources(id) ON DELETE CASCADE,
         key TEXT NOT NULL,
         value TEXT NOT NULL,
         PRIMARY KEY(resource_id, key, value)
     );
 
     CREATE TABLE IF NOT EXISTS relations (
-        resource_id INTEGER REFERENCES resources(id),
+        resource_id INTEGER REFERENCES resources(id) ON DELETE CASCADE,
         related_resource_id INTEGER REFERENCES resources(id),
         PRIMARY KEY(resource_id, related_resource_id)
     );
@@ -354,9 +354,31 @@ func (p *PostgreSQL) runInTransaction(f func(tx *sql.Tx) error) error {
 
 func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (error, int) {
 	var version int
-	err := p.DB.QueryRow("SELECT max(version) FROM resources WHERE source = $1 AND kind = $2", source, kind).Scan(&version)
+	err := p.DB.QueryRow("SELECT COALESCE(max(version), 0) + 1 FROM resources WHERE source = $1 AND kind = $2", source, kind).Scan(&version)
 	if err != nil {
 		return err, 0
 	}
-	return nil, version + 1
+
+	return nil, version
+}
+
+func (p *PostgreSQL) CleanupOldVersion(source, kind string) (int, error) {
+	query := `DELETE FROM resources WHERE (kind, external_id, name, version) NOT IN (
+    SELECT kind, external_id, name, max(version)
+    FROM resources
+    WHERE kind = $1 AND source = $2
+    GROUP BY kind, external_id, name
+) AND kind = $1 AND source = $2`
+
+	result, err := p.DB.Exec(query, kind, source)
+	if err != nil {
+		return 0, err
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(affectedRows), nil
 }
