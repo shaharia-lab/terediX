@@ -21,22 +21,25 @@ func (p *PostgreSQL) Prepare() error {
 	sqlString := `
     CREATE TABLE IF NOT EXISTS resources (
         id SERIAL PRIMARY KEY,
+        source text NOT NULL,
         kind TEXT NOT NULL,
-        uuid TEXT NOT NULL,
+        uuid TEXT NOT NULL UNIQUE,
         name TEXT NOT NULL,
-        external_id TEXT NOT NULL UNIQUE,
+        external_id TEXT NOT NULL,
+        version INT NOT NULL DEFAULT '1',
         discovered_at TIMESTAMP NOT NULL DEFAULT NOW()
     );
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_resources_on_conflict ON resources (kind, uuid, external_id, version);
 
     CREATE TABLE IF NOT EXISTS metadata (
-        resource_id INTEGER REFERENCES resources(id),
+        resource_id INTEGER REFERENCES resources(id) ON DELETE CASCADE,
         key TEXT NOT NULL,
         value TEXT NOT NULL,
         PRIMARY KEY(resource_id, key, value)
     );
 
     CREATE TABLE IF NOT EXISTS relations (
-        resource_id INTEGER REFERENCES resources(id),
+        resource_id INTEGER REFERENCES resources(id) ON DELETE CASCADE,
         related_resource_id INTEGER REFERENCES resources(id),
         PRIMARY KEY(resource_id, related_resource_id)
     );
@@ -57,7 +60,7 @@ func (p *PostgreSQL) Prepare() error {
 func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 	return p.runInTransaction(func(tx *sql.Tx) error {
 		// Prepare the SQL statements
-		resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id) VALUES ($1, $2, $3, $4) ON CONFLICT (external_id) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name RETURNING id")
+		resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id, source, version) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (kind, uuid, external_id, version) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name, source = excluded.source, version = excluded.version RETURNING id")
 		if err != nil {
 			return err
 		}
@@ -83,13 +86,14 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 		for _, res := range resources {
 			// Insert or update the resource
 			var id int
-			err := resourcesStmt.QueryRow(res.Kind, res.UUID, res.Name, res.ExternalID).Scan(&id)
+			err := resourcesStmt.QueryRow(res.GetKind(), res.GetUUID(), res.GetName(), res.GetExternalID(), res.GetScanner(), res.GetVersion()).Scan(&id)
 			if err != nil {
 				return err
 			}
 
 			// Insert or update the metadata
-			for _, meta := range res.MetaData {
+			data := res.GetMetaData()
+			for _, meta := range data.Get() {
 				_, err = metadataStmt.Exec(id, meta.Key, meta.Value)
 				if err != nil {
 					return err
@@ -148,40 +152,30 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 		// Create a resource object if it doesn't exist in the slice yet
 		var res *resource.Resource
 		for i := range resources {
-			if resources[i].UUID == uuid {
+			if resources[i].GetUUID() == uuid {
 				res = &resources[i]
 				break
 			}
 		}
 		if res == nil {
-			res = &resource.Resource{
-				Kind:        kind,
-				UUID:        uuid,
-				Name:        name,
-				ExternalID:  externalID,
-				MetaData:    []resource.MetaData{},
-				RelatedWith: []resource.Resource{},
-			}
-			resources = append(resources, *res)
+			r := resource.NewResource(kind, name, externalID, "", 1)
+			r.SetUUID(uuid)
+			res = &r
+			resources = append(resources, r)
 		}
 
 		// Add metadata to the resource
 		if metaKey != "" && metaValue != "" {
-			res.MetaData = append(res.MetaData, resource.MetaData{
-				Key:   metaKey,
-				Value: metaValue,
+			res.AddMetaData(map[string]string{
+				metaKey: metaValue,
 			})
 		}
 
 		// Add related resource to the resource
 		if relatedKind.Valid && relatedKind.String != "" && relatedUUID.String != "" {
-			related := resource.Resource{
-				Kind:       relatedKind.String,
-				UUID:       relatedUUID.String,
-				Name:       relatedName.String,
-				ExternalID: relatedExternalID.String,
-			}
-			res.RelatedWith = append(res.RelatedWith, related)
+			r := resource.NewResource(relatedKind.String, relatedName.String, relatedExternalID.String, "", 1)
+			r.SetUUID(relatedUUID.String)
+			res.AddRelation(r)
 		}
 	}
 
@@ -272,7 +266,7 @@ func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBu
 
 // GetResources fetch all resources from storage
 func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
-	resources := []resource.Resource{}
+	var resources []resource.Resource
 
 	// Query all resources
 	rows, err := p.DB.Query("SELECT kind, uuid, name, external_id FROM resources")
@@ -288,10 +282,15 @@ func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 
 	// Loop through the result set and create Resource objects
 	for rows.Next() {
-		r := resource.Resource{}
-		if err := rows.Scan(&r.Kind, &r.UUID, &r.Name, &r.ExternalID); err != nil {
+		var k string
+		var u string
+		var n string
+		var eid string
+		if err := rows.Scan(&k, &u, &n, &eid); err != nil {
 			return nil, err
 		}
+		r := resource.NewResource(k, n, eid, "", 1)
+		r.SetUUID(u)
 		resources = append(resources, r)
 	}
 	if err := rows.Err(); err != nil {
@@ -351,4 +350,37 @@ func (p *PostgreSQL) runInTransaction(f func(tx *sql.Tx) error) error {
 	}()
 
 	return f(tx)
+}
+
+// GetNextVersionForResource get next version for a resource
+func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (int, error) {
+	var version int
+	err := p.DB.QueryRow("SELECT COALESCE(max(version), 0) + 1 FROM resources WHERE source = $1 AND kind = $2", source, kind).Scan(&version)
+	if err != nil {
+		return 0, err
+	}
+
+	return version, nil
+}
+
+// CleanupOldVersion cleanup old version of resources
+func (p *PostgreSQL) CleanupOldVersion(source, kind string) (int, error) {
+	query := `DELETE FROM resources WHERE (kind, external_id, name, version) NOT IN (
+    SELECT kind, external_id, name, max(version)
+    FROM resources
+    WHERE kind = $1 AND source = $2
+    GROUP BY kind, external_id, name
+) AND kind = $1 AND source = $2`
+
+	result, err := p.DB.Exec(query, kind, source)
+	if err != nil {
+		return 0, err
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(affectedRows), nil
 }

@@ -49,7 +49,11 @@ func (p *Processor) Process(resourceChan chan resource.Resource) {
 		wg.Add(1)
 		go func(s source.Source) {
 			defer wg.Done()
-			if err := s.Scanner.Scan(resourceChan); err != nil {
+			i, err := p.Storage.GetNextVersionForResource(s.Name, s.Scanner.GetKind())
+			if err != nil {
+				fmt.Printf("Failed to get the next resource version for the scanner. Scanner: %s. Error: %s\n", s.Name, err)
+			}
+			if err := s.Scanner.Scan(resourceChan, i); err != nil {
 				fmt.Printf("Failed to start the scanner. Scanner: %s. Error: %s\n", s.Name, err)
 			}
 		}(s)
@@ -71,7 +75,7 @@ func (p *Processor) processResources(resourceChan <-chan resource.Resource) {
 	var resources []resource.Resource
 
 	for res := range resourceChan {
-		fmt.Println("Received resource:", res.Kind, res.Name)
+		fmt.Println("Received resource:", res.GetKind(), res.GetName())
 		resources = append(resources, res)
 
 		if p.shouldProcessBatch(resources) {
@@ -106,7 +110,7 @@ func (p *Processor) processBatch(resources []resource.Resource) error {
 	fmt.Println("\nProcessing batch of", len(resources), "resources...")
 
 	for _, res := range resources {
-		fmt.Println(emoji.Sprintf(":check_mark: Processed resource: [ %s ] - %s", res.Kind, res.Name))
+		fmt.Println(emoji.Sprintf(":check_mark: Processed resource: [ %s ] - %s", res.GetKind(), res.GetName()))
 	}
 
 	if err := p.Storage.Persist(resources); err != nil {

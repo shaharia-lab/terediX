@@ -5,12 +5,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/rds"
 	types "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/util"
-
-	"github.com/aws/aws-sdk-go-v2/service/rds"
 
 	"github.com/aws/aws-sdk-go/aws"
 )
@@ -49,8 +47,13 @@ func NewAWSRDS(sourceName string, region string, accountID string, rdsClient Rds
 	}
 }
 
+// GetKind return resource kind
+func (a *AWSRDS) GetKind() string {
+	return pkg.ResourceKindAWSRDS
+}
+
 // Scan discover resource and send to resource channel
-func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
+func (a *AWSRDS) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	rdsInstances, err := listAllRDSInstances(a.RdsClient)
 
 	for _, rdsInstance := range rdsInstances {
@@ -60,14 +63,8 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 			return fmt.Errorf("failed to get tags for RDS instance %s. error: %w", instanceID, err)
 		}
 
-		r := resource.Resource{
-			Kind:        pkg.ResourceKindAWSRDS,
-			UUID:        util.GenerateUUID(),
-			Name:        instanceID,
-			ExternalID:  instanceID,
-			RelatedWith: nil,
-			MetaData:    a.getMetaData(rdsInstance),
-		}
+		r := resource.NewResource(pkg.ResourceKindAWSRDS, instanceID, instanceID, a.SourceName, nextResourceVersion)
+		r.AddMetaData(a.getMetaData(rdsInstance))
 
 		resourceChannel <- r
 	}
@@ -75,7 +72,7 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 	return nil
 }
 
-func (a *AWSRDS) getMetaData(rdsInstance types.DBInstance) []resource.MetaData {
+func (a *AWSRDS) getMetaData(rdsInstance types.DBInstance) map[string]string {
 	mappings := map[string]func() string{
 		rdsFieldInstanceID: func() string { return aws.StringValue(rdsInstance.DBInstanceIdentifier) },
 		rdsFieldARN: func() string {

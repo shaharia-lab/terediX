@@ -140,6 +140,6 @@ func TestAWSEC2_Scan_Return_Error(t *testing.T) {
 	a := NewAWSEC2("test-source", "us-west-2", "1234567890", mc, []string{})
 
 	resCh := make(chan resource.Resource, 1)
-	err := a.Scan(resCh)
+	err := a.Scan(resCh, 1)
 	assert.Error(t, err)
 }

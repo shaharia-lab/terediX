@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/source"
@@ -45,9 +46,8 @@ func TestProcess(t *testing.T) {
 		{
 			name: "Successful processing",
 			resources: []resource.Resource{
-				{Kind: "GitHubRepository", Name: "repo1"},
-				{Kind: "GitHubRepository", Name: "repo2"},
-				{Kind: "GitHubRepository", Name: "repo3"},
+				resource.NewResource("GitHubRepository", "repo1", "externalID", "scannerName", 1),
+				resource.NewResource("GitHubRepository", "repo1", "externalID", "scannerName", 1),
 			},
 			scanError:    nil,
 			persistError: nil,
@@ -69,7 +69,8 @@ func TestProcess(t *testing.T) {
 
 			// Setup mock scanner and storage
 			firstScanner := new(scanner.Mock)
-			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
+			firstScanner.On("GetKind").Return(pkg.ResourceKindAWSEC2)
+			firstScanner.On("Scan", resourceChan, 1).Run(func(args mock.Arguments) {
 				for _, res := range tc.resources {
 					resourceChan <- res
 				}
@@ -79,6 +80,7 @@ func TestProcess(t *testing.T) {
 			if tc.resources != nil {
 				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
 			}
+			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []source.Source{{Scanner: firstScanner}})
 			p.Process(resourceChan)
@@ -95,10 +97,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 	generateResources := func(n int) []resource.Resource {
 		var resources []resource.Resource
 		for i := 0; i < n; i++ {
-			resources = append(resources, resource.Resource{
-				Kind: "GitHubRepository",
-				Name: fmt.Sprintf("repo%d", i+1),
-			})
+			resources = append(resources, resource.NewResource("GitHubRepository", fmt.Sprintf("repo%d", i+1), "externalID", "scannerName", 1))
 		}
 		return resources
 	}
@@ -121,7 +120,8 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 
 			// Setup mock scanner and storage
 			firstScanner := new(scanner.Mock)
-			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
+			firstScanner.On("GetKind").Return(pkg.ResourceKindAWSEC2)
+			firstScanner.On("Scan", resourceChan, 1).Run(func(args mock.Arguments) {
 				for _, res := range resources {
 					resourceChan <- res
 				}
@@ -130,6 +130,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			mockStorage := new(storage.Mock)
 			// This will ensure the Persist method is called expectedBatches times
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
+			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []source.Source{{Scanner: firstScanner}})
 			p.Process(resourceChan)

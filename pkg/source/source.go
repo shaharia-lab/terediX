@@ -27,6 +27,7 @@ import (
 type Source struct {
 	Name    string
 	Scanner scanner.Scanner
+	Kind    string
 }
 
 // BuildSources build source based on configuration
@@ -37,7 +38,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 			fs := scanner.NewFsScanner(sourceKey, s.Configuration["root_directory"], s.Fields)
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
-				Scanner: &fs,
+				Scanner: fs,
 			})
 		}
 

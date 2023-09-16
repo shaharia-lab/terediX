@@ -17,16 +17,6 @@ import (
 	"testing"
 )
 
-func TestGenerateUUID(t *testing.T) {
-	// Generate a UUID
-	uuid := GenerateUUID()
-
-	// Verify that the UUID is in the correct format
-	if len(uuid) != 36 {
-		t.Errorf("UUID is not in the correct format: %s", uuid)
-	}
-}
-
 func TestRetryWithExponentialBackoff(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -190,6 +180,17 @@ func TestIsFieldExistsInConfig(t *testing.T) {
 }
 
 func TestCheckKeysInMetaData(t *testing.T) {
+	r1 := resource.NewResource("kind", "uuid", "name", "", 1)
+	r1.AddMetaData(map[string]string{
+		"key1": "value1",
+		"key2": "value2",
+	})
+
+	r2 := resource.NewResource("kind", "uuid", "name", "", 1)
+	r2.AddMetaData(map[string]string{
+		"key1": "value1",
+	})
+
 	tests := []struct {
 		name            string
 		resource        resource.Resource
@@ -198,24 +199,15 @@ func TestCheckKeysInMetaData(t *testing.T) {
 		expectedMissing []string
 	}{
 		{
-			name: "all keys present",
-			resource: resource.Resource{
-				MetaData: []resource.MetaData{
-					{Key: "key1", Value: "value1"},
-					{Key: "key2", Value: "value2"},
-				},
-			},
+			name:            "all keys present",
+			resource:        r1,
 			keys:            []string{"key1", "key2"},
 			expectedExists:  true,
 			expectedMissing: []string{},
 		},
 		{
-			name: "some keys missing",
-			resource: resource.Resource{
-				MetaData: []resource.MetaData{
-					{Key: "key1", Value: "value1"},
-				},
-			},
+			name:            "some keys missing",
+			resource:        r2,
 			keys:            []string{"key1", "key2"},
 			expectedExists:  false,
 			expectedMissing: []string{"key2"},
@@ -224,11 +216,10 @@ func TestCheckKeysInMetaData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			exists, missingKeys := CheckKeysInMetaData(tt.resource, tt.keys)
+			data := tt.resource.GetMetaData()
+			missingKeys := data.FindMissingKeys(tt.keys)
 
-			if exists != tt.expectedExists {
-				t.Errorf("expected existence: %v, got: %v", tt.expectedExists, exists)
-			}
+			assert.Equal(t, tt.expectedExists, len(missingKeys) == 0, "unexpected existence")
 
 			if !slicesEqual(missingKeys, tt.expectedMissing) {
 				t.Errorf("expected missing keys: %v, got: %v", tt.expectedMissing, missingKeys)

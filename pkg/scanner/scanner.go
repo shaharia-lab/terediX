@@ -15,7 +15,8 @@ const (
 
 // Scanner interface to build different scanner
 type Scanner interface {
-	Scan(resourceChannel chan resource.Resource) error
+	Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error
+	GetKind() string
 }
 
 // MetaDataMapper map the fields
@@ -40,7 +41,7 @@ func RunScannerForTests(scanner Scanner) []resource.Resource {
 	var res []resource.Resource
 
 	go func() {
-		scanner.Scan(resourceChannel)
+		scanner.Scan(resourceChannel, 1)
 		close(resourceChannel)
 	}()
 
@@ -88,7 +89,9 @@ func NewFieldMapper(mappings map[string]func() string, tags func() []ResourceTag
 // For each field in mappings, the associated function is called to retrieve its value.
 // Additionally, if tags are specified in the configuration, they are appended with
 // the "tag_" prefix and included in the final resource.MetaData list.
-func (f *FieldMapper) getResourceMetaData() []resource.MetaData {
+func (f *FieldMapper) getResourceMetaData() map[string]string {
+	md := make(map[string]string)
+
 	var fieldMapper []MetaDataMapper
 	for field, fn := range f.mappings {
 		fieldMapper = append(fieldMapper, MetaDataMapper{field: field, value: fn})
@@ -103,15 +106,14 @@ func (f *FieldMapper) getResourceMetaData() []resource.MetaData {
 		}
 	}
 
-	var resMeta []resource.MetaData
 	for _, mapper := range fieldMapper {
 		if util.IsFieldExistsInConfig(mapper.field, f.fields) || strings.Contains(mapper.field, "tag_") {
 			val := mapper.value()
-			if val != "" {
-				resMeta = append(resMeta, resource.MetaData{Key: mapper.field, Value: val})
+			if val != "" && mapper.field != "" {
+				md[mapper.field] = val
 			}
 		}
 	}
 
-	return resMeta
+	return md
 }

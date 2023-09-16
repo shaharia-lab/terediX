@@ -6,9 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/util"
 )
 
 const (
@@ -29,49 +27,46 @@ type File struct {
 }
 
 // NewFsScanner construct new file system scanner
-func NewFsScanner(name, rootDirectory string, fields []string) FsScanner {
-	return FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
+func NewFsScanner(name, rootDirectory string, fields []string) *FsScanner {
+	return &FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
+}
+
+// GetKind return resource kind
+func (s *FsScanner) GetKind() string {
+	return "FileSystem"
 }
 
 // Scan scans the file system
-func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
+func (s *FsScanner) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	files, err := s.listFilesRecursive(s.rootDirectory)
 	if err != nil {
 		return nil
 	}
 
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = ""
+	//rootResource := resource.NewResourceV1("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
+	rootResource := resource.NewResource("FileDirectory", s.name, s.rootDirectory, s.name, nextResourceVersion)
+
+	mappings := map[string]func() string{
+		fileSystemFieldRootDirectory: func() string { return s.rootDirectory },
+		fileSystemFieldMachineHost: func() string {
+			hostname, err := os.Hostname()
+			if err != nil {
+				hostname = ""
+			}
+			return hostname
+		},
 	}
 
-	rootResource := resource.NewResource("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
-
-	if util.IsFieldExistsInConfig(fileSystemFieldRootDirectory, s.fields) {
-		rootResource.AddMetaData(fileSystemFieldRootDirectory, s.rootDirectory)
-	}
-
-	if util.IsFieldExistsInConfig(fileSystemFieldMachineHost, s.fields) {
-		rootResource.AddMetaData(fileSystemFieldMachineHost, hostname)
-	}
-
-	rootResource.AddMetaData(pkg.MetaKeyScannerLabel, s.name)
+	resourceMeta := NewFieldMapper(mappings, nil, s.fields).getResourceMetaData()
+	rootResource.AddMetaData(resourceMeta)
 
 	resourceChannel <- rootResource
 
 	for _, f := range files {
-		nr := resource.NewResource("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
+		//nr := resource.NewResourceV1("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
+		nr := resource.NewResource("FilePath", s.name, f.Path, s.name, nextResourceVersion)
 		nr.AddRelation(rootResource)
-
-		nr.AddMetaData("Scanner-Label", s.name)
-
-		if util.IsFieldExistsInConfig(fileSystemFieldRootDirectory, s.fields) {
-			nr.AddMetaData(fileSystemFieldRootDirectory, s.rootDirectory)
-		}
-
-		if util.IsFieldExistsInConfig(fileSystemFieldMachineHost, s.fields) {
-			nr.AddMetaData(fileSystemFieldMachineHost, hostname)
-		}
+		nr.AddMetaData(resourceMeta)
 
 		resourceChannel <- nr
 	}
