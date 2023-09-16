@@ -76,6 +76,7 @@ func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string,
 	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name, fields: fields}
 }
 
+// GetKind return resource kind
 func (r *GitHubRepositoryScanner) GetKind() string {
 	return pkg.ResourceKindGitHubRepository
 }

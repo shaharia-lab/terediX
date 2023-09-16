@@ -48,6 +48,7 @@ func NewAWSS3(sourceName string, region string, s3Client AWSS3Client, fields []s
 	}
 }
 
+// GetKind return resource kind
 func (a *AWSS3) GetKind() string {
 	return pkg.ResourceKindAWSS3
 }

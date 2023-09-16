@@ -47,6 +47,7 @@ func NewAWSRDS(sourceName string, region string, accountID string, rdsClient Rds
 	}
 }
 
+// GetKind return resource kind
 func (a *AWSRDS) GetKind() string {
 	return pkg.ResourceKindAWSRDS
 }

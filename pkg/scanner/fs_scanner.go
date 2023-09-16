@@ -31,6 +31,7 @@ func NewFsScanner(name, rootDirectory string, fields []string) *FsScanner {
 	return &FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
 }
 
+// GetKind return resource kind
 func (s *FsScanner) GetKind() string {
 	return "FileSystem"
 }

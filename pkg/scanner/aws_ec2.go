@@ -51,6 +51,7 @@ func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2
 	}
 }
 
+// GetKind return resource kind
 func (a *AWSEC2) GetKind() string {
 	return pkg.ResourceKindAWSEC2
 }

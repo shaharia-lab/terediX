@@ -50,6 +50,7 @@ func NewAWSECR(sourceName string, region string, accountID string, ecrClient Ecr
 	}
 }
 
+// GetKind return resource kind
 func (a *AWSECR) GetKind() string {
 	return pkg.ResourceKindAWSECR
 }
