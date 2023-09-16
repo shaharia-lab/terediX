@@ -126,21 +126,21 @@ func (_m *Mock) GetResources() ([]resource.Resource, error) {
 }
 
 // GetNextVersionForResource provides a mock function with given fields: source, kind
-func (_m *Mock) GetNextVersionForResource(source string, kind string) (error, int) {
+func (_m *Mock) GetNextVersionForResource(source string, kind string) (int, error) {
 	ret := _m.Called(source, kind)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string) error); ok {
+	var r0 int
+	if rf, ok := ret.Get(0).(func(string, string) int); ok {
 		r0 = rf(source, kind)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int)
 	}
 
-	var r1 int
-	if rf, ok := ret.Get(1).(func(string, string) int); ok {
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, string) error); ok {
 		r1 = rf(source, kind)
 	} else {
-		r1 = ret.Get(1).(int)
+		r1 = ret.Error(1)
 	}
 
 	return r0, r1

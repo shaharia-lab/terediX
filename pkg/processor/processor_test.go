@@ -80,7 +80,7 @@ func TestProcess(t *testing.T) {
 			if tc.resources != nil {
 				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
 			}
-			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(nil, 1)
+			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []source.Source{{Scanner: firstScanner}})
 			p.Process(resourceChan)
@@ -130,7 +130,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			mockStorage := new(storage.Mock)
 			// This will ensure the Persist method is called expectedBatches times
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
-			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(nil, 1)
+			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []source.Source{{Scanner: firstScanner}})
 			p.Process(resourceChan)

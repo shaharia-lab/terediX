@@ -353,14 +353,14 @@ func (p *PostgreSQL) runInTransaction(f func(tx *sql.Tx) error) error {
 }
 
 // GetNextVersionForResource get next version for a resource
-func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (error, int) {
+func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (int, error) {
 	var version int
 	err := p.DB.QueryRow("SELECT COALESCE(max(version), 0) + 1 FROM resources WHERE source = $1 AND kind = $2", source, kind).Scan(&version)
 	if err != nil {
-		return err, 0
+		return 0, err
 	}
 
-	return nil, version
+	return version, nil
 }
 
 // CleanupOldVersion cleanup old version of resources

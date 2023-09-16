@@ -49,7 +49,7 @@ func (p *Processor) Process(resourceChan chan resource.Resource) {
 		wg.Add(1)
 		go func(s source.Source) {
 			defer wg.Done()
-			err, i := p.Storage.GetNextVersionForResource(s.Name, s.Scanner.GetKind())
+			i, err := p.Storage.GetNextVersionForResource(s.Name, s.Scanner.GetKind())
 			if err != nil {
 				fmt.Printf("Failed to get the next resource version for the scanner. Scanner: %s. Error: %s\n", s.Name, err)
 			}
