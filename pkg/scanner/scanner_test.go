@@ -3,15 +3,13 @@ package scanner
 import (
 	"reflect"
 	"testing"
-
-	"github.com/shaharia-lab/teredix/pkg/resource"
 )
 
 // Data provider structure
 type getResourceMetaDataTestCase struct {
 	name           string
 	inputMapper    *FieldMapper
-	expectedOutput []resource.MetaData
+	expectedOutput map[string]string
 }
 
 func TestGetResourceMetaData(t *testing.T) {
@@ -32,9 +30,9 @@ func TestGetResourceMetaData(t *testing.T) {
 				mockTagsFunc,
 				[]string{"field1", fieldTags},
 			),
-			expectedOutput: []resource.MetaData{
-				{Key: "field1", Value: "value"},
-				{Key: "tag_tagKey", Value: "tagValue"},
+			expectedOutput: map[string]string{
+				"field1":     "value",
+				"tag_tagKey": "tagValue",
 			},
 		},
 	}
@@ -47,17 +45,5 @@ func TestGetResourceMetaData(t *testing.T) {
 				t.Errorf("Expected %v, but got %v", testCase.expectedOutput, actualOutput)
 			}
 		})
-	}
-}
-
-// MockScanner is a mock implementation of the Scanner interface
-type MockScanner struct {
-	resources []resource.Resource
-}
-
-// Scan is a mock method that sends resources to the given channel
-func (m *MockScanner) Scan(ch chan<- resource.Resource) {
-	for _, r := range m.resources {
-		ch <- r
 	}
 }

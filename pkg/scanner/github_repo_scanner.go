@@ -7,11 +7,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/google/go-github/v50/github"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/util"
-
-	"github.com/google/go-github/v50/github"
 )
 
 const (
@@ -78,8 +76,13 @@ func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string,
 	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name, fields: fields}
 }
 
+// GetKind return resource kind
+func (r *GitHubRepositoryScanner) GetKind() string {
+	return pkg.ResourceKindGitHubRepository
+}
+
 // Scan scans GitHub to get the list of repositories as resources
-func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) error {
+func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	opt := &github.RepositoryListOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
 	}
@@ -90,19 +93,15 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 	}
 
 	for _, repo := range repos {
-		resourceChannel <- resource.Resource{
-			Kind:       pkg.ResourceKindGitHubRepository,
-			UUID:       util.GenerateUUID(),
-			Name:       repo.GetFullName(),
-			ExternalID: repo.GetFullName(),
-			MetaData:   r.getMetaData(repo),
-		}
+		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, nextResourceVersion)
+		res.AddMetaData(r.getMetaData(repo))
+		resourceChannel <- res
 	}
 
 	return nil
 }
 
-func (r *GitHubRepositoryScanner) getMetaData(repo *github.Repository) []resource.MetaData {
+func (r *GitHubRepositoryScanner) getMetaData(repo *github.Repository) map[string]string {
 	mappings := map[string]func() string{
 		fieldCompany: func() string {
 			if repo.GetOwner() != nil {

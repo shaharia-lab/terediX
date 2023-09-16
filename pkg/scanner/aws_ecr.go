@@ -50,9 +50,14 @@ func NewAWSECR(sourceName string, region string, accountID string, ecrClient Ecr
 	}
 }
 
+// GetKind return resource kind
+func (a *AWSECR) GetKind() string {
+	return pkg.ResourceKindAWSECR
+}
+
 // Scan discover resource and send to resource channel
 // Scan discover resource and send to resource channel
-func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
+func (a *AWSECR) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	// Set initial values for pagination
 	pageNum := 0
 	nextToken := ""
@@ -73,14 +78,8 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 
 		// Loop through repositories and their tags
 		for _, repository := range resp.Repositories {
-			res := resource.Resource{
-				Name:       *repository.RepositoryName,
-				Kind:       pkg.ResourceKindAWSECR,
-				UUID:       util.GenerateUUID(),
-				ExternalID: *repository.RepositoryArn,
-				MetaData:   a.getMetaData(repository),
-			}
-
+			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, nextResourceVersion)
+			res.AddMetaData(a.getMetaData(repository))
 			resourceChannel <- res
 		}
 
@@ -95,7 +94,7 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 	return nil
 }
 
-func (a *AWSECR) getMetaData(repository ecrTypes.Repository) []resource.MetaData {
+func (a *AWSECR) getMetaData(repository ecrTypes.Repository) map[string]string {
 	mappings := map[string]func() string{
 		ecrFieldRepositoryName: func() string { return stringValueOrDefault(*repository.RepositoryName) },
 		ecrFieldArn:            func() string { return stringValueOrDefault(*repository.RepositoryArn) },

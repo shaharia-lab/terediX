@@ -76,7 +76,7 @@ func TestBuildSources(t *testing.T) {
 	expectedSources := []Source{
 		{
 			Name:    "source1",
-			Scanner: &fsScanner,
+			Scanner: fsScanner,
 		},
 		{
 			Name:    "source2",

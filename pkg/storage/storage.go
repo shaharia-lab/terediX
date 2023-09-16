@@ -34,6 +34,10 @@ type Storage interface {
 
 	// StoreRelations Store Relationship
 	StoreRelations(relation config.Relation) error
+
+	GetNextVersionForResource(source, kind string) (int, error)
+
+	CleanupOldVersion(source, kind string) (int, error)
 }
 
 // Query build query based on filters

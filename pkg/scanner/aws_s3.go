@@ -48,8 +48,13 @@ func NewAWSS3(sourceName string, region string, s3Client AWSS3Client, fields []s
 	}
 }
 
+// GetKind return resource kind
+func (a *AWSS3) GetKind() string {
+	return pkg.ResourceKindAWSS3
+}
+
 // Scan discover resource and send to resource channel
-func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
+func (a *AWSS3) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	// List all S3 buckets
 	output, err := a.S3Client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
@@ -57,20 +62,15 @@ func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
 	}
 
 	for _, bucket := range output.Buckets {
-		resourceChannel <- resource.Resource{
-			Kind:        pkg.ResourceKindAWSS3,
-			UUID:        util.GenerateUUID(),
-			Name:        aws.ToString(bucket.Name),
-			ExternalID:  aws.ToString(bucket.Name),
-			RelatedWith: nil,
-			MetaData:    a.getMetaData(bucket),
-		}
+		res := resource.NewResource(pkg.ResourceKindAWSS3, aws.ToString(bucket.Name), aws.ToString(bucket.Name), a.SourceName, nextResourceVersion)
+		res.AddMetaData(a.getMetaData(bucket))
+		resourceChannel <- res
 	}
 
 	return nil
 }
 
-func (a *AWSS3) getMetaData(bucket types.Bucket) []resource.MetaData {
+func (a *AWSS3) getMetaData(bucket types.Bucket) map[string]string {
 	mappings := map[string]func() string{
 		s3fieldBucketName: func() string { return aws.ToString(bucket.Name) },
 		s3fieldARN: func() string {
