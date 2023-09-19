@@ -8,13 +8,13 @@ import (
 
 	"github.com/kyokomi/emoji"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 )
 
 // Processor manages the processing of resources from various sources.
 type Processor struct {
-	Sources []source.Source
+	Sources []scanner.Source
 	Config  Config
 	Storage storage.Storage
 }
@@ -25,7 +25,7 @@ type Config struct {
 }
 
 // NewProcessor initializes a new Processor instance.
-func NewProcessor(config Config, storage storage.Storage, sources []source.Source) Processor {
+func NewProcessor(config Config, storage storage.Storage, sources []scanner.Source) Processor {
 	return Processor{Sources: sources, Config: config, Storage: storage}
 }
 
@@ -47,7 +47,7 @@ func (p *Processor) Process(resourceChan chan resource.Resource) {
 	// Start goroutines to scan in parallel
 	for _, s := range p.Sources {
 		wg.Add(1)
-		go func(s source.Source) {
+		go func(s scanner.Source) {
 			defer wg.Done()
 			i, err := p.Storage.GetNextVersionForResource(s.Name, s.Scanner.GetKind())
 			if err != nil {

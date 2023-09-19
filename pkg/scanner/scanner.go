@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
 )
@@ -15,6 +16,7 @@ const (
 
 // Scanner interface to build different scanner
 type Scanner interface {
+	Build(sourceKey string, source config.Source) Scanner
 	Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error
 	GetKind() string
 }

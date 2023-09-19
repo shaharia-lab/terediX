@@ -1,14 +1,12 @@
 // Package source represent source
-package source
+package scanner
 
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
-	"github.com/shaharia-lab/teredix/pkg/scanner"
-
-	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -26,7 +24,7 @@ import (
 // Source represent source configuration
 type Source struct {
 	Name    string
-	Scanner scanner.Scanner
+	Scanner Scanner
 	Kind    string
 }
 
@@ -35,7 +33,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 	var finalSources []Source
 	for sourceKey, s := range appConfig.Sources {
 		if s.Type == pkg.SourceTypeFileSystem {
-			fs := scanner.NewFsScanner(sourceKey, s.Configuration["root_directory"], s.Fields)
+			fs := NewFsScanner(sourceKey, s.Configuration["root_directory"], s.Fields)
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: fs,
@@ -50,9 +48,9 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 			)
 			tc := oauth2.NewClient(ctx, ts)
 			client := github.NewClient(tc)
-			gc := scanner.NewGitHubRepositoryClient(client)
+			gc := NewGitHubRepositoryClient(client)
 
-			gh := scanner.NewGitHubRepositoryScanner(sourceKey, gc, s.Configuration["user_or_org"], s.Fields)
+			gh := NewGitHubRepositoryScanner(sourceKey, gc, s.Configuration["user_or_org"], s.Fields)
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: gh,
@@ -60,9 +58,9 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 		}
 
 		if s.Type == pkg.SourceTypeAWSS3 {
-			s3Client := s3.NewFromConfig(buildAWSConfig(s))
+			s3Client := s3.NewFromConfig(BuildAWSConfig(s))
 
-			awsS3 := scanner.NewAWSS3(sourceKey, s.Configuration["region"], s3Client, s.Fields)
+			awsS3 := NewAWSS3(sourceKey, s.Configuration["region"], s3Client, s.Fields)
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: awsS3,
@@ -70,9 +68,9 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 		}
 
 		if s.Type == pkg.SourceTypeAWSRDS {
-			rdsClient := rds.NewFromConfig(buildAWSConfig(s))
+			rdsClient := rds.NewFromConfig(BuildAWSConfig(s))
 
-			awsS3 := scanner.NewAWSRDS(sourceKey, s.Configuration["region"], s.Configuration["account_id"], rdsClient, s.Fields)
+			awsS3 := NewAWSRDS(sourceKey, s.Configuration["region"], s.Configuration["account_id"], rdsClient, s.Fields)
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
 				Scanner: awsS3,
@@ -82,19 +80,19 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 		if s.Type == pkg.SourceTypeAWSEC2 {
 			finalSources = append(finalSources, Source{
 				Name:    sourceKey,
-				Scanner: scanner.NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2.NewFromConfig(buildAWSConfig(s)), s.Fields),
+				Scanner: NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2.NewFromConfig(BuildAWSConfig(s)), s.Fields),
 			})
 		}
 
 		if s.Type == pkg.SourceTypeAWSECR {
 			finalSources = append(finalSources, Source{
 				Name: sourceKey,
-				Scanner: scanner.NewAWSECR(
+				Scanner: NewAWSECR(
 					sourceKey,
 					s.Configuration["region"],
 					s.Configuration["account_id"],
-					ecr.NewFromConfig(buildAWSConfig(s)),
-					resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(s)),
+					ecr.NewFromConfig(BuildAWSConfig(s)),
+					resourcegroupstaggingapi.NewFromConfig(BuildAWSConfig(s)),
 					s.Fields,
 				),
 			})
@@ -103,7 +101,7 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 	return finalSources
 }
 
-func buildAWSConfig(s config.Source) aws.Config {
+func BuildAWSConfig(s config.Source) aws.Config {
 	cfg, _ := awsConfig.LoadDefaultConfig(context.TODO())
 	awsCredentials := credentials.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
 

@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	types "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -34,6 +35,7 @@ type AWSRDS struct {
 	Region     string
 	AccountID  string
 	Fields     []string
+	Schedule   string
 }
 
 // NewAWSRDS construct AWS S3 source
@@ -45,6 +47,17 @@ func NewAWSRDS(sourceName string, region string, accountID string, rdsClient Rds
 		AccountID:  accountID,
 		Fields:     fields,
 	}
+}
+
+func (a *AWSRDS) Build(sourceKey string, cfg config.Source) Scanner {
+	a.SourceName = sourceKey
+	a.RdsClient = rds.NewFromConfig(BuildAWSConfig(cfg))
+	a.Region = cfg.Configuration["region"]
+	a.AccountID = cfg.Configuration["account_id"]
+	a.Fields = cfg.Fields
+	a.Schedule = cfg.Schedule
+
+	return a
 }
 
 // GetKind return resource kind

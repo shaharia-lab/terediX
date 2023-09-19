@@ -5,7 +5,7 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/processor"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +34,7 @@ func run(cfgFile string) error {
 		return err
 	}
 
-	sources := source.BuildSources(appConfig)
+	sources := scanner.BuildSources(appConfig)
 	st := storage.BuildStorage(appConfig)
 	err = st.Prepare()
 	if err != nil {

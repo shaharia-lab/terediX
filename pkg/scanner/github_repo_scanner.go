@@ -9,7 +9,9 @@ import (
 
 	"github.com/google/go-github/v50/github"
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -79,6 +81,21 @@ func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string,
 // GetKind return resource kind
 func (r *GitHubRepositoryScanner) GetKind() string {
 	return pkg.ResourceKindGitHubRepository
+}
+
+func (r *GitHubRepositoryScanner) Build(sourceKey string, cfg config.Source) Scanner {
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: cfg.Configuration["token"]},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	r.name = sourceKey
+	r.ghClient = NewGitHubRepositoryClient(client)
+	r.user = cfg.Configuration["user"]
+	r.fields = cfg.Fields
+	return r
 }
 
 // Scan scans GitHub to get the list of repositories as resources

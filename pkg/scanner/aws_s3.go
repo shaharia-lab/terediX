@@ -7,7 +7,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+
 	"github.com/shaharia-lab/teredix/pkg/util"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -36,6 +38,7 @@ type AWSS3 struct {
 	S3Client   AWSS3Client
 	Region     string
 	Fields     []string
+	Schedule   string
 }
 
 // NewAWSS3 construct AWS S3 source
@@ -46,6 +49,16 @@ func NewAWSS3(sourceName string, region string, s3Client AWSS3Client, fields []s
 		Region:     region,
 		Fields:     fields,
 	}
+}
+
+func (a *AWSS3) Build(sourceKey string, cfg config.Source) Scanner {
+	a.SourceName = sourceKey
+	a.S3Client = s3.NewFromConfig(BuildAWSConfig(cfg))
+	a.Region = cfg.Configuration["region"]
+	a.Fields = cfg.Fields
+	a.Schedule = cfg.Schedule
+
+	return a
 }
 
 // GetKind return resource kind

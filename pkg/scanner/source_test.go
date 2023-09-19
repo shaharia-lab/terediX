@@ -1,17 +1,15 @@
-package source
+package scanner
 
 import (
 	"context"
 	"testing"
 
-	"github.com/shaharia-lab/teredix/pkg"
-	"github.com/shaharia-lab/teredix/pkg/config"
-	"github.com/shaharia-lab/teredix/pkg/scanner"
-
 	configv2 "github.com/aws/aws-sdk-go-v2/config"
 	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 
 	"github.com/google/go-github/v50/github"
 	"golang.org/x/oauth2"
@@ -50,13 +48,13 @@ func TestBuildSources(t *testing.T) {
 
 	sources := BuildSources(appConfig)
 
-	fsScanner := scanner.NewFsScanner("source1", "/path/to/directory", []string{"rootDirectory"})
+	fsScanner := NewFsScanner("source1", "/path/to/directory", []string{"rootDirectory"})
 
-	gc := scanner.NewGitHubRepositoryClient(github.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(
+	gc := NewGitHubRepositoryClient(github.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: "token"},
 	))))
 
-	gh := scanner.NewGitHubRepositoryScanner("source2", gc, "user_or_org", []string{})
+	gh := NewGitHubRepositoryScanner("source2", gc, "user_or_org", []string{})
 
 	awsConfig, _ := configv2.LoadDefaultConfig(context.TODO())
 	awsCredentials := credentialsv2.NewStaticCredentialsProvider("xxx", "xxx", "xxx")
@@ -64,7 +62,7 @@ func TestBuildSources(t *testing.T) {
 	awsConfig.Credentials = awsCredentials
 	awsConfig.Region = "me-south-1"
 
-	awsEcr := scanner.NewAWSECR(
+	awsEcr := NewAWSECR(
 		"source3",
 		"me-south-1",
 		"xxxx",
