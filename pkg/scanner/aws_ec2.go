@@ -54,7 +54,7 @@ func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2
 }
 
 // Build AWS EC2 source
-func (a *AWSEC2) Build(sourceKey string, cfg config.Source) Scanner {
+func (a *AWSEC2) Build(sourceKey string, cfg config.Source, dependencies Dependency) Scanner {
 	a.SourceName = sourceKey
 	a.Ec2Client = ec2.NewFromConfig(BuildAWSConfig(cfg))
 	a.Region = cfg.Configuration["region"]

@@ -33,7 +33,7 @@ func NewFsScanner(name, rootDirectory string, fields []string) *FsScanner {
 }
 
 // Build file system scanner
-func (s *FsScanner) Build(sourceKey string, cfg config.Source) Scanner {
+func (s *FsScanner) Build(sourceKey string, cfg config.Source, dependencies Dependency) Scanner {
 	return &FsScanner{name: sourceKey, rootDirectory: cfg.Configuration["root_directory"], fields: cfg.Fields}
 }
 

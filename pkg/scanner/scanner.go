@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
@@ -21,9 +22,13 @@ const (
 	fieldTags = "tags"
 )
 
+type Dependency struct {
+	Scheduler *gocron.Scheduler
+}
+
 // Scanner interface to build different scanner
 type Scanner interface {
-	Build(sourceKey string, source config.Source) Scanner
+	Build(sourceKey string, source config.Source, dependencies Dependency) Scanner
 	Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error
 	GetKind() string
 }
@@ -42,7 +47,7 @@ func NewSourceRegistry(scanners map[string]Scanner) *Sources {
 func (s *Sources) BuildFromAppConfig(sourceConfigs map[string]config.Source) []Scanner {
 	var scanners []Scanner
 	for sourceKey, sc := range sourceConfigs {
-		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc))
+		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc, Dependency{}))
 	}
 	return scanners
 }

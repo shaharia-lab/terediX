@@ -84,7 +84,7 @@ func (r *GitHubRepositoryScanner) GetKind() string {
 }
 
 // Build GitHub repository scanner
-func (r *GitHubRepositoryScanner) Build(sourceKey string, cfg config.Source) Scanner {
+func (r *GitHubRepositoryScanner) Build(sourceKey string, cfg config.Source, dependencies Dependency) Scanner {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: cfg.Configuration["token"]},

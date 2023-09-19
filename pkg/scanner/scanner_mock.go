@@ -13,13 +13,12 @@ type Mock struct {
 	mock.Mock
 }
 
-// Build provides a mock function with given fields: sourceKey, source
-func (_m *Mock) Build(sourceKey string, source config.Source) Scanner {
-	ret := _m.Called(sourceKey, source)
+func (_m *Mock) Build(sourceKey string, source config.Source, dependencies Dependency) Scanner {
+	ret := _m.Called(sourceKey, source, dependencies)
 
 	var r0 Scanner
-	if rf, ok := ret.Get(0).(func(string, config.Source) Scanner); ok {
-		r0 = rf(sourceKey, source)
+	if rf, ok := ret.Get(0).(func(string, config.Source, Dependency) Scanner); ok {
+		r0 = rf(sourceKey, source, dependencies)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(Scanner)
