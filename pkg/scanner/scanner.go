@@ -38,21 +38,11 @@ func NewSourceRegistry(scanners map[string]Scanner) *Sources {
 	return &Sources{Scanners: scanners}
 }
 
-// Get source
-func (s *Sources) Get(sourceKey string) Scanner {
-	return s.Scanners[sourceKey]
-}
-
-// Add new source
-func (s *Sources) Add(sourceKey string, scanner Scanner) {
-	s.Scanners[sourceKey] = scanner
-}
-
 // BuildFromAppConfig build source based on configuration
-func (s *Sources) BuildFromAppConfig(appConfig config.AppConfig) []Scanner {
+func (s *Sources) BuildFromAppConfig(sourceConfigs map[string]config.Source) []Scanner {
 	var scanners []Scanner
-	for sourceKey, sc := range appConfig.Sources {
-		scanners = append(scanners, s.Scanners[sourceKey].Build(sourceKey, sc))
+	for sourceKey, sc := range sourceConfigs {
+		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc))
 	}
 	return scanners
 }
