@@ -15,7 +15,7 @@ import (
 
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/stretchr/testify/assert"
 )
@@ -80,13 +80,14 @@ func TestProcessor_Process_Integration(t *testing.T) {
 	appConfig, err := config.Load("config.yaml")
 	assert.NoError(t, err)
 
-	sources := source.BuildSources(appConfig)
+	sources := scanner.NewSourceRegistry(scanner.GetScannerRegistries())
+
 	st := storage.BuildStorage(appConfig)
 	err = st.Prepare()
 	assert.NoError(t, err)
 
 	processConfig := Config{BatchSize: appConfig.Storage.BatchSize}
-	p := NewProcessor(processConfig, st, sources)
+	p := NewProcessor(processConfig, st, sources.BuildFromAppConfig(appConfig.Sources))
 
 	resourceChan := make(chan resource.Resource)
 	p.Process(resourceChan)
