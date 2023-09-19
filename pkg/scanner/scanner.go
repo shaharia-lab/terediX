@@ -28,6 +28,36 @@ type Scanner interface {
 	GetKind() string
 }
 
+// Sources registry
+type Sources struct {
+	Scanners map[string]Scanner
+}
+
+// NewSourceRegistry build source registry
+func NewSourceRegistry(scanners map[string]Scanner) *Sources {
+	return &Sources{Scanners: scanners}
+}
+
+// Get source
+func (s *Sources) Get(sourceKey string) Scanner {
+	return s.Scanners[sourceKey]
+}
+
+// Add new source
+func (s *Sources) Add(sourceKey string, scanner Scanner) {
+	s.Scanners[sourceKey] = scanner
+}
+
+// BuildFromAppConfig build source based on configuration
+func (s *Sources) BuildFromAppConfig(appConfig config.AppConfig) []Scanner {
+	var scanners []Scanner
+	for sourceKey, sc := range appConfig.Sources {
+		scanners = append(scanners, s.Scanners[sourceKey].Build(sourceKey, sc))
+	}
+	return scanners
+}
+
+// GetScannerRegistries get all scanner registries
 func GetScannerRegistries() map[string]Scanner {
 	return map[string]Scanner{
 		pkg.SourceTypeFileSystem:       &FsScanner{},
@@ -37,18 +67,6 @@ func GetScannerRegistries() map[string]Scanner {
 		pkg.SourceTypeAWSEC2:           &AWSEC2{},
 		pkg.SourceTypeAWSECR:           &AWSECR{},
 	}
-}
-
-// GetAll build source based on configuration
-func GetAll(appConfig *config.AppConfig) []Source {
-	var finalSources []Source
-	scs := GetScannerRegistries()
-	for sourceKey, s := range appConfig.Sources {
-		finalSources = append(finalSources, Source{
-			Scanner: scs[s.Type].Build(sourceKey, s),
-		})
-	}
-	return finalSources
 }
 
 // MetaDataMapper map the fields
