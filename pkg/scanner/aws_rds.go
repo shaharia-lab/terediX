@@ -49,6 +49,7 @@ func NewAWSRDS(sourceName string, region string, accountID string, rdsClient Rds
 	}
 }
 
+// Build AWS S3 source
 func (a *AWSRDS) Build(sourceKey string, cfg config.Source) Scanner {
 	a.SourceName = sourceKey
 	a.RdsClient = rds.NewFromConfig(BuildAWSConfig(cfg))

@@ -51,6 +51,7 @@ func NewAWSS3(sourceName string, region string, s3Client AWSS3Client, fields []s
 	}
 }
 
+// Build AWS S3 source
 func (a *AWSS3) Build(sourceKey string, cfg config.Source) Scanner {
 	a.SourceName = sourceKey
 	a.S3Client = s3.NewFromConfig(BuildAWSConfig(cfg))

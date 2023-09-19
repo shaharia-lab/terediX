@@ -83,6 +83,7 @@ func (r *GitHubRepositoryScanner) GetKind() string {
 	return pkg.ResourceKindGitHubRepository
 }
 
+// Build GitHub repository scanner
 func (r *GitHubRepositoryScanner) Build(sourceKey string, cfg config.Source) Scanner {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(

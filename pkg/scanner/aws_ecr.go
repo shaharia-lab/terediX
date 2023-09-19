@@ -53,6 +53,7 @@ func NewAWSECR(sourceName string, region string, accountID string, ecrClient Ecr
 	}
 }
 
+// Build AWS ECR source
 func (a *AWSECR) Build(sourceKey string, cfg config.Source) Scanner {
 	a.SourceName = sourceKey
 	a.ECRClient = ecr.NewFromConfig(BuildAWSConfig(cfg))
