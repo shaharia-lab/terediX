@@ -2,12 +2,19 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 )
 
 const (
@@ -19,6 +26,29 @@ type Scanner interface {
 	Build(sourceKey string, source config.Source) Scanner
 	Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error
 	GetKind() string
+}
+
+func GetScannerRegistries() map[string]Scanner {
+	return map[string]Scanner{
+		pkg.SourceTypeFileSystem:       &FsScanner{},
+		pkg.SourceTypeGitHubRepository: &GitHubRepositoryScanner{},
+		pkg.SourceTypeAWSS3:            &AWSS3{},
+		pkg.SourceTypeAWSRDS:           &AWSRDS{},
+		pkg.SourceTypeAWSEC2:           &AWSEC2{},
+		pkg.SourceTypeAWSECR:           &AWSECR{},
+	}
+}
+
+// GetAll build source based on configuration
+func GetAll(appConfig *config.AppConfig) []Source {
+	var finalSources []Source
+	scs := GetScannerRegistries()
+	for sourceKey, s := range appConfig.Sources {
+		finalSources = append(finalSources, Source{
+			Scanner: scs[s.Type].Build(sourceKey, s),
+		})
+	}
+	return finalSources
 }
 
 // MetaDataMapper map the fields
@@ -118,4 +148,14 @@ func (f *FieldMapper) getResourceMetaData() map[string]string {
 	}
 
 	return md
+}
+
+// BuildAWSConfig build aws config
+func BuildAWSConfig(s config.Source) aws.Config {
+	cfg, _ := awsConfig.LoadDefaultConfig(context.TODO())
+	awsCredentials := credentials.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
+
+	cfg.Credentials = awsCredentials
+	cfg.Region = s.Configuration["region"]
+	return cfg
 }

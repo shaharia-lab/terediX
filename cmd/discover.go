@@ -34,7 +34,7 @@ func run(cfgFile string) error {
 		return err
 	}
 
-	sources := scanner.BuildSources(appConfig)
+	sources := scanner.GetAll(appConfig)
 	st := storage.BuildStorage(appConfig)
 	err = st.Prepare()
 	if err != nil {

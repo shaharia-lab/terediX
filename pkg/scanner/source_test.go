@@ -46,7 +46,7 @@ func TestBuildSources(t *testing.T) {
 		},
 	}
 
-	sources := BuildSources(appConfig)
+	sources := GetAll(appConfig)
 
 	fsScanner := NewFsScanner("source1", "/path/to/directory", []string{"rootDirectory"})
 
@@ -73,15 +73,12 @@ func TestBuildSources(t *testing.T) {
 
 	expectedSources := []Source{
 		{
-			Name:    "source1",
 			Scanner: fsScanner,
 		},
 		{
-			Name:    "source2",
 			Scanner: gh,
 		},
 		{
-			Name:    "source3",
 			Scanner: awsEcr,
 		},
 	}
