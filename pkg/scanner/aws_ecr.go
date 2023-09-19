@@ -38,7 +38,7 @@ type AWSECR struct {
 	AccountID              string
 	ResourceTaggingService util.ResourceTaggingServiceClient
 	Fields                 []string
-	Schedule               string
+	Schedule               config.Schedule
 }
 
 // NewAWSECR construct AWS ECR source

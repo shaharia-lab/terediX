@@ -35,7 +35,7 @@ type AWSRDS struct {
 	Region     string
 	AccountID  string
 	Fields     []string
-	Schedule   string
+	Schedule   config.Schedule
 }
 
 // NewAWSRDS construct AWS S3 source

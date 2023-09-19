@@ -38,7 +38,7 @@ type AWSS3 struct {
 	S3Client   AWSS3Client
 	Region     string
 	Fields     []string
-	Schedule   string
+	Schedule   config.Schedule
 }
 
 // NewAWSS3 construct AWS S3 source

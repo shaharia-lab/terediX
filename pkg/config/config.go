@@ -34,6 +34,11 @@ type SourceConfiguration struct {
 	RootDirectory string `yaml:"root_directory"`
 }
 
+type Schedule struct {
+	Type       string `yaml:"type,omitempty"`
+	Expression string `yaml:"expression,omitempty"`
+}
+
 // Source holds source configuration
 type Source struct {
 	Type          string            `yaml:"type"`
@@ -41,7 +46,7 @@ type Source struct {
 	Configuration map[string]string `yaml:"configuration"`
 	Fields        []string          `yaml:"fields"`
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
-	Schedule      string            `yaml:"schedule,omitempty"`
+	Schedule      Schedule          `yaml:"schedule,omitempty"`
 }
 
 // RelationCriteriaNode represent source and target

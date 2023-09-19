@@ -39,7 +39,7 @@ type AWSEC2 struct {
 	Region     string
 	AccountID  string
 	Fields     []string
-	Schedule   string
+	Schedule   config.Schedule
 }
 
 // NewAWSEC2 construct AWS EC2 source
