@@ -8,7 +8,6 @@ import (
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
-	"github.com/shaharia-lab/teredix/pkg/source"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/stretchr/testify/mock"
 )
@@ -82,7 +81,7 @@ func TestProcess(t *testing.T) {
 			}
 			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
-			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []source.Source{{Scanner: firstScanner}})
+			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner})
 			p.Process(resourceChan)
 
 			// Assert that the expected calls were made
@@ -132,7 +131,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
 			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
-			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []source.Source{{Scanner: firstScanner}})
+			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner})
 			p.Process(resourceChan)
 
 			// Assert that the expected calls were made

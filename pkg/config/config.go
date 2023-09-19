@@ -41,6 +41,7 @@ type Source struct {
 	Configuration map[string]string `yaml:"configuration"`
 	Fields        []string          `yaml:"fields"`
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
+	Schedule      string            `yaml:"schedule,omitempty"`
 }
 
 // RelationCriteriaNode represent source and target

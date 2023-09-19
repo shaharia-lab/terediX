@@ -8,15 +8,15 @@ import (
 
 	"github.com/kyokomi/emoji"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 )
 
 // Processor manages the processing of resources from various sources.
 type Processor struct {
-	Sources []source.Source
-	Config  Config
-	Storage storage.Storage
+	Scanners []scanner.Scanner
+	Config   Config
+	Storage  storage.Storage
 }
 
 // Config holds configuration values for the Processor.
@@ -25,8 +25,8 @@ type Config struct {
 }
 
 // NewProcessor initializes a new Processor instance.
-func NewProcessor(config Config, storage storage.Storage, sources []source.Source) Processor {
-	return Processor{Sources: sources, Config: config, Storage: storage}
+func NewProcessor(config Config, storage storage.Storage, scanners []scanner.Scanner) Processor {
+	return Processor{Scanners: scanners, Config: config, Storage: storage}
 }
 
 // Process initiates resource processing.
@@ -45,16 +45,16 @@ func (p *Processor) Process(resourceChan chan resource.Resource) {
 	}()
 
 	// Start goroutines to scan in parallel
-	for _, s := range p.Sources {
+	for _, s := range p.Scanners {
 		wg.Add(1)
-		go func(s source.Source) {
+		go func(s scanner.Scanner) {
 			defer wg.Done()
-			i, err := p.Storage.GetNextVersionForResource(s.Name, s.Scanner.GetKind())
+			i, err := p.Storage.GetNextVersionForResource(s.GetKind(), s.GetKind())
 			if err != nil {
-				fmt.Printf("Failed to get the next resource version for the scanner. Scanner: %s. Error: %s\n", s.Name, err)
+				fmt.Printf("Failed to get the next resource version for the scanner. Scanner: %s. Error: %s\n", s.GetKind(), err)
 			}
-			if err := s.Scanner.Scan(resourceChan, i); err != nil {
-				fmt.Printf("Failed to start the scanner. Scanner: %s. Error: %s\n", s.Name, err)
+			if err := s.Scan(resourceChan, i); err != nil {
+				fmt.Printf("Failed to start the scanner. Scanner: %s. Error: %s\n", s.GetKind(), err)
 			}
 		}(s)
 	}

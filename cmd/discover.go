@@ -5,7 +5,7 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/processor"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +34,8 @@ func run(cfgFile string) error {
 		return err
 	}
 
-	sources := source.BuildSources(appConfig)
+	sources := scanner.NewSourceRegistry(scanner.GetScannerRegistries())
+
 	st := storage.BuildStorage(appConfig)
 	err = st.Prepare()
 	if err != nil {
@@ -42,7 +43,7 @@ func run(cfgFile string) error {
 	}
 
 	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
-	p := processor.NewProcessor(processConfig, st, sources)
+	p := processor.NewProcessor(processConfig, st, sources.BuildFromAppConfig(appConfig.Sources))
 
 	resourceChan := make(chan resource.Resource)
 	p.Process(resourceChan)
