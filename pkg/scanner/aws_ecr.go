@@ -47,18 +47,6 @@ type AWSECR struct {
 	logger                 *logrus.Logger
 }
 
-// NewAWSECR construct AWS ECR source
-func NewAWSECR(sourceName string, region string, accountID string, ecrClient EcrClient, resourceTaggingService util.ResourceTaggingServiceClient, fields []string) *AWSECR {
-	return &AWSECR{
-		SourceName:             sourceName,
-		ECRClient:              ecrClient,
-		Region:                 region,
-		AccountID:              accountID,
-		ResourceTaggingService: resourceTaggingService,
-		Fields:                 fields,
-	}
-}
-
 func (a *AWSECR) setECRClient(ecrClient EcrClient) {
 	a.ECRClient = ecrClient
 }

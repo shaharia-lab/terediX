@@ -33,11 +33,6 @@ type File struct {
 	Path string
 }
 
-// NewFsScanner construct new file system scanner
-func NewFsScanner(name, rootDirectory string, fields []string) *FsScanner {
-	return &FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
-}
-
 // Build file system scanner
 func (s *FsScanner) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
 	s.name = sourceKey

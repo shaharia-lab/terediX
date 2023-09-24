@@ -48,17 +48,6 @@ type AWSEC2 struct {
 	storage    storage.Storage
 }
 
-// NewAWSEC2 construct AWS EC2 source
-func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2Client, fields []string) *AWSEC2 {
-	return &AWSEC2{
-		SourceName: sourceName,
-		Ec2Client:  ec2Client,
-		Region:     region,
-		AccountID:  accountID,
-		Fields:     fields,
-	}
-}
-
 func (a *AWSEC2) setEC2Client(ec2Client Ec2Client) {
 	a.Ec2Client = ec2Client
 }

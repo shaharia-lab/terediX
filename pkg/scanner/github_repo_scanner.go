@@ -79,11 +79,6 @@ type GitHubRepositoryScanner struct {
 	logger    *logrus.Logger
 }
 
-// NewGitHubRepositoryScanner construct a new GitHub repository scanner
-func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string, fields []string) *GitHubRepositoryScanner {
-	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name, fields: fields}
-}
-
 func (r *GitHubRepositoryScanner) setGitHubClient(ghClient GitHubClient) {
 	r.ghClient = ghClient
 }

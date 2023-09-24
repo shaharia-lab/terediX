@@ -47,16 +47,6 @@ type AWSS3 struct {
 	logger     *logrus.Logger
 }
 
-// NewAWSS3 construct AWS S3 source
-func NewAWSS3(sourceName string, region string, s3Client AWSS3Client, fields []string) *AWSS3 {
-	return &AWSS3{
-		SourceName: sourceName,
-		S3Client:   s3Client,
-		Region:     region,
-		Fields:     fields,
-	}
-}
-
 // Build AWS S3 source
 func (a *AWSS3) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
 	a.SourceName = sourceKey

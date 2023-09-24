@@ -44,17 +44,6 @@ type AWSRDS struct {
 	logger     *logrus.Logger
 }
 
-// NewAWSRDS construct AWS S3 source
-func NewAWSRDS(sourceName string, region string, accountID string, rdsClient RdsClient, fields []string) *AWSRDS {
-	return &AWSRDS{
-		SourceName: sourceName,
-		RdsClient:  rdsClient,
-		Region:     region,
-		AccountID:  accountID,
-		Fields:     fields,
-	}
-}
-
 // Build AWS S3 source
 func (a *AWSRDS) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
 	a.SourceName = sourceKey
