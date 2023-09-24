@@ -6,14 +6,18 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFsScanner_ScanV2(t *testing.T) {
+func TestFsScanner_Scan(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	tests := []struct {
@@ -73,7 +77,20 @@ func TestFsScanner_ScanV2(t *testing.T) {
 				t.Errorf(err.Error())
 			}
 
-			res := RunScannerForTests(NewFsScanner("scanner_name", tmpDir, []string{"rootDirectory", "machineHost"}))
+			sm := new(storage.Mock)
+			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
+
+			sc := config.Source{
+				Configuration: map[string]string{
+					"root_directory": tmpDir,
+				},
+				Fields: tt.fsSource.Fields,
+			}
+
+			f := FsScanner{}
+			f.Build("test-source", sc, sm, &gocron.Scheduler{}, &logrus.Logger{})
+
+			res := RunScannerForTests(&f)
 
 			assert.Equal(t, tt.expectedResourceCount, len(res), fmt.Sprintf("expected %d resource, but got %d resource", tt.expectedResourceCount, len(res)))
 			data := res[0].GetMetaData()

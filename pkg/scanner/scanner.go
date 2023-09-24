@@ -10,7 +10,9 @@ import (
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 
@@ -28,8 +30,8 @@ type Dependency struct {
 
 // Scanner interface to build different scanner
 type Scanner interface {
-	Build(sourceKey string, source config.Source, dependencies Dependency) Scanner
-	Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error
+	Build(sourceKey string, source config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner
+	Scan(resourceChannel chan resource.Resource) error
 	GetKind() string
 }
 
@@ -47,7 +49,7 @@ func NewSourceRegistry(scanners map[string]Scanner) *Sources {
 func (s *Sources) BuildFromAppConfig(sourceConfigs map[string]config.Source) []Scanner {
 	var scanners []Scanner
 	for sourceKey, sc := range sourceConfigs {
-		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc, Dependency{}))
+		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc, nil, nil, nil))
 	}
 	return scanners
 }
@@ -86,7 +88,7 @@ func RunScannerForTests(scanner Scanner) []resource.Resource {
 	var res []resource.Resource
 
 	go func() {
-		scanner.Scan(resourceChannel, 1)
+		scanner.Scan(resourceChannel)
 		close(resourceChannel)
 	}()
 

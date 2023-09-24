@@ -5,9 +5,12 @@ import (
 	"context"
 
 	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
+	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 
 	"github.com/shaharia-lab/teredix/pkg/util"
 
@@ -39,6 +42,9 @@ type AWSECR struct {
 	ResourceTaggingService util.ResourceTaggingServiceClient
 	Fields                 []string
 	Schedule               config.Schedule
+	scheduler              *gocron.Scheduler
+	storage                storage.Storage
+	logger                 *logrus.Logger
 }
 
 // NewAWSECR construct AWS ECR source
@@ -53,14 +59,25 @@ func NewAWSECR(sourceName string, region string, accountID string, ecrClient Ecr
 	}
 }
 
+func (a *AWSECR) setECRClient(ecrClient EcrClient) {
+	a.ECRClient = ecrClient
+}
+
+func (a *AWSECR) setResourceTaggingService(resourceTaggingService util.ResourceTaggingServiceClient) {
+	a.ResourceTaggingService = resourceTaggingService
+}
+
 // Build AWS ECR source
-func (a *AWSECR) Build(sourceKey string, cfg config.Source, dependencies Dependency) Scanner {
+func (a *AWSECR) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
 	a.SourceName = sourceKey
 	a.ECRClient = ecr.NewFromConfig(BuildAWSConfig(cfg))
 	a.Region = cfg.Configuration["region"]
 	a.AccountID = cfg.Configuration["account_id"]
 	a.Fields = cfg.Fields
 	a.Schedule = cfg.Schedule
+	a.scheduler = scheduler
+	a.storage = storage
+	a.logger = logger
 
 	return a
 }
@@ -72,10 +89,15 @@ func (a *AWSECR) GetKind() string {
 
 // Scan discover resource and send to resource channel
 // Scan discover resource and send to resource channel
-func (a *AWSECR) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
+func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 	// Set initial values for pagination
 	pageNum := 0
 	nextToken := ""
+
+	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSEC2)
+	if err != nil {
+		return err
+	}
 
 	// Loop through pages of ECR repositories
 	for {
@@ -93,7 +115,7 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource, nextResourceVersio
 
 		// Loop through repositories and their tags
 		for _, repository := range resp.Repositories {
-			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, nextResourceVersion)
+			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, nextVersion)
 			res.AddMetaData(a.getMetaData(repository))
 			resourceChannel <- res
 		}
