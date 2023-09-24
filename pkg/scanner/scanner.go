@@ -24,10 +24,6 @@ const (
 	fieldTags = "tags"
 )
 
-type Dependency struct {
-	Scheduler *gocron.Scheduler
-}
-
 // GetScannerRegistries get all scanner registries
 func GetScannerRegistries() map[string]Scanner {
 	return map[string]Scanner{
