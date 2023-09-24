@@ -34,6 +34,7 @@ type SourceConfiguration struct {
 	RootDirectory string `yaml:"root_directory"`
 }
 
+// Schedule store schedule configuration
 type Schedule struct {
 	Type       string `yaml:"type,omitempty"`
 	Expression string `yaml:"expression,omitempty"`
