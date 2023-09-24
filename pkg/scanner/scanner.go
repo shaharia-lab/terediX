@@ -28,6 +28,18 @@ type Dependency struct {
 	Scheduler *gocron.Scheduler
 }
 
+// GetScannerRegistries get all scanner registries
+func GetScannerRegistries() map[string]Scanner {
+	return map[string]Scanner{
+		pkg.SourceTypeFileSystem:       &FsScanner{},
+		pkg.SourceTypeGitHubRepository: &GitHubRepositoryScanner{},
+		pkg.SourceTypeAWSS3:            &AWSS3{},
+		pkg.SourceTypeAWSRDS:           &AWSRDS{},
+		pkg.SourceTypeAWSEC2:           &AWSEC2{},
+		pkg.SourceTypeAWSECR:           &AWSECR{},
+	}
+}
+
 // Scanner interface to build different scanner
 type Scanner interface {
 	Build(sourceKey string, source config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner
@@ -52,18 +64,6 @@ func (s *Sources) BuildFromAppConfig(sourceConfigs map[string]config.Source) []S
 		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc, nil, nil, nil))
 	}
 	return scanners
-}
-
-// GetScannerRegistries get all scanner registries
-func GetScannerRegistries() map[string]Scanner {
-	return map[string]Scanner{
-		pkg.SourceTypeFileSystem:       &FsScanner{},
-		pkg.SourceTypeGitHubRepository: &GitHubRepositoryScanner{},
-		pkg.SourceTypeAWSS3:            &AWSS3{},
-		pkg.SourceTypeAWSRDS:           &AWSRDS{},
-		pkg.SourceTypeAWSEC2:           &AWSEC2{},
-		pkg.SourceTypeAWSECR:           &AWSECR{},
-	}
 }
 
 // MetaDataMapper map the fields
