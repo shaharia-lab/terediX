@@ -2,8 +2,11 @@
 package scanner
 
 import (
+	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -13,31 +16,17 @@ type Mock struct {
 	mock.Mock
 }
 
-// Build provides a mock function with given fields: sourceKey, source
-func (_m *Mock) Build(sourceKey string, source config.Source) Scanner {
-	ret := _m.Called(sourceKey, source)
+// Build provides a mock function with given fields: sourceKey, source, _a2, scheduler, logger
+func (_m *Mock) Build(sourceKey string, source config.Source, _a2 storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
+	ret := _m.Called(sourceKey, source, _a2, scheduler, logger)
 
 	var r0 Scanner
-	if rf, ok := ret.Get(0).(func(string, config.Source) Scanner); ok {
-		r0 = rf(sourceKey, source)
+	if rf, ok := ret.Get(0).(func(string, config.Source, storage.Storage, *gocron.Scheduler, *logrus.Logger) Scanner); ok {
+		r0 = rf(sourceKey, source, _a2, scheduler, logger)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(Scanner)
 		}
-	}
-
-	return r0
-}
-
-// Scan provides a mock function with given fields: resourceChannel, nextResourceVersion
-func (_m *Mock) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
-	ret := _m.Called(resourceChannel, nextResourceVersion)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(chan resource.Resource, int) error); ok {
-		r0 = rf(resourceChannel, nextResourceVersion)
-	} else {
-		r0 = ret.Error(0)
 	}
 
 	return r0
@@ -52,6 +41,20 @@ func (_m *Mock) GetKind() string {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// Scan provides a mock function with given fields: resourceChannel
+func (_m *Mock) Scan(resourceChannel chan resource.Resource) error {
+	ret := _m.Called(resourceChannel)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(chan resource.Resource) error); ok {
+		r0 = rf(resourceChannel)
+	} else {
+		r0 = ret.Error(0)
 	}
 
 	return r0

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/storage"
@@ -66,20 +65,19 @@ func TestProcess(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			resourceChan := make(chan resource.Resource)
 
-			// Setup mock scanner and storage
-			firstScanner := new(scanner.Mock)
-			firstScanner.On("GetKind").Return(pkg.ResourceKindAWSEC2)
-			firstScanner.On("Scan", resourceChan, 1).Run(func(args mock.Arguments) {
-				for _, res := range tc.resources {
-					resourceChan <- res
-				}
-			}).Return(tc.scanError)
-
 			mockStorage := new(storage.Mock)
 			if tc.resources != nil {
 				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
 			}
-			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
+			//mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
+
+			// Setup mock scanner and storage
+			firstScanner := new(scanner.Mock)
+			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
+				for _, res := range tc.resources {
+					resourceChan <- res
+				}
+			}).Return(tc.scanError)
 
 			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner})
 			p.Process(resourceChan)
@@ -119,8 +117,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 
 			// Setup mock scanner and storage
 			firstScanner := new(scanner.Mock)
-			firstScanner.On("GetKind").Return(pkg.ResourceKindAWSEC2)
-			firstScanner.On("Scan", resourceChan, 1).Run(func(args mock.Arguments) {
+			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
 				for _, res := range resources {
 					resourceChan <- res
 				}
@@ -129,7 +126,6 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			mockStorage := new(storage.Mock)
 			// This will ensure the Persist method is called expectedBatches times
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
-			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner})
 			p.Process(resourceChan)

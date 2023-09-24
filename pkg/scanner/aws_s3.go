@@ -6,9 +6,12 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 
 	"github.com/shaharia-lab/teredix/pkg/util"
 
@@ -38,28 +41,28 @@ type AWSS3 struct {
 	S3Client   AWSS3Client
 	Region     string
 	Fields     []string
-	Schedule   string
-}
-
-// NewAWSS3 construct AWS S3 source
-func NewAWSS3(sourceName string, region string, s3Client AWSS3Client, fields []string) *AWSS3 {
-	return &AWSS3{
-		SourceName: sourceName,
-		S3Client:   s3Client,
-		Region:     region,
-		Fields:     fields,
-	}
+	Schedule   config.Schedule
+	scheduler  *gocron.Scheduler
+	storage    storage.Storage
+	logger     *logrus.Logger
 }
 
 // Build AWS S3 source
-func (a *AWSS3) Build(sourceKey string, cfg config.Source) Scanner {
+func (a *AWSS3) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
 	a.SourceName = sourceKey
 	a.S3Client = s3.NewFromConfig(BuildAWSConfig(cfg))
 	a.Region = cfg.Configuration["region"]
 	a.Fields = cfg.Fields
 	a.Schedule = cfg.Schedule
+	a.storage = storage
+	a.scheduler = scheduler
+	a.logger = logger
 
 	return a
+}
+
+func (a *AWSS3) setS3Client(s3Client AWSS3Client) {
+	a.S3Client = s3Client
 }
 
 // GetKind return resource kind
@@ -68,7 +71,11 @@ func (a *AWSS3) GetKind() string {
 }
 
 // Scan discover resource and send to resource channel
-func (a *AWSS3) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
+func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
+	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSS3)
+	if err != nil {
+		return err
+	}
 	// List all S3 buckets
 	output, err := a.S3Client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
@@ -76,7 +83,7 @@ func (a *AWSS3) Scan(resourceChannel chan resource.Resource, nextResourceVersion
 	}
 
 	for _, bucket := range output.Buckets {
-		res := resource.NewResource(pkg.ResourceKindAWSS3, aws.ToString(bucket.Name), aws.ToString(bucket.Name), a.SourceName, nextResourceVersion)
+		res := resource.NewResource(pkg.ResourceKindAWSS3, aws.ToString(bucket.Name), aws.ToString(bucket.Name), a.SourceName, nextVersion)
 		res.AddMetaData(a.getMetaData(bucket))
 		resourceChannel <- res
 	}
