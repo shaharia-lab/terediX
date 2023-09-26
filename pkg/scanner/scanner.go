@@ -5,8 +5,23 @@ import (
 	"fmt"
 	"strings"
 
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/service/rds"
+	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/go-github/v50/github"
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
+	"golang.org/x/oauth2"
+
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
 const (
@@ -116,4 +131,93 @@ func (f *FieldMapper) getResourceMetaData() map[string]string {
 	}
 
 	return md
+}
+
+// Source represent source configuration
+type Source struct {
+	Name    string
+	Scanner Scanner
+	Kind    string
+}
+
+// BuildSources build source based on configuration
+func BuildSources(appConfig *config.AppConfig) []Source {
+	var finalSources []Source
+	for sourceKey, s := range appConfig.Sources {
+		if s.Type == pkg.SourceTypeFileSystem {
+			fs := NewFsScanner(sourceKey, s.Configuration["root_directory"], s.Fields)
+			finalSources = append(finalSources, Source{
+				Name:    sourceKey,
+				Scanner: fs,
+			})
+		}
+
+		if s.Type == pkg.SourceTypeGitHubRepository {
+
+			ctx := context.Background()
+			ts := oauth2.StaticTokenSource(
+				&oauth2.Token{AccessToken: s.Configuration["token"]},
+			)
+			tc := oauth2.NewClient(ctx, ts)
+			client := github.NewClient(tc)
+			gc := NewGitHubRepositoryClient(client)
+
+			gh := NewGitHubRepositoryScanner(sourceKey, gc, s.Configuration["user_or_org"], s.Fields)
+			finalSources = append(finalSources, Source{
+				Name:    sourceKey,
+				Scanner: gh,
+			})
+		}
+
+		if s.Type == pkg.SourceTypeAWSS3 {
+			s3Client := s3.NewFromConfig(buildAWSConfig(s))
+
+			awsS3 := NewAWSS3(sourceKey, s.Configuration["region"], s3Client, s.Fields)
+			finalSources = append(finalSources, Source{
+				Name:    sourceKey,
+				Scanner: awsS3,
+			})
+		}
+
+		if s.Type == pkg.SourceTypeAWSRDS {
+			rdsClient := rds.NewFromConfig(buildAWSConfig(s))
+
+			awsS3 := NewAWSRDS(sourceKey, s.Configuration["region"], s.Configuration["account_id"], rdsClient, s.Fields)
+			finalSources = append(finalSources, Source{
+				Name:    sourceKey,
+				Scanner: awsS3,
+			})
+		}
+
+		if s.Type == pkg.SourceTypeAWSEC2 {
+			finalSources = append(finalSources, Source{
+				Name:    sourceKey,
+				Scanner: NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2.NewFromConfig(buildAWSConfig(s)), s.Fields),
+			})
+		}
+
+		if s.Type == pkg.SourceTypeAWSECR {
+			finalSources = append(finalSources, Source{
+				Name: sourceKey,
+				Scanner: NewAWSECR(
+					sourceKey,
+					s.Configuration["region"],
+					s.Configuration["account_id"],
+					ecr.NewFromConfig(buildAWSConfig(s)),
+					resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(s)),
+					s.Fields,
+				),
+			})
+		}
+	}
+	return finalSources
+}
+
+func buildAWSConfig(s config.Source) aws.Config {
+	cfg, _ := awsConfig.LoadDefaultConfig(context.TODO())
+	awsCredentials := credentials.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
+
+	cfg.Credentials = awsCredentials
+	cfg.Region = s.Configuration["region"]
+	return cfg
 }
