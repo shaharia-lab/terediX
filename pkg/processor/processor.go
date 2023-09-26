@@ -14,9 +14,10 @@ import (
 
 // Processor manages the processing of resources from various sources.
 type Processor struct {
-	Sources []scanner.Source
-	Config  Config
-	Storage storage.Storage
+	Sources  []scanner.Source
+	Config   Config
+	Storage  storage.Storage
+	scanners []scanner.Scanner
 }
 
 // Config holds configuration values for the Processor.
@@ -25,8 +26,8 @@ type Config struct {
 }
 
 // NewProcessor initializes a new Processor instance.
-func NewProcessor(config Config, storage storage.Storage, sources []scanner.Source) Processor {
-	return Processor{Sources: sources, Config: config, Storage: storage}
+func NewProcessor(config Config, storage storage.Storage, sources []scanner.Source, scanners []scanner.Scanner) Processor {
+	return Processor{Sources: sources, Config: config, Storage: storage, scanners: scanners}
 }
 
 // Process initiates resource processing.

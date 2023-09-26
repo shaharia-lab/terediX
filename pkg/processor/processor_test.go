@@ -81,7 +81,7 @@ func TestProcess(t *testing.T) {
 			}
 			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
-			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Source{{Scanner: firstScanner}})
+			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Source{{Scanner: firstScanner}}, []scanner.Scanner{firstScanner})
 			p.Process(resourceChan)
 
 			// Assert that the expected calls were made
@@ -131,7 +131,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
 			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
-			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Source{{Scanner: firstScanner}})
+			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Source{{Scanner: firstScanner}}, []scanner.Scanner{firstScanner})
 			p.Process(resourceChan)
 
 			// Assert that the expected calls were made

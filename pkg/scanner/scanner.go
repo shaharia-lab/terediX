@@ -213,6 +213,61 @@ func BuildSources(appConfig *config.AppConfig) []Source {
 	return finalSources
 }
 
+// BuildScanners build source based on configuration
+func BuildScanners(appConfig *config.AppConfig) []Scanner {
+	var scanners []Scanner
+	for sourceKey, s := range appConfig.Sources {
+		if s.Type == pkg.SourceTypeFileSystem {
+			fs := NewFsScanner(sourceKey, s.Configuration["root_directory"], s.Fields)
+			scanners = append(scanners, fs)
+		}
+
+		if s.Type == pkg.SourceTypeGitHubRepository {
+
+			ctx := context.Background()
+			ts := oauth2.StaticTokenSource(
+				&oauth2.Token{AccessToken: s.Configuration["token"]},
+			)
+			tc := oauth2.NewClient(ctx, ts)
+			client := github.NewClient(tc)
+			gc := NewGitHubRepositoryClient(client)
+
+			gh := NewGitHubRepositoryScanner(sourceKey, gc, s.Configuration["user_or_org"], s.Fields)
+			scanners = append(scanners, gh)
+		}
+
+		if s.Type == pkg.SourceTypeAWSS3 {
+			s3Client := s3.NewFromConfig(buildAWSConfig(s))
+
+			awsS3 := NewAWSS3(sourceKey, s.Configuration["region"], s3Client, s.Fields)
+			scanners = append(scanners, awsS3)
+		}
+
+		if s.Type == pkg.SourceTypeAWSRDS {
+			rdsClient := rds.NewFromConfig(buildAWSConfig(s))
+
+			awsS3 := NewAWSRDS(sourceKey, s.Configuration["region"], s.Configuration["account_id"], rdsClient, s.Fields)
+			scanners = append(scanners, awsS3)
+		}
+
+		if s.Type == pkg.SourceTypeAWSEC2 {
+			scanners = append(scanners, NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2.NewFromConfig(buildAWSConfig(s)), s.Fields))
+		}
+
+		if s.Type == pkg.SourceTypeAWSECR {
+			scanners = append(scanners, NewAWSECR(
+				sourceKey,
+				s.Configuration["region"],
+				s.Configuration["account_id"],
+				ecr.NewFromConfig(buildAWSConfig(s)),
+				resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(s)),
+				s.Fields,
+			))
+		}
+	}
+	return scanners
+}
+
 func buildAWSConfig(s config.Source) aws.Config {
 	cfg, _ := awsConfig.LoadDefaultConfig(context.TODO())
 	awsCredentials := credentials.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])

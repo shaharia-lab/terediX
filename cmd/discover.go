@@ -35,6 +35,7 @@ func run(cfgFile string) error {
 	}
 
 	sources := scanner.BuildSources(appConfig)
+	scanners := scanner.BuildScanners(appConfig)
 	st := storage.BuildStorage(appConfig)
 	err = st.Prepare()
 	if err != nil {
@@ -42,7 +43,7 @@ func run(cfgFile string) error {
 	}
 
 	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
-	p := processor.NewProcessor(processConfig, st, sources)
+	p := processor.NewProcessor(processConfig, st, sources, scanners)
 
 	resourceChan := make(chan resource.Resource)
 	p.Process(resourceChan)
