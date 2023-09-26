@@ -2,19 +2,11 @@
 package scanner
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
-	"github.com/shaharia-lab/teredix/pkg"
-	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/util"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-
-	awsConfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 )
 
 const (
@@ -23,40 +15,8 @@ const (
 
 // Scanner interface to build different scanner
 type Scanner interface {
-	Build(sourceKey string, source config.Source) Scanner
 	Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error
 	GetKind() string
-}
-
-// Sources registry
-type Sources struct {
-	Scanners map[string]Scanner
-}
-
-// NewSourceRegistry build source registry
-func NewSourceRegistry(scanners map[string]Scanner) *Sources {
-	return &Sources{Scanners: scanners}
-}
-
-// BuildFromAppConfig build source based on configuration
-func (s *Sources) BuildFromAppConfig(sourceConfigs map[string]config.Source) []Scanner {
-	var scanners []Scanner
-	for sourceKey, sc := range sourceConfigs {
-		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc))
-	}
-	return scanners
-}
-
-// GetScannerRegistries get all scanner registries
-func GetScannerRegistries() map[string]Scanner {
-	return map[string]Scanner{
-		pkg.SourceTypeFileSystem:       &FsScanner{},
-		pkg.SourceTypeGitHubRepository: &GitHubRepositoryScanner{},
-		pkg.SourceTypeAWSS3:            &AWSS3{},
-		pkg.SourceTypeAWSRDS:           &AWSRDS{},
-		pkg.SourceTypeAWSEC2:           &AWSEC2{},
-		pkg.SourceTypeAWSECR:           &AWSECR{},
-	}
 }
 
 // MetaDataMapper map the fields
@@ -156,14 +116,4 @@ func (f *FieldMapper) getResourceMetaData() map[string]string {
 	}
 
 	return md
-}
-
-// BuildAWSConfig build aws config
-func BuildAWSConfig(s config.Source) aws.Config {
-	cfg, _ := awsConfig.LoadDefaultConfig(context.TODO())
-	awsCredentials := credentials.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
-
-	cfg.Credentials = awsCredentials
-	cfg.Region = s.Configuration["region"]
-	return cfg
 }

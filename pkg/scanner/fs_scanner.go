@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 )
 
@@ -30,11 +29,6 @@ type File struct {
 // NewFsScanner construct new file system scanner
 func NewFsScanner(name, rootDirectory string, fields []string) *FsScanner {
 	return &FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
-}
-
-// Build file system scanner
-func (s *FsScanner) Build(sourceKey string, cfg config.Source) Scanner {
-	return &FsScanner{name: sourceKey, rootDirectory: cfg.Configuration["root_directory"], fields: cfg.Fields}
 }
 
 // GetKind return resource kind

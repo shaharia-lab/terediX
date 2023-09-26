@@ -6,9 +6,7 @@ import (
 
 	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/shaharia-lab/teredix/pkg"
-	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-
 	"github.com/shaharia-lab/teredix/pkg/util"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -38,7 +36,6 @@ type AWSECR struct {
 	AccountID              string
 	ResourceTaggingService util.ResourceTaggingServiceClient
 	Fields                 []string
-	Schedule               string
 }
 
 // NewAWSECR construct AWS ECR source
@@ -51,18 +48,6 @@ func NewAWSECR(sourceName string, region string, accountID string, ecrClient Ecr
 		ResourceTaggingService: resourceTaggingService,
 		Fields:                 fields,
 	}
-}
-
-// Build AWS ECR source
-func (a *AWSECR) Build(sourceKey string, cfg config.Source) Scanner {
-	a.SourceName = sourceKey
-	a.ECRClient = ecr.NewFromConfig(BuildAWSConfig(cfg))
-	a.Region = cfg.Configuration["region"]
-	a.AccountID = cfg.Configuration["account_id"]
-	a.Fields = cfg.Fields
-	a.Schedule = cfg.Schedule
-
-	return a
 }
 
 // GetKind return resource kind
