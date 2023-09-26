@@ -13,13 +13,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/rds v1.51.0
 	github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.14.7
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.38.5
-	github.com/go-co-op/gocron v1.34.0
 	github.com/google/go-github/v50 v50.2.0
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.3.0
 	github.com/kyokomi/emoji v2.2.4+incompatible
 	github.com/lib/pq v1.10.7
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
-	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/oauth2 v0.6.0
@@ -49,14 +47,14 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )

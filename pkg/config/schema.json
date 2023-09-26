@@ -198,9 +198,6 @@
         },
         "fields": {
           "$ref": "#/definitions/source.file_system.fields"
-        },
-        "schedule": {
-          "$ref": "#/definitions/scanner.schedule"
         }
       },
       "required": ["type", "configuration", "fields"]
@@ -236,9 +233,6 @@
         },
         "fields": {
           "$ref": "#/definitions/source.github_repository.fields"
-        },
-        "schedule": {
-          "$ref": "#/definitions/scanner.schedule"
         }
       },
       "required": ["type", "configuration", "fields"]
@@ -288,9 +282,6 @@
         },
         "fields": {
           "$ref": "#/definitions/source.aws_s3.fields"
-        },
-        "schedule": {
-          "$ref": "#/definitions/scanner.schedule"
         }
       },
       "required": ["type", "configuration", "fields"]
@@ -321,9 +312,6 @@
         },
         "fields": {
           "$ref": "#/definitions/source.aws_rds.fields"
-        },
-        "schedule": {
-          "$ref": "#/definitions/scanner.schedule"
         }
       },
       "required": ["type", "configuration", "fields"]
@@ -359,9 +347,6 @@
         },
         "fields": {
           "$ref": "#/definitions/source.aws_ec2.fields"
-        },
-        "schedule": {
-          "$ref": "#/definitions/scanner.schedule"
         }
       },
       "required": ["type", "configuration", "fields"]
@@ -392,9 +377,6 @@
         },
         "fields": {
           "$ref": "#/definitions/source.aws_ecr.fields"
-        },
-        "schedule": {
-          "$ref": "#/definitions/scanner.schedule"
         }
       },
       "required": ["type", "configuration", "fields"]
@@ -474,19 +456,6 @@
         }
       },
       "required": ["config_key"]
-    },
-    "scanner.schedule": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["cron"]
-        },
-        "expression": {
-          "type": "string"
-        }
-      },
-      "required": ["type", "expression"]
     }
   }
 }

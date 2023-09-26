@@ -6,13 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
-	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 
@@ -24,22 +21,10 @@ const (
 	fieldTags = "tags"
 )
 
-// GetScannerRegistries get all scanner registries
-func GetScannerRegistries() map[string]Scanner {
-	return map[string]Scanner{
-		pkg.SourceTypeFileSystem:       &FsScanner{},
-		pkg.SourceTypeGitHubRepository: &GitHubRepositoryScanner{},
-		pkg.SourceTypeAWSS3:            &AWSS3{},
-		pkg.SourceTypeAWSRDS:           &AWSRDS{},
-		pkg.SourceTypeAWSEC2:           &AWSEC2{},
-		pkg.SourceTypeAWSECR:           &AWSECR{},
-	}
-}
-
 // Scanner interface to build different scanner
 type Scanner interface {
-	Build(sourceKey string, source config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner
-	Scan(resourceChannel chan resource.Resource) error
+	Build(sourceKey string, source config.Source) Scanner
+	Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error
 	GetKind() string
 }
 
@@ -57,9 +42,21 @@ func NewSourceRegistry(scanners map[string]Scanner) *Sources {
 func (s *Sources) BuildFromAppConfig(sourceConfigs map[string]config.Source) []Scanner {
 	var scanners []Scanner
 	for sourceKey, sc := range sourceConfigs {
-		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc, nil, nil, nil))
+		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc))
 	}
 	return scanners
+}
+
+// GetScannerRegistries get all scanner registries
+func GetScannerRegistries() map[string]Scanner {
+	return map[string]Scanner{
+		pkg.SourceTypeFileSystem:       &FsScanner{},
+		pkg.SourceTypeGitHubRepository: &GitHubRepositoryScanner{},
+		pkg.SourceTypeAWSS3:            &AWSS3{},
+		pkg.SourceTypeAWSRDS:           &AWSRDS{},
+		pkg.SourceTypeAWSEC2:           &AWSEC2{},
+		pkg.SourceTypeAWSECR:           &AWSECR{},
+	}
 }
 
 // MetaDataMapper map the fields
@@ -84,7 +81,7 @@ func RunScannerForTests(scanner Scanner) []resource.Resource {
 	var res []resource.Resource
 
 	go func() {
-		scanner.Scan(resourceChannel)
+		scanner.Scan(resourceChannel, 1)
 		close(resourceChannel)
 	}()
 

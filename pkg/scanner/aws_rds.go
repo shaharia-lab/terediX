@@ -7,12 +7,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	types "github.com/aws/aws-sdk-go-v2/service/rds/types"
-	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 )
@@ -38,23 +35,28 @@ type AWSRDS struct {
 	Region     string
 	AccountID  string
 	Fields     []string
-	Schedule   config.Schedule
-	scheduler  *gocron.Scheduler
-	storage    storage.Storage
-	logger     *logrus.Logger
+	Schedule   string
+}
+
+// NewAWSRDS construct AWS S3 source
+func NewAWSRDS(sourceName string, region string, accountID string, rdsClient RdsClient, fields []string) *AWSRDS {
+	return &AWSRDS{
+		SourceName: sourceName,
+		RdsClient:  rdsClient,
+		Region:     region,
+		AccountID:  accountID,
+		Fields:     fields,
+	}
 }
 
 // Build AWS S3 source
-func (a *AWSRDS) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
+func (a *AWSRDS) Build(sourceKey string, cfg config.Source) Scanner {
 	a.SourceName = sourceKey
 	a.RdsClient = rds.NewFromConfig(BuildAWSConfig(cfg))
 	a.Region = cfg.Configuration["region"]
 	a.AccountID = cfg.Configuration["account_id"]
 	a.Fields = cfg.Fields
 	a.Schedule = cfg.Schedule
-	a.scheduler = scheduler
-	a.storage = storage
-	a.logger = logger
 
 	return a
 }
@@ -65,11 +67,7 @@ func (a *AWSRDS) GetKind() string {
 }
 
 // Scan discover resource and send to resource channel
-func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
-	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSEC2)
-	if err != nil {
-		return err
-	}
+func (a *AWSRDS) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	rdsInstances, err := listAllRDSInstances(a.RdsClient)
 
 	for _, rdsInstance := range rdsInstances {
@@ -79,7 +77,7 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 			return fmt.Errorf("failed to get tags for RDS instance %s. error: %w", instanceID, err)
 		}
 
-		r := resource.NewResource(pkg.ResourceKindAWSRDS, instanceID, instanceID, a.SourceName, nextVersion)
+		r := resource.NewResource(pkg.ResourceKindAWSRDS, instanceID, instanceID, a.SourceName, nextResourceVersion)
 		r.AddMetaData(a.getMetaData(rdsInstance))
 
 		resourceChannel <- r
@@ -110,10 +108,6 @@ func (a *AWSRDS) getMetaData(rdsInstance types.DBInstance) map[string]string {
 	}
 
 	return NewFieldMapper(mappings, getTags, a.Fields).getResourceMetaData()
-}
-
-func (a *AWSRDS) setRDSClient(rdsClient RdsClient) {
-	a.RdsClient = rdsClient
 }
 
 func listAllRDSInstances(client RdsClient) ([]types.DBInstance, error) {

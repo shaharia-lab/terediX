@@ -7,13 +7,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/go-co-op/gocron"
 	"github.com/google/go-github/v50/github"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -70,17 +67,15 @@ func (c *GitHubRepositoryClient) ListRepositories(ctx context.Context, user stri
 
 // GitHubRepositoryScanner GitHub repository scanner
 type GitHubRepositoryScanner struct {
-	ghClient  GitHubClient
-	user      string
-	name      string
-	fields    []string
-	scheduler *gocron.Scheduler
-	storage   storage.Storage
-	logger    *logrus.Logger
+	ghClient GitHubClient
+	user     string
+	name     string
+	fields   []string
 }
 
-func (r *GitHubRepositoryScanner) setGitHubClient(ghClient GitHubClient) {
-	r.ghClient = ghClient
+// NewGitHubRepositoryScanner construct a new GitHub repository scanner
+func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string, fields []string) *GitHubRepositoryScanner {
+	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name, fields: fields}
 }
 
 // GetKind return resource kind
@@ -89,7 +84,7 @@ func (r *GitHubRepositoryScanner) GetKind() string {
 }
 
 // Build GitHub repository scanner
-func (r *GitHubRepositoryScanner) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
+func (r *GitHubRepositoryScanner) Build(sourceKey string, cfg config.Source) Scanner {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: cfg.Configuration["token"]},
@@ -101,20 +96,11 @@ func (r *GitHubRepositoryScanner) Build(sourceKey string, cfg config.Source, sto
 	r.ghClient = NewGitHubRepositoryClient(client)
 	r.user = cfg.Configuration["user"]
 	r.fields = cfg.Fields
-	r.scheduler = scheduler
-	r.storage = storage
-	r.logger = logger
-
 	return r
 }
 
 // Scan scans GitHub to get the list of repositories as resources
-func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) error {
-	nextVersion, err := r.storage.GetNextVersionForResource(r.name, pkg.ResourceKindGitHubRepository)
-	if err != nil {
-		return err
-	}
-
+func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	opt := &github.RepositoryListOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
 	}
@@ -125,7 +111,7 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 	}
 
 	for _, repo := range repos {
-		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, nextVersion)
+		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, nextResourceVersion)
 		res.AddMetaData(r.getMetaData(repo))
 		resourceChannel <- res
 	}

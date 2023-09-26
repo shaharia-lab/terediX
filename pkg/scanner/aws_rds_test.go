@@ -7,11 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/go-co-op/gocron"
-	"github.com/shaharia-lab/teredix/pkg/config"
-	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -92,21 +88,7 @@ func TestAWSRDS_Scan(t *testing.T) {
 			// Return mockOutput as a result of the DescribeDBInstances method
 			rdsClientMock.On("DescribeDBInstances", mock.Anything, rdsInput, mock.Anything).Return(mockOutput, nil)
 
-			sm := new(storage.Mock)
-			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
-
-			sc := config.Source{
-				Configuration: map[string]string{
-					"region":     "us-east-1",
-					"account_id": "123456789012",
-				},
-				Fields: tt.sourceFields,
-			}
-			r := AWSRDS{}
-			r.Build("source-name", sc, sm, &gocron.Scheduler{}, &logrus.Logger{})
-			r.setRDSClient(rdsClientMock)
-
-			res := RunScannerForTests(&r)
+			res := RunScannerForTests(NewAWSRDS("source-name", "us-east-1", "123456789012", rdsClientMock, []string{rdsFieldInstanceID, rdsFieldTags, rdsFieldARN, rdsFieldRegion}))
 
 			assert.Equal(t, tt.expectedTotalResource, len(res))
 			util.CheckIfMetaKeysExistsInResources(t, res, tt.expectedMetaDataKeys)

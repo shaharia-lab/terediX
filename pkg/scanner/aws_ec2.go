@@ -4,12 +4,9 @@ package scanner
 import (
 	"context"
 
-	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
@@ -42,27 +39,28 @@ type AWSEC2 struct {
 	Region     string
 	AccountID  string
 	Fields     []string
-	Schedule   config.Schedule
-	scheduler  *gocron.Scheduler
-	logger     *logrus.Logger
-	storage    storage.Storage
+	Schedule   string
 }
 
-func (a *AWSEC2) setEC2Client(ec2Client Ec2Client) {
-	a.Ec2Client = ec2Client
+// NewAWSEC2 construct AWS EC2 source
+func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2Client, fields []string) *AWSEC2 {
+	return &AWSEC2{
+		SourceName: sourceName,
+		Ec2Client:  ec2Client,
+		Region:     region,
+		AccountID:  accountID,
+		Fields:     fields,
+	}
 }
 
 // Build AWS EC2 source
-func (a *AWSEC2) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
+func (a *AWSEC2) Build(sourceKey string, cfg config.Source) Scanner {
 	a.SourceName = sourceKey
 	a.Ec2Client = ec2.NewFromConfig(BuildAWSConfig(cfg))
 	a.Region = cfg.Configuration["region"]
 	a.AccountID = cfg.Configuration["account_id"]
 	a.Fields = cfg.Fields
 	a.Schedule = cfg.Schedule
-	a.scheduler = scheduler
-	a.storage = storage
-	a.logger = logger
 	return a
 }
 
@@ -72,14 +70,9 @@ func (a *AWSEC2) GetKind() string {
 }
 
 // Scan discover resource and send to resource channel
-func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
+func (a *AWSEC2) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
 	pageNum := 0
 	nextToken := ""
-
-	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSEC2)
-	if err != nil {
-		return err
-	}
 
 	for {
 		resp, err := a.makeAPICallToAWS(nextToken)
@@ -90,7 +83,7 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 		// Loop through instances and their tags
 		for _, reservation := range resp.Reservations {
 			for _, instance := range reservation.Instances {
-				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, nextVersion)
+				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, nextResourceVersion)
 				res.AddMetaData(a.getMetaData(instance))
 				resourceChannel <- res
 			}

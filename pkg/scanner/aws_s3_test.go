@@ -6,11 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/go-co-op/gocron"
-	"github.com/shaharia-lab/teredix/pkg/config"
-	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -116,22 +112,7 @@ func TestAWSS3_Scan(t *testing.T) {
 			s3ClientMock.On("ListBuckets", mock.Anything, mock.Anything, mock.Anything).Return(&s3.ListBucketsOutput{Buckets: tt.buckets}, nil)
 			s3ClientMock.On("GetBucketTagging", mock.Anything, mock.Anything, mock.Anything).Return(&s3.GetBucketTaggingOutput{TagSet: tt.tags}, nil)
 
-			sm := new(storage.Mock)
-			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
-
-			sc := config.Source{
-				Configuration: map[string]string{
-					"region":     "us-east-1",
-					"account_id": "123456789012",
-				},
-				Fields: tt.sourceFields,
-			}
-
-			s := AWSS3{}
-			s.Build("source-name", sc, sm, &gocron.Scheduler{}, &logrus.Logger{})
-			s.setS3Client(s3ClientMock)
-
-			resources := RunScannerForTests(&s)
+			resources := RunScannerForTests(NewAWSS3("source-name", "us-east-1", s3ClientMock, tt.sourceFields))
 
 			assert.Equal(t, tt.expectedTotalResource, len(resources))
 			util.CheckIfMetaKeysExistsInResources(t, resources, tt.expectedMetaDataKeys)

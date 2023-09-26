@@ -9,12 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-co-op/gocron"
 	"github.com/google/go-github/v50/github"
-	"github.com/shaharia-lab/teredix/pkg/config"
-	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -108,22 +104,7 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			mockClient := new(GitHubClientMock)
 			mockClient.On("ListRepositories", mock.Anything, mock.Anything, mock.Anything).Return(tc.ghRepositories, nil)
 
-			sm := new(storage.Mock)
-			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
-
-			sc := config.Source{
-				Configuration: map[string]string{
-					"token":       "test",
-					"user_or_org": "shaharia-lab",
-				},
-				Fields: tc.sourceFields,
-			}
-
-			gh := GitHubRepositoryScanner{}
-			gh.Build("test", sc, sm, &gocron.Scheduler{}, &logrus.Logger{})
-			gh.setGitHubClient(mockClient)
-
-			res := RunScannerForTests(&gh)
+			res := RunScannerForTests(NewGitHubRepositoryScanner("test", mockClient, "something", tc.sourceFields))
 			assert.Equal(t, tc.expectedTotalResource, len(res))
 			util.CheckIfMetaKeysExistsInResources(t, res, tc.expectedMetaDataKeys)
 		})
