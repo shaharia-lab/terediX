@@ -4,9 +4,11 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -45,6 +47,7 @@ type AWSEC2 struct {
 	storage    storage.Storage
 	logger     *logrus.Logger
 	schedule   string
+	metrics    *metrics.Collector
 }
 
 // GetName return source name
@@ -67,6 +70,7 @@ func (a *AWSEC2) Setup(name string, cfg config.Source, dependencies *Dependencie
 	a.schedule = cfg.Schedule
 	a.storage = dependencies.GetStorage()
 	a.logger = dependencies.GetLogger()
+	a.metrics = dependencies.GetMetrics()
 
 	a.logger.WithFields(logrus.Fields{
 		"scanner_name": a.SourceName,
@@ -133,6 +137,7 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 		"total_resource_discovered": totalResourceDiscovered,
 	}).Info("scan completed")
 
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), strconv.Itoa(nextVersion), float64(totalResourceDiscovered))
 	return nil
 }
 

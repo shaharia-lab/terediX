@@ -4,11 +4,13 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -40,6 +42,7 @@ type AWSRDS struct {
 	storage    storage.Storage
 	logger     *logrus.Logger
 	schedule   string
+	metrics    *metrics.Collector
 }
 
 // GetName return source name
@@ -62,6 +65,7 @@ func (a *AWSRDS) Setup(name string, cfg config.Source, dependencies *Dependencie
 	a.AccountID = cfg.Configuration["accountID"]
 	a.RdsClient = rds.NewFromConfig(buildAWSConfig(cfg))
 	a.Fields = cfg.Fields
+	a.metrics = dependencies.GetMetrics()
 
 	a.logger.WithFields(logrus.Fields{
 		"scanner_name": a.SourceName,
@@ -117,6 +121,8 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 		"scanner_kind":              a.GetKind(),
 		"total_resource_discovered": totalResourceDiscovered,
 	}).Info("scan completed")
+
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), strconv.Itoa(nextResourceVersion), float64(totalResourceDiscovered))
 
 	return nil
 }

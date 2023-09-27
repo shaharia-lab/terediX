@@ -10,6 +10,7 @@ import (
 	"github.com/google/go-github/v50/github"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -77,6 +78,7 @@ type GitHubRepositoryScanner struct {
 	schedule string
 	storage  storage.Storage
 	logger   *logrus.Logger
+	metrics  *metrics.Collector
 }
 
 // Setup GitHub repository scanner
@@ -87,6 +89,7 @@ func (r *GitHubRepositoryScanner) Setup(name string, cfg config.Source, dependen
 	r.name = name
 	r.user = cfg.Configuration["user_or_org"]
 	r.fields = cfg.Fields
+	r.metrics = dependencies.GetMetrics()
 
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -160,6 +163,7 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 		"total_resource_discovered": totalResourceDiscovered,
 	}).Info("scan completed")
 
+	r.metrics.CollectTotalResourceDiscoveredByScanner(r.name, r.GetKind(), strconv.Itoa(nextResourceVersion), float64(totalResourceDiscovered))
 	return nil
 }
 

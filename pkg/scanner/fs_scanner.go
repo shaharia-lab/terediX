@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
@@ -127,6 +128,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	}).Info("scan completed")
 
 	s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "finished")
+	s.metrics.CollectTotalResourceDiscoveredByScanner(s.name, s.GetKind(), strconv.Itoa(nextVersion), float64(totalResourceDiscovered))
 	return nil
 }
 

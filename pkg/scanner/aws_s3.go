@@ -4,10 +4,12 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
@@ -42,6 +44,7 @@ type AWSS3 struct {
 	schedule   string
 	storage    storage.Storage
 	logger     *logrus.Logger
+	metrics    *metrics.Collector
 }
 
 // Setup AWS S3 source
@@ -53,6 +56,7 @@ func (a *AWSS3) Setup(name string, cfg config.Source, dependencies *Dependencies
 	a.Region = cfg.Configuration["region"]
 	a.Fields = cfg.Fields
 	a.SourceName = name
+	a.metrics = dependencies.GetMetrics()
 
 	a.logger.WithFields(logrus.Fields{
 		"scanner_name": a.SourceName,
@@ -110,6 +114,13 @@ func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
 		totalResourceDiscovered++
 	}
 
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
+
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), strconv.Itoa(nextResourceVersion), float64(totalResourceDiscovered))
 	return nil
 }
 
