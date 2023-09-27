@@ -53,6 +53,12 @@ func (a *AWSS3) Setup(name string, cfg config.Source, dependencies *Dependencies
 	a.Region = cfg.Configuration["region"]
 	a.Fields = cfg.Fields
 	a.SourceName = name
+
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
 	return nil
 }
 
@@ -75,19 +81,33 @@ func (a *AWSS3) GetKind() string {
 func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
 	nextResourceVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSS3)
 	if err != nil {
-		return fmt.Errorf("unable to get next resource version for S3: %w", err)
+		a.logger.WithFields(logrus.Fields{
+			"scanner_name": a.SourceName,
+			"scanner_kind": a.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
 
 	// List all S3 buckets
 	output, err := a.S3Client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
-		return fmt.Errorf("unable to list buckets: %w", err)
+		a.logger.WithFields(logrus.Fields{
+			"scanner_name": a.SourceName,
+			"scanner_kind": a.GetKind(),
+		}).WithError(err).Error("Unable to get bucket list from aws s3 endpoint")
+
+		return fmt.Errorf("unable to get bucket list from aws s3 endpoint: %w", err)
 	}
+
+	totalResourceDiscovered := 0
 
 	for _, bucket := range output.Buckets {
 		res := resource.NewResource(pkg.ResourceKindAWSS3, aws.ToString(bucket.Name), aws.ToString(bucket.Name), a.SourceName, nextResourceVersion)
 		res.AddMetaData(a.getMetaData(bucket))
 		resourceChannel <- res
+
+		totalResourceDiscovered++
 	}
 
 	return nil

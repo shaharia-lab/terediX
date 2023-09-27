@@ -64,7 +64,7 @@ func TestBuildStorage(t *testing.T) {
 	}
 
 	// Call BuildStorage
-	st := BuildStorage(appConfig)
+	st, _ := BuildStorage(appConfig)
 
 	// Verify that the correct type of storage was created
 	expectedType := reflect.TypeOf(&PostgreSQL{})

@@ -72,6 +72,7 @@ relations:
 `
 
 func TestProcessor_Process_Integration(t *testing.T) {
+	logger := logrus.New()
 	testDBHost := os.Getenv("TEST_DB_HOST")
 	if testDBHost == "" {
 		testDBHost = "localhost"
@@ -84,15 +85,15 @@ func TestProcessor_Process_Integration(t *testing.T) {
 	appConfig, err := config.Load("config.yaml")
 	assert.NoError(t, err)
 
-	st := storage.BuildStorage(appConfig)
+	st, _ := storage.BuildStorage(appConfig)
 	err = st.Prepare()
 	assert.NoError(t, err)
 
 	sch := scheduler.NewStaticScheduler()
-	scanners := scanner.BuildScanners(appConfig, scanner.NewScannerDependencies(sch, st, &logrus.Logger{}))
+	scanners := scanner.BuildScanners(appConfig, scanner.NewScannerDependencies(sch, st, logger))
 
 	processConfig := Config{BatchSize: appConfig.Storage.BatchSize}
-	p := NewProcessor(processConfig, st, scanners)
+	p := NewProcessor(processConfig, st, scanners, logger)
 
 	resourceChan := make(chan resource.Resource)
 	p.Process(resourceChan, sch)

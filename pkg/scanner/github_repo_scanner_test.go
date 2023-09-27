@@ -149,7 +149,7 @@ func TestNewGitHubRepositoryClient_ListRepositories_Return_Data(t *testing.T) {
 	defer ts.Close()
 
 	client, _ := github.NewEnterpriseClient(ts.URL, "", ts.Client())
-	gc := NewGitHubRepositoryClient(client)
+	gc := NewGitHubRepositoryClient(client, &logrus.Logger{})
 	repositories, err := gc.ListRepositories(ctx, "HI", &github.RepositoryListOptions{})
 
 	assert.NoError(t, err)
@@ -164,7 +164,7 @@ func TestNewGitHubRepositoryClient_ListRepositories_Bad_Response_Code(t *testing
 	defer ts.Close()
 
 	client, _ := github.NewEnterpriseClient(ts.URL, "", ts.Client())
-	gc := NewGitHubRepositoryClient(client)
+	gc := NewGitHubRepositoryClient(client, &logrus.Logger{})
 	_, err := gc.ListRepositories(ctx, "HI", &github.RepositoryListOptions{})
 
 	assert.Error(t, err)

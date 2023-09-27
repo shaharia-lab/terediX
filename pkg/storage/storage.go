@@ -62,7 +62,7 @@ func (q *Query) Build() (string, []interface{}) {
 }
 
 // BuildStorage build storage based on configuration
-func BuildStorage(appConfig *config.AppConfig) Storage {
+func BuildStorage(appConfig *config.AppConfig) (Storage, error) {
 	var st Storage
 
 	for engineKey, engine := range appConfig.Storage.Engines {
@@ -78,12 +78,12 @@ func BuildStorage(appConfig *config.AppConfig) Storage {
 
 			db, err := sql.Open("postgres", connStr)
 			if err != nil {
-				panic(ec)
+				return nil, fmt.Errorf("failed to connect to postgresql: %w", err)
 			}
 
 			st = &PostgreSQL{DB: db}
 		}
 	}
 
-	return st
+	return st, nil
 }

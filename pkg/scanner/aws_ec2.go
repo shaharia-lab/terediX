@@ -3,6 +3,7 @@ package scanner
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
@@ -67,6 +68,11 @@ func (a *AWSEC2) Setup(name string, cfg config.Source, dependencies *Dependencie
 	a.storage = dependencies.GetStorage()
 	a.logger = dependencies.GetLogger()
 
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
 	return nil
 }
 
@@ -79,8 +85,15 @@ func (a *AWSEC2) GetKind() string {
 func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSEC2)
 	if err != nil {
-		return err
+		a.logger.WithFields(logrus.Fields{
+			"scanner_name": a.SourceName,
+			"scanner_kind": a.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
+
+	totalResourceDiscovered := 0
 
 	pageNum := 0
 	nextToken := ""
@@ -88,7 +101,12 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 	for {
 		resp, err := a.makeAPICallToAWS(nextToken)
 		if err != nil {
-			return err
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to make api call to aws ec2 endpoint")
+
+			return fmt.Errorf("unable to make api call to aws ec2 endpoint: %w", err)
 		}
 
 		// Loop through instances and their tags
@@ -97,6 +115,8 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, nextVersion)
 				res.AddMetaData(a.getMetaData(instance))
 				resourceChannel <- res
+
+				totalResourceDiscovered++
 			}
 		}
 
@@ -106,6 +126,12 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 		nextToken = *resp.NextToken
 		pageNum++
 	}
+
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
 
 	return nil
 }

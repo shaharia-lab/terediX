@@ -21,7 +21,8 @@ func NewDiscoverCommand() *cobra.Command {
 		Short: "Start discovering resources",
 		Long:  "Start discovering resources",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return run(cfgFile)
+			logger := logrus.New()
+			return run(cfgFile, logger)
 		},
 	}
 
@@ -30,28 +31,36 @@ func NewDiscoverCommand() *cobra.Command {
 	return &cmd
 }
 
-func run(cfgFile string) error {
+func run(cfgFile string, logger *logrus.Logger) error {
 	appConfig, err := config.Load(cfgFile)
 	if err != nil {
+		logger.WithError(err).Error("failed to load and parse configuration file")
 		return err
 	}
 
-	st := storage.BuildStorage(appConfig)
+	st, err := storage.BuildStorage(appConfig)
+	if err != nil {
+		logger.WithError(err).Error("failed to build storage")
+		return err
+	}
+
 	err = st.Prepare()
 	if err != nil {
+		logger.WithError(err).Error("failed to prepare storage system")
 		return err
 	}
 
 	sch := scheduler.NewGoCron()
-	scDeps := scanner.NewScannerDependencies(sch, storage.BuildStorage(appConfig), &logrus.Logger{})
-
-	scanners := scanner.BuildScanners(appConfig, scDeps)
-
-	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
-	p := processor.NewProcessor(processConfig, st, scanners)
+	scDeps := scanner.NewScannerDependencies(sch, st, logger)
 
 	resourceChan := make(chan resource.Resource)
-	p.Process(resourceChan, sch)
+	p := processor.NewProcessor(processor.Config{BatchSize: appConfig.Storage.BatchSize}, st, scanner.BuildScanners(appConfig, scDeps), logger)
+	err = p.Process(resourceChan, sch)
+	if err != nil {
+		logger.WithError(err).Error("failed to start processing scheduler jobs")
+		return err
+	}
 
+	logger.Info("started processing scheduled jobs")
 	select {}
 }

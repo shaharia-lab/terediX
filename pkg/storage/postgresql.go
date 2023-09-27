@@ -3,6 +3,7 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/shaharia-lab/teredix/pkg/config"
@@ -50,7 +51,7 @@ func (p *PostgreSQL) Prepare() error {
 
 	_, err := p.DB.Exec(sqlString)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create tables in database: %v", err)
 	}
 
 	return nil

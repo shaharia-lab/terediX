@@ -22,7 +22,7 @@ func NewRelationCommand() *cobra.Command {
 				return err
 			}
 
-			st := storage.BuildStorage(appConfig)
+			st, _ := storage.BuildStorage(appConfig)
 			return st.StoreRelations(appConfig.Relation)
 		},
 	}

@@ -3,6 +3,7 @@ package scanner
 
 import (
 	"context"
+	"fmt"
 
 	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
@@ -66,6 +67,11 @@ func (a *AWSECR) Setup(name string, cfg config.Source, dependencies *Dependencie
 	a.storage = dependencies.GetStorage()
 	a.logger = dependencies.GetLogger()
 
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
 	return nil
 }
 
@@ -78,8 +84,10 @@ func (a *AWSECR) GetKind() string {
 func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSECR)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
+
+	totalResourceDiscovered := 0
 
 	// Set initial values for pagination
 	pageNum := 0
@@ -96,7 +104,12 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 		}
 		resp, err := a.ECRClient.DescribeRepositories(context.TODO(), params)
 		if err != nil {
-			return err
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to make api call to aws ecr endpoint")
+
+			return fmt.Errorf("unable to make api call to aws ecr endpoint: %w", err)
 		}
 
 		// Loop through repositories and their tags
@@ -104,6 +117,8 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, nextVersion)
 			res.AddMetaData(a.getMetaData(repository))
 			resourceChannel <- res
+
+			totalResourceDiscovered++
 		}
 
 		// Check if there are more pages
@@ -113,6 +128,12 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 		nextToken = *resp.NextToken
 		pageNum++
 	}
+
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
 
 	return nil
 }

@@ -2,6 +2,7 @@
 package scanner
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -42,6 +43,11 @@ func (s *FsScanner) Setup(name string, cfg config.Source, dependencies *Dependen
 	s.storage = dependencies.GetStorage()
 	s.logger = dependencies.GetLogger()
 
+	s.logger.WithFields(logrus.Fields{
+		"scanner_name": s.name,
+		"scanner_kind": s.GetKind(),
+	}).Info("Scanner has been setup")
+
 	return nil
 }
 
@@ -57,14 +63,19 @@ func (s *FsScanner) GetSchedule() string {
 
 // GetKind return resource kind
 func (s *FsScanner) GetKind() string {
-	return "FileSystem"
+	return pkg.ResourceKindFileSystem
 }
 
 // Scan scans the file system
 func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	nextVersion, err := s.storage.GetNextVersionForResource(s.name, pkg.ResourceKindFileSystem)
 	if err != nil {
-		return err
+		s.logger.WithFields(logrus.Fields{
+			"scanner_name": s.name,
+			"scanner_kind": s.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
 
 	files, err := s.listFilesRecursive(s.rootDirectory)
@@ -86,6 +97,8 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 		},
 	}
 
+	totalResourceDiscovered := 1
+
 	resourceMeta := NewFieldMapper(mappings, nil, s.fields).getResourceMetaData()
 	rootResource.AddMetaData(resourceMeta)
 
@@ -97,7 +110,15 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 		nr.AddMetaData(resourceMeta)
 
 		resourceChannel <- nr
+
+		totalResourceDiscovered++
 	}
+
+	s.logger.WithFields(logrus.Fields{
+		"scanner_name":              s.name,
+		"scanner_kind":              s.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
 
 	return nil
 }

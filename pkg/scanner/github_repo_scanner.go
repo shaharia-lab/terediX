@@ -36,11 +36,12 @@ type GitHubClient interface {
 // GitHubRepositoryClient GitHub repository client
 type GitHubRepositoryClient struct {
 	client *github.Client
+	logger *logrus.Logger
 }
 
 // NewGitHubRepositoryClient construct new GitHub repository client
-func NewGitHubRepositoryClient(client *github.Client) *GitHubRepositoryClient {
-	return &GitHubRepositoryClient{client: client}
+func NewGitHubRepositoryClient(client *github.Client, logger *logrus.Logger) *GitHubRepositoryClient {
+	return &GitHubRepositoryClient{client: client, logger: logger}
 }
 
 // ListRepositories provide list of repositories from GitHub
@@ -93,8 +94,13 @@ func (r *GitHubRepositoryScanner) Setup(name string, cfg config.Source, dependen
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
-	gc := NewGitHubRepositoryClient(client)
+	gc := NewGitHubRepositoryClient(client, r.logger)
 	r.ghClient = gc
+
+	r.logger.WithFields(logrus.Fields{
+		"scanner_name": r.name,
+		"scanner_kind": r.GetKind(),
+	}).Info("Scanner has been setup")
 
 	return nil
 }
@@ -116,7 +122,12 @@ func (r *GitHubRepositoryScanner) GetKind() string {
 func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) error {
 	nextResourceVersion, err := r.storage.GetNextVersionForResource(r.name, pkg.ResourceKindGitHubRepository)
 	if err != nil {
-		return err
+		r.logger.WithFields(logrus.Fields{
+			"scanner_name": r.name,
+			"scanner_kind": r.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
 
 	opt := &github.RepositoryListOptions{
@@ -125,14 +136,29 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 
 	repos, err := r.ghClient.ListRepositories(context.Background(), r.user, opt)
 	if err != nil {
+		r.logger.WithFields(logrus.Fields{
+			"scanner_name": r.name,
+			"scanner_kind": r.GetKind(),
+		}).WithError(err).Error("Unable to get repository list from GitHub")
+
 		return err
 	}
+
+	totalResourceDiscovered := 0
 
 	for _, repo := range repos {
 		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, nextResourceVersion)
 		res.AddMetaData(r.getMetaData(repo))
 		resourceChannel <- res
+
+		totalResourceDiscovered++
 	}
+
+	r.logger.WithFields(logrus.Fields{
+		"scanner_name":              r.name,
+		"scanner_kind":              r.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
 
 	return nil
 }

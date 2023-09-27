@@ -24,9 +24,10 @@ const (
 	fieldTags = "tags"
 )
 
-type ScannerFactory func() Scanner
+// Factory is a function that returns a new instance of a Scanner.
+type Factory func() Scanner
 
-var scannerFactories = map[string]ScannerFactory{
+var scannerFactories = map[string]Factory{
 	pkg.ResourceKindAWSEC2:         func() Scanner { return &AWSEC2{} },
 	pkg.ResourceKindAWSECR:         func() Scanner { return &AWSECR{} },
 	pkg.ResourceKindAWSRDS:         func() Scanner { return &AWSRDS{} },
@@ -62,6 +63,7 @@ func BuildScanners(appConfig *config.AppConfig, dependencies *Dependencies) []Sc
 	return scanners
 }
 
+// Dependencies scanner dependencies
 type Dependencies struct {
 	scheduler scheduler.Scheduler
 	storage   storage.Storage
@@ -97,6 +99,7 @@ type Scanner interface {
 	GetSchedule() string
 }
 
+// Scanners list of scanners
 type Scanners struct {
 	Scanners []Scanner
 }

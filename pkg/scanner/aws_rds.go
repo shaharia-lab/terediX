@@ -63,6 +63,11 @@ func (a *AWSRDS) Setup(name string, cfg config.Source, dependencies *Dependencie
 	a.RdsClient = rds.NewFromConfig(buildAWSConfig(cfg))
 	a.Fields = cfg.Fields
 
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
 	return nil
 }
 
@@ -75,15 +80,27 @@ func (a *AWSRDS) GetKind() string {
 func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 	nextResourceVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSRDS)
 	if err != nil {
-		return err
+		a.logger.WithFields(logrus.Fields{
+			"scanner_name": a.SourceName,
+			"scanner_kind": a.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
 
-	rdsInstances, err := listAllRDSInstances(a.RdsClient)
+	totalResourceDiscovered := 0
+
+	rdsInstances, err := a.listAllRDSInstances(a.RdsClient)
 
 	for _, rdsInstance := range rdsInstances {
 		instanceID := aws.StringValue(rdsInstance.DBInstanceIdentifier)
 
 		if err != nil {
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to get tags for RDS instance")
+
 			return fmt.Errorf("failed to get tags for RDS instance %s. error: %w", instanceID, err)
 		}
 
@@ -91,7 +108,15 @@ func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
 		r.AddMetaData(a.getMetaData(rdsInstance))
 
 		resourceChannel <- r
+
+		totalResourceDiscovered++
 	}
+
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
 
 	return nil
 }
@@ -120,7 +145,7 @@ func (a *AWSRDS) getMetaData(rdsInstance types.DBInstance) map[string]string {
 	return NewFieldMapper(mappings, getTags, a.Fields).getResourceMetaData()
 }
 
-func listAllRDSInstances(client RdsClient) ([]types.DBInstance, error) {
+func (a *AWSRDS) listAllRDSInstances(client RdsClient) ([]types.DBInstance, error) {
 	var allInstances []types.DBInstance
 
 	// Define Pagination logic
@@ -128,8 +153,14 @@ func listAllRDSInstances(client RdsClient) ([]types.DBInstance, error) {
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			return nil, err
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to make api call to aws rds endpoint")
+
+			return nil, fmt.Errorf("unable to make api call to aws rds endpoint: %w", err)
 		}
+
 		allInstances = append(allInstances, output.DBInstances...)
 	}
 

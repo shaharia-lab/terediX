@@ -10,6 +10,7 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -62,6 +63,8 @@ func TestProcess(t *testing.T) {
 			// Setup mock scanner and storage
 			firstScanner := new(scanner.Mock)
 			firstScanner.On("GetSchedule").Return("@every 1s")
+			firstScanner.On("GetName").Return("scannerName")
+			firstScanner.On("GetKind").Return("kindName")
 			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
 				for _, res := range tc.resources {
 					resourceChan <- res
@@ -73,7 +76,7 @@ func TestProcess(t *testing.T) {
 				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
 			}
 
-			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner})
+			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{})
 
 			staticScheduler := scheduler.NewStaticScheduler()
 			p.Process(resourceChan, staticScheduler)
@@ -116,6 +119,8 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			// Setup mock scanner and storage
 			firstScanner := new(scanner.Mock)
 			firstScanner.On("GetSchedule").Return("@every 1s")
+			firstScanner.On("GetName").Return("scannerName")
+			firstScanner.On("GetKind").Return("kindName")
 			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
 				for _, res := range resources {
 					resourceChan <- res
@@ -127,7 +132,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
 			//mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
-			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner})
+			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{})
 
 			staticScheduler := scheduler.NewStaticScheduler()
 			p.Process(resourceChan, staticScheduler)

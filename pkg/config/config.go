@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/shaharia-lab/teredix/pkg"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -112,106 +110,4 @@ func Load(path string) (*AppConfig, error) {
 	}
 
 	return &appConfig, nil
-}
-
-func (c *AppConfig) validateDiscovery(discovery Discovery) error {
-	if discovery.Name == "" {
-		return fmt.Errorf("discovery name is required")
-	}
-
-	return nil
-}
-
-func (c *AppConfig) validateSourceConfiguration(name string, source Source) error {
-	switch source.Type {
-	case pkg.SourceTypeFileSystem:
-		if err := c.validateConfigurationKeys(name, source, "root_directory"); err != nil {
-			return err
-		}
-	case "kubernetes":
-		if err := c.validateConfigurationKeys(name, source, "kube_config_file_path"); err != nil {
-			return err
-		}
-	case pkg.SourceTypeGitHubRepository:
-		if err := c.validateConfigurationKeys(name, source, "token", "user_or_org"); err != nil {
-			return err
-		}
-	case pkg.SourceTypeAWSS3, pkg.SourceTypeAWSRDS, pkg.SourceTypeAWSEC2, pkg.SourceTypeAWSECR:
-		if err := c.validateConfigurationKeys(name, source, "access_key", "secret_key", "session_token", "region", "account_id"); err != nil {
-			return err
-		}
-	default:
-		return fmt.Errorf("unknown source type: '%s'", source.Type)
-	}
-	return nil
-}
-
-func (c *AppConfig) validateConfigurationKeys(sourceName string, source Source, requiredKeys ...string) error {
-	for _, k := range requiredKeys {
-		keyNotEmpty, ok := source.Configuration[k]
-		if !ok || keyNotEmpty == "" {
-			return fmt.Errorf("source '%s' requires 'configuration.%s'", sourceName, k)
-		}
-	}
-
-	return nil
-}
-
-func (c *AppConfig) validateDependsOn(name string, source Source) error {
-	for _, dependency := range source.DependsOn {
-		if _, ok := c.Sources[dependency]; !ok {
-			return fmt.Errorf("source '%s' depends_on contains invalid source key: '%s'", name, dependency)
-		}
-	}
-	return nil
-}
-
-func (c *AppConfig) validateRelations(relations Relation) error {
-	if relations.RelationCriteria == nil {
-		return fmt.Errorf("relations field must be defined")
-	}
-
-	if len(relations.RelationCriteria) == 0 {
-		return fmt.Errorf("relations.criteria is empty")
-	}
-
-	for _, criteria := range relations.RelationCriteria {
-		err := c.validateRelationCriteria(criteria)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (c *AppConfig) validateRelationCriteria(criteria RelationCriteria) error {
-	if criteria.Name == "" {
-		return fmt.Errorf("relations.criteria.name is required")
-	}
-
-	if criteria.Source.Kind == "" {
-		return fmt.Errorf("relations.criteria.source.kind is required")
-	}
-
-	if criteria.Source.MetaKey == "" {
-		return fmt.Errorf("relations.criteria.source.meta_key is required")
-	}
-
-	if criteria.Source.MetaValue == "" {
-		return fmt.Errorf("relations.criteria.source.meta_value is required")
-	}
-
-	if criteria.Target.Kind == "" {
-		return fmt.Errorf("relations.criteria.target.kind is required")
-	}
-
-	if criteria.Target.MetaKey == "" {
-		return fmt.Errorf("relations.criteria.target.meta_key is required")
-	}
-
-	if criteria.Target.MetaValue == "" {
-		return fmt.Errorf("relations.criteria.target.meta_value is required")
-	}
-	return nil
 }
