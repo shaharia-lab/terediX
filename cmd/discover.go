@@ -42,7 +42,7 @@ func run(cfgFile string) error {
 		return err
 	}
 
-	sch := scheduler.NewCron()
+	sch := scheduler.NewGoCron()
 	scDeps := scanner.NewScannerDependencies(sch, storage.BuildStorage(appConfig), &logrus.Logger{})
 
 	scanners := scanner.BuildScanners(appConfig, scDeps)
