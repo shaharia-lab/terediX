@@ -111,7 +111,7 @@ func TestAWSRDS_Scan(t *testing.T) {
 			}
 
 			rd := AWSRDS{}
-			rd.Setup("source-name", sc, NewScannerDependencies(scheduler.NewCron(), mockStorage, &logrus.Logger{}))
+			rd.Setup("source-name", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}))
 			rd.RdsClient = rdsClientMock
 
 			RunCommonScannerAssertionTest(t, &rd, tt.expectedTotalResource, tt.expectedTotalMetaData, tt.expectedMetaDataKeys)

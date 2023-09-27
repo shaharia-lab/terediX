@@ -235,7 +235,7 @@ func TestAWSECR_Scan(t *testing.T) {
 				Schedule: "@every 1s",
 			}
 			er := AWSECR{}
-			er.Setup("test-source", sc, NewScannerDependencies(scheduler.NewCron(), mockStorage, &logrus.Logger{}))
+			er.Setup("test-source", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}))
 			er.ECRClient = mockEcrClient
 			er.ResourceTaggingService = mockSvc
 

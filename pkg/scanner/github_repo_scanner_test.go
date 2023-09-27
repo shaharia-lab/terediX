@@ -126,7 +126,7 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			}
 
 			gh := GitHubRepositoryScanner{}
-			gh.Setup("test", sc, NewScannerDependencies(scheduler.NewCron(), mockStorage, &logrus.Logger{}))
+			gh.Setup("test", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}))
 			gh.ghClient = mockClient
 
 			RunCommonScannerAssertionTest(t, &gh, tc.expectedTotalResource, tc.expectedTotalMetaData, tc.expectedMetaDataKeys)

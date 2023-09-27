@@ -145,7 +145,7 @@ func TestAWSEC2_Scan(t *testing.T) {
 			}
 
 			e := AWSEC2{}
-			_ = e.Setup("test-source", sc, NewScannerDependencies(scheduler.NewCron(), storageMock, &logrus.Logger{}))
+			_ = e.Setup("test-source", sc, NewScannerDependencies(scheduler.NewGoCron(), storageMock, &logrus.Logger{}))
 			e.Ec2Client = mc
 			RunCommonScannerAssertionTest(t, &e, tc.expectedTotalResource, tc.expectedMetaDataCount, tc.expectedMetaDataKeys)
 		})

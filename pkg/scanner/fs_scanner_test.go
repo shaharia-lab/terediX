@@ -84,7 +84,7 @@ func TestFsScanner_Scan(t *testing.T) {
 			mockStorage.On("GetNextVersionForResource", "scanner_name", pkg.SourceTypeFileSystem).Return(1, nil)
 
 			fs := FsScanner{}
-			_ = fs.Setup("scanner_name", sc, NewScannerDependencies(scheduler.NewCron(), mockStorage, nil))
+			_ = fs.Setup("scanner_name", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, nil))
 
 			RunCommonScannerAssertionTest(t, &fs, tt.expectedResourceCount, tt.expectedMetaDataCount, tt.expectedMetaDataKeys)
 		})

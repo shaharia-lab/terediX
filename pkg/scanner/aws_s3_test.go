@@ -135,7 +135,7 @@ func TestAWSS3_Scan(t *testing.T) {
 			}
 
 			s := AWSS3{}
-			s.Setup("source-name", sc, NewScannerDependencies(scheduler.NewCron(), storageMock, &logrus.Logger{}))
+			s.Setup("source-name", sc, NewScannerDependencies(scheduler.NewGoCron(), storageMock, &logrus.Logger{}))
 			s.S3Client = s3ClientMock
 
 			RunCommonScannerAssertionTest(t, &s, tt.expectedTotalResource, tt.expectedTotalMetaData, tt.expectedMetaDataKeys)
