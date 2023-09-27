@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -235,7 +236,7 @@ func TestAWSECR_Scan(t *testing.T) {
 				Schedule: "@every 1s",
 			}
 			er := AWSECR{}
-			er.Setup("test-source", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}))
+			er.Setup("test-source", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}, metrics.NewCollector()))
 			er.ECRClient = mockEcrClient
 			er.ResourceTaggingService = mockSvc
 

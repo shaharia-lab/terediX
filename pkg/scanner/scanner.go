@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
@@ -46,6 +47,7 @@ func getScanner(sType string) Scanner {
 // BuildScanners build source based on configuration
 func BuildScanners(appConfig *config.AppConfig, dependencies *Dependencies) []Scanner {
 	var scanners []Scanner
+	totalScannerSetup := 0
 	for sourceKey, s := range appConfig.Sources {
 		scanner := getScanner(s.Type)
 		if scanner == nil {
@@ -58,8 +60,13 @@ func BuildScanners(appConfig *config.AppConfig, dependencies *Dependencies) []Sc
 			return nil
 		}
 		scanners = append(scanners, scanner)
+
+		dependencies.GetMetrics().CollectTotalScannerBuildByName(scanner.GetName(), scanner.GetKind())
+
+		totalScannerSetup++
 	}
 
+	dependencies.GetMetrics().CollectTotalScannerBuild(float64(totalScannerSetup))
 	return scanners
 }
 
@@ -68,11 +75,12 @@ type Dependencies struct {
 	scheduler scheduler.Scheduler
 	storage   storage.Storage
 	logger    *logrus.Logger
+	metrics   *metrics.Collector
 }
 
 // NewScannerDependencies construct new scanner dependencies
-func NewScannerDependencies(scheduler scheduler.Scheduler, storage storage.Storage, logger *logrus.Logger) *Dependencies {
-	return &Dependencies{scheduler: scheduler, storage: storage, logger: logger}
+func NewScannerDependencies(scheduler scheduler.Scheduler, storage storage.Storage, logger *logrus.Logger, metricsCollector *metrics.Collector) *Dependencies {
+	return &Dependencies{scheduler: scheduler, storage: storage, logger: logger, metrics: metricsCollector}
 }
 
 // GetScheduler return scheduler
@@ -88,6 +96,11 @@ func (d *Dependencies) GetStorage() storage.Storage {
 // GetLogger return logger
 func (d *Dependencies) GetLogger() *logrus.Logger {
 	return d.logger
+}
+
+// GetMetrics return metrics
+func (d *Dependencies) GetMetrics() *metrics.Collector {
+	return d.metrics
 }
 
 // Scanner interface to build different scanner

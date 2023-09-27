@@ -6,6 +6,7 @@ import (
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -145,7 +146,7 @@ func TestAWSEC2_Scan(t *testing.T) {
 			}
 
 			e := AWSEC2{}
-			_ = e.Setup("test-source", sc, NewScannerDependencies(scheduler.NewGoCron(), storageMock, &logrus.Logger{}))
+			_ = e.Setup("test-source", sc, NewScannerDependencies(scheduler.NewGoCron(), storageMock, &logrus.Logger{}, metrics.NewCollector()))
 			e.Ec2Client = mc
 			RunCommonScannerAssertionTest(t, &e, tc.expectedTotalResource, tc.expectedMetaDataCount, tc.expectedMetaDataKeys)
 		})

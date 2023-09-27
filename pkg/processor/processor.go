@@ -3,8 +3,10 @@ package processor
 
 import (
 	"fmt"
+	"runtime"
 	"time"
 
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
@@ -18,6 +20,7 @@ type Processor struct {
 	Storage  storage.Storage
 	scanners []scanner.Scanner
 	logger   *logrus.Logger
+	metrics  *metrics.Collector
 }
 
 // Config holds configuration values for the Processor.
@@ -26,8 +29,8 @@ type Config struct {
 }
 
 // NewProcessor initializes a new Processor instance.
-func NewProcessor(config Config, storage storage.Storage, scanners []scanner.Scanner, logger *logrus.Logger) Processor {
-	return Processor{Config: config, Storage: storage, scanners: scanners, logger: logger}
+func NewProcessor(config Config, storage storage.Storage, scanners []scanner.Scanner, logger *logrus.Logger, metrics *metrics.Collector) Processor {
+	return Processor{Config: config, Storage: storage, scanners: scanners, logger: logger, metrics: metrics}
 }
 
 // Process initiates resource processing.
@@ -43,14 +46,37 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 		lf := logrus.Fields{"scanner_name": sc.GetName(), "scanner_kind": sc.GetKind()}
 
 		err := sch.AddFunc(sc.GetSchedule(), func() {
+			start := time.Now()
+			// Track initial memory
+			var m1 runtime.MemStats
+			runtime.ReadMemStats(&m1)
+
 			err := sc.Scan(resourceChan)
+
 			if err != nil {
+				p.metrics.CollectTotalProcessErrorCount("scanner_scan")
 				p.logger.WithFields(lf).WithError(err).Error("Failed to scan resources")
 			}
+
+			duration := time.Since(start)
+			// Track end memory
+			var m2 runtime.MemStats
+			runtime.ReadMemStats(&m2)
+
+			p.metrics.CollectTotalScanTimeDurationInSecs(sc.GetName(), sc.GetKind(), duration.Seconds())
+			p.metrics.CollectTotalScanTimeDurationInMs(sc.GetName(), sc.GetKind(), float64(duration.Milliseconds()))
+
+			p.metrics.CollectTotalMemoryUsageByScannerInMB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/(1024*1024))
+			p.metrics.CollectTotalMemoryUsageByScannerInKB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/1024)
 		})
 
 		if err != nil {
 			p.logger.WithFields(lf).WithError(err).Error("Failed to schedule scanner in job queue")
+			p.metrics.CollectTotalScannerJobAddedToQueue(sc.GetName(), sc.GetKind(), "failed")
+		}
+
+		if err == nil {
+			p.metrics.CollectTotalScannerJobAddedToQueue(sc.GetName(), sc.GetKind(), "success")
 		}
 
 		p.logger.WithFields(lf).WithFields(logrus.Fields{"schedule": sc.GetSchedule()}).Info("Scanner has been scheduled to run")
@@ -59,10 +85,12 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 	err := sch.Start()
 	if err != nil {
 		p.logger.WithError(err).Error("Failed to start scheduler")
+		p.metrics.CollectTotalProcessErrorCount("scheduler_start")
 		return err
 	}
 
 	p.logger.Info("Scheduler has been started")
+	p.metrics.CollectTotalSchedulerStartCount()
 	return nil
 }
 
@@ -93,6 +121,7 @@ func (p *Processor) processResources(resourceChan <-chan resource.Resource) {
 
 			if p.shouldProcessBatch(resources) {
 				if err := p.processBatch(resources); err != nil {
+					p.metrics.CollectTotalProcessErrorCount("batch_resource_processing")
 					p.logger.WithFields(logrus.Fields{"total_resources_in_batch": len(resources)}).WithError(err).Error("Error processing batch")
 				}
 				resources = resetResourceBatch(p.Config.BatchSize)
@@ -102,6 +131,7 @@ func (p *Processor) processResources(resourceChan <-chan resource.Resource) {
 		case <-flushTimer.C:
 			if len(resources) > 0 {
 				if err := p.processBatch(resources); err != nil {
+					p.metrics.CollectTotalProcessErrorCount("resource_processing_channel_flush")
 					p.logger.WithFields(logrus.Fields{"total_resources_in_batch": len(resources)}).WithError(err).Error("Error processing batch during resource channel flush")
 				}
 				resources = resetResourceBatch(p.Config.BatchSize)
@@ -124,6 +154,7 @@ func (p *Processor) processBatch(resources []resource.Resource) error {
 
 	if err := p.Storage.Persist(resources); err != nil {
 		p.logger.WithField("total_resources_affected", len(resources)).WithError(err).Errorf("failed to persist resources")
+		p.metrics.CollectTotalProcessErrorCount("resource_persistence")
 		return fmt.Errorf("failed to persist resources: %w", err)
 	}
 

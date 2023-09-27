@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
@@ -76,7 +77,7 @@ func TestProcess(t *testing.T) {
 				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
 			}
 
-			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{})
+			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{}, &metrics.Collector{})
 
 			staticScheduler := scheduler.NewStaticScheduler()
 			p.Process(resourceChan, staticScheduler)
@@ -132,7 +133,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
 			//mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
-			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{})
+			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{}, &metrics.Collector{})
 
 			staticScheduler := scheduler.NewStaticScheduler()
 			p.Process(resourceChan, staticScheduler)

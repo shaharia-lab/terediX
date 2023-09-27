@@ -9,6 +9,7 @@ import (
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -27,6 +28,7 @@ type FsScanner struct {
 	schedule      string
 	storage       storage.Storage
 	logger        *logrus.Logger
+	metrics       *metrics.Collector
 }
 
 // File represent file information
@@ -42,6 +44,7 @@ func (s *FsScanner) Setup(name string, cfg config.Source, dependencies *Dependen
 	s.schedule = cfg.Schedule
 	s.storage = dependencies.GetStorage()
 	s.logger = dependencies.GetLogger()
+	s.metrics = dependencies.GetMetrics()
 
 	s.logger.WithFields(logrus.Fields{
 		"scanner_name": s.name,
@@ -68,8 +71,10 @@ func (s *FsScanner) GetKind() string {
 
 // Scan scans the file system
 func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
+	s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "running")
 	nextVersion, err := s.storage.GetNextVersionForResource(s.name, pkg.ResourceKindFileSystem)
 	if err != nil {
+		s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "failed")
 		s.logger.WithFields(logrus.Fields{
 			"scanner_name": s.name,
 			"scanner_kind": s.GetKind(),
@@ -80,6 +85,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 
 	files, err := s.listFilesRecursive(s.rootDirectory)
 	if err != nil {
+		s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "failed")
 		return nil
 	}
 
@@ -120,6 +126,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 		"total_resource_discovered": totalResourceDiscovered,
 	}).Info("scan completed")
 
+	s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "finished")
 	return nil
 }
 

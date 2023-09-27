@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -111,7 +112,7 @@ func TestAWSRDS_Scan(t *testing.T) {
 			}
 
 			rd := AWSRDS{}
-			rd.Setup("source-name", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}))
+			rd.Setup("source-name", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}, metrics.NewCollector()))
 			rd.RdsClient = rdsClientMock
 
 			RunCommonScannerAssertionTest(t, &rd, tt.expectedTotalResource, tt.expectedTotalMetaData, tt.expectedMetaDataKeys)

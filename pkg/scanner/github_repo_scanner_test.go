@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-github/v50/github"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -126,7 +127,7 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			}
 
 			gh := GitHubRepositoryScanner{}
-			gh.Setup("test", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}))
+			gh.Setup("test", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}, metrics.NewCollector()))
 			gh.ghClient = mockClient
 
 			RunCommonScannerAssertionTest(t, &gh, tc.expectedTotalResource, tc.expectedTotalMetaData, tc.expectedMetaDataKeys)

@@ -2,7 +2,11 @@
 package cmd
 
 import (
+	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/processor"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
@@ -51,10 +55,11 @@ func run(cfgFile string, logger *logrus.Logger) error {
 	}
 
 	sch := scheduler.NewGoCron()
-	scDeps := scanner.NewScannerDependencies(sch, st, logger)
+	metricsCollector := metrics.NewCollector()
+	scDeps := scanner.NewScannerDependencies(sch, st, logger, metricsCollector)
 
 	resourceChan := make(chan resource.Resource)
-	p := processor.NewProcessor(processor.Config{BatchSize: appConfig.Storage.BatchSize}, st, scanner.BuildScanners(appConfig, scDeps), logger)
+	p := processor.NewProcessor(processor.Config{BatchSize: appConfig.Storage.BatchSize}, st, scanner.BuildScanners(appConfig, scDeps), logger, metricsCollector)
 	err = p.Process(resourceChan, sch)
 	if err != nil {
 		logger.WithError(err).Error("failed to start processing scheduler jobs")
@@ -62,5 +67,13 @@ func run(cfgFile string, logger *logrus.Logger) error {
 	}
 
 	logger.Info("started processing scheduled jobs")
-	select {}
+
+	http.Handle("/metrics", promhttp.Handler())
+	err = http.ListenAndServe(":2112", nil)
+	if err != nil {
+		logger.WithError(err).Error("failed to start prometheus server")
+		return err
+	}
+
+	return nil
 }

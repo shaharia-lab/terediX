@@ -15,6 +15,7 @@ import (
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
@@ -93,7 +94,7 @@ func TestProcessor_Process_Integration(t *testing.T) {
 	scanners := scanner.BuildScanners(appConfig, scanner.NewScannerDependencies(sch, st, logger))
 
 	processConfig := Config{BatchSize: appConfig.Storage.BatchSize}
-	p := NewProcessor(processConfig, st, scanners, logger)
+	p := NewProcessor(processConfig, st, scanners, logger, metrics.NewCollector())
 
 	resourceChan := make(chan resource.Resource)
 	p.Process(resourceChan, sch)

@@ -8,6 +8,7 @@ import (
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
@@ -85,7 +86,7 @@ func TestFsScanner_Scan(t *testing.T) {
 			mockStorage.On("GetNextVersionForResource", "scanner_name", pkg.SourceTypeFileSystem).Return(1, nil)
 
 			fs := FsScanner{}
-			_ = fs.Setup("scanner_name", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}))
+			_ = fs.Setup("scanner_name", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}, metrics.NewCollector()))
 
 			RunCommonScannerAssertionTest(t, &fs, tt.expectedResourceCount, tt.expectedMetaDataCount, tt.expectedMetaDataKeys)
 		})
