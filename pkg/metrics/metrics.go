@@ -55,6 +55,16 @@ var totalMemoryUsageByScannerInKB = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	Help: "The total memory usage by scanner in KiloBytes",
 }, []string{"scanner_name", "scanner_kind"})
 
+var totalMemoryUsageByScannerInBytes = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	Name: "teredix_memory_usage_by_scanner_in_bytes",
+	Help: "The total memory usage by scanner in bytes",
+}, []string{"scanner_name", "scanner_kind"})
+
+var totalStorageBatchPersistingLatencyInMs = promauto.NewGauge(prometheus.GaugeOpts{
+	Name: "teredix_storage_batch_persisting_latency_in_ms",
+	Help: "The total storage batch persisting latency in milliseconds",
+})
+
 type Collector struct {
 }
 
@@ -110,4 +120,14 @@ func (c *Collector) CollectTotalMemoryUsageByScannerInMB(scannerName, scannerKin
 // CollectTotalMemoryUsageByScannerInKB collect total memory usage by scanner
 func (c *Collector) CollectTotalMemoryUsageByScannerInKB(scannerName, scannerKind string, memoryUsage float64) {
 	totalMemoryUsageByScannerInKB.WithLabelValues(scannerName, scannerKind).Set(memoryUsage)
+}
+
+// CollectTotalMemoryUsageByScannerInBytes collect total memory usage by scanner
+func (c *Collector) CollectTotalMemoryUsageByScannerInBytes(scannerName, scannerKind string, memoryUsage float64) {
+	totalMemoryUsageByScannerInBytes.WithLabelValues(scannerName, scannerKind).Set(memoryUsage)
+}
+
+// CollectTotalStorageBatchPersistingLatencyInMs collect total storage batch persisting latency
+func (c *Collector) CollectTotalStorageBatchPersistingLatencyInMs(totalLatency float64) {
+	totalStorageBatchPersistingLatencyInMs.Set(totalLatency)
 }

@@ -68,6 +68,7 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 
 			p.metrics.CollectTotalMemoryUsageByScannerInMB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/(1024*1024))
 			p.metrics.CollectTotalMemoryUsageByScannerInKB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/1024)
+			p.metrics.CollectTotalMemoryUsageByScannerInBytes(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc))
 		})
 
 		if err != nil {
@@ -150,6 +151,7 @@ func resetResourceBatch(capacity int) []resource.Resource {
 }
 
 func (p *Processor) processBatch(resources []resource.Resource) error {
+	start := time.Now()
 	p.logger.WithFields(logrus.Fields{"total_resources_in_batch": len(resources)}).Info("Processing batch of resources")
 
 	if err := p.Storage.Persist(resources); err != nil {
@@ -159,5 +161,9 @@ func (p *Processor) processBatch(resources []resource.Resource) error {
 	}
 
 	p.logger.WithField("total_resources", len(resources)).Info("Batch of resources has been processed successfully")
+
+	duration := time.Since(start)
+
+	p.metrics.CollectTotalStorageBatchPersistingLatencyInMs(float64(duration.Milliseconds()))
 	return nil
 }
