@@ -198,9 +198,12 @@
         },
         "fields": {
           "$ref": "#/definitions/source.file_system.fields"
+        },
+        "schedule": {
+          "type": "string"
         }
       },
-      "required": ["type", "configuration", "fields"]
+      "required": ["type", "configuration", "fields", "schedule"]
     },
     "source.file_system.configuration": {
       "type": "object",
@@ -233,9 +236,12 @@
         },
         "fields": {
           "$ref": "#/definitions/source.github_repository.fields"
+        },
+        "schedule": {
+          "type": "string"
         }
       },
-      "required": ["type", "configuration", "fields"]
+      "required": ["type", "configuration", "fields", "schedule"]
     },
     "source.github_repository.configuration": {
       "type": "object",
@@ -282,9 +288,12 @@
         },
         "fields": {
           "$ref": "#/definitions/source.aws_s3.fields"
+        },
+        "schedule": {
+          "type": "string"
         }
       },
-      "required": ["type", "configuration", "fields"]
+      "required": ["type", "configuration", "fields", "schedule"]
     },
     "source.aws_s3.fields": {
       "type": "array",
@@ -312,9 +321,12 @@
         },
         "fields": {
           "$ref": "#/definitions/source.aws_rds.fields"
+        },
+        "schedule": {
+          "type": "string"
         }
       },
-      "required": ["type", "configuration", "fields"]
+      "required": ["type", "configuration", "fields", "schedule"]
     },
     "source.aws_ec2.fields": {
       "type": "array",
@@ -347,9 +359,12 @@
         },
         "fields": {
           "$ref": "#/definitions/source.aws_ec2.fields"
+        },
+        "schedule": {
+          "type": "string"
         }
       },
-      "required": ["type", "configuration", "fields"]
+      "required": ["type", "configuration", "fields", "schedule"]
     },
     "source.aws_rds.fields": {
       "type": "array",
@@ -377,9 +392,12 @@
         },
         "fields": {
           "$ref": "#/definitions/source.aws_ecr.fields"
+        },
+        "schedule": {
+          "type": "string"
         }
       },
-      "required": ["type", "configuration", "fields"]
+      "required": ["type", "configuration", "fields", "schedule"]
     },
     "source.aws_ecr.fields": {
       "type": "array",

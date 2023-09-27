@@ -44,6 +44,7 @@ source:
     fields: &file_system_fields
       - rootDirectory
       - machineHost
+    schedule: &schedule "@every 1m"
   github_repo:
     type: github_repository
     configuration:
@@ -59,11 +60,13 @@ source:
       - owner_login
       - owner_name
       - topics
+    schedule: *schedule
   fs_two:
     type: file_system
     configuration:
       root_directory: "/some/other/path"
     fields: *file_system_fields
+    schedule: *schedule
   aws_s3_one:
     type: aws_s3
     configuration: &aws_conf
@@ -77,6 +80,7 @@ source:
       - region
       - arn
       - tags
+    schedule: *schedule
   aws_rds_one:
     type: aws_rds
     configuration: *aws_conf
@@ -85,6 +89,7 @@ source:
       - region
       - arn
       - tags
+    schedule: *schedule
   aws_ec2_one:
     type: aws_ec2
     configuration:
@@ -103,6 +108,7 @@ source:
       - instance_state
       - vpc_id
       - tags
+    schedule: *schedule
   aws_ecr_example:
     type: aws_ecr
     configuration: *aws_conf
@@ -112,6 +118,7 @@ source:
       - registry_id
       - arn
       - tags
+    schedule: *schedule
 relations:
   criteria:
     - name: "file-system-rule1"
