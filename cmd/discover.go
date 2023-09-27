@@ -6,7 +6,9 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/processor"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -34,19 +36,22 @@ func run(cfgFile string) error {
 		return err
 	}
 
-	sources := scanner.BuildSources(appConfig)
-	scanners := scanner.BuildScanners(appConfig)
 	st := storage.BuildStorage(appConfig)
 	err = st.Prepare()
 	if err != nil {
 		return err
 	}
 
+	sch := scheduler.NewCron()
+	scDeps := scanner.NewScannerDependencies(sch, storage.BuildStorage(appConfig), &logrus.Logger{})
+
+	scanners := scanner.BuildScanners(appConfig, scDeps)
+
 	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
-	p := processor.NewProcessor(processConfig, st, sources, scanners)
+	p := processor.NewProcessor(processConfig, st, scanners)
 
 	resourceChan := make(chan resource.Resource)
-	p.Process(resourceChan)
+	p.Process(resourceChan, sch)
 
-	return nil
+	select {}
 }

@@ -1,26 +1,26 @@
-package processor
+package scheduler
 
 import (
 	"fmt"
 )
 
+// CronJob definition
 type CronJob struct {
 	spec string
 	cmd  func()
 }
 
+// CronJobs definition
 type CronJobs struct {
 	jobs []CronJob
 }
 
+// Runner definition
 type Runner struct {
 	scheduler Scheduler
 }
 
-func NewRunner(scheduler Scheduler) *Runner {
-	return &Runner{scheduler: scheduler}
-}
-
+// AddJobs to add jobs to cron scheduler
 func (r *Runner) AddJobs(jobs []CronJob) error {
 	for _, job := range jobs {
 		err := r.scheduler.AddFunc(job.spec, job.cmd)
@@ -32,6 +32,7 @@ func (r *Runner) AddJobs(jobs []CronJob) error {
 	return nil
 }
 
+// Run to start the scheduler
 func (r *Runner) Run() error {
 	r.scheduler.Start()
 

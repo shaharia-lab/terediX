@@ -6,7 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -19,6 +23,9 @@ type FsScanner struct {
 	name          string
 	rootDirectory string
 	fields        []string
+	schedule      string
+	storage       storage.Storage
+	logger        *logrus.Logger
 }
 
 // File represent file information
@@ -26,9 +33,26 @@ type File struct {
 	Path string
 }
 
-// NewFsScanner construct new file system scanner
-func NewFsScanner(name, rootDirectory string, fields []string) *FsScanner {
-	return &FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
+// Setup setup file system scanner
+func (s *FsScanner) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	s.name = name
+	s.rootDirectory = cfg.Configuration["root_directory"]
+	s.fields = cfg.Fields
+	s.schedule = cfg.Schedule
+	s.storage = dependencies.GetStorage()
+	s.logger = dependencies.GetLogger()
+
+	return nil
+}
+
+// GetName return name
+func (s *FsScanner) GetName() string {
+	return s.name
+}
+
+// GetSchedule return schedule
+func (s *FsScanner) GetSchedule() string {
+	return s.schedule
 }
 
 // GetKind return resource kind
@@ -37,14 +61,19 @@ func (s *FsScanner) GetKind() string {
 }
 
 // Scan scans the file system
-func (s *FsScanner) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
+func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
+	nextVersion, err := s.storage.GetNextVersionForResource(s.name, pkg.ResourceKindFileSystem)
+	if err != nil {
+		return err
+	}
+
 	files, err := s.listFilesRecursive(s.rootDirectory)
 	if err != nil {
 		return nil
 	}
 
 	//rootResource := resource.NewResourceV1("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
-	rootResource := resource.NewResource("FileDirectory", s.name, s.rootDirectory, s.name, nextResourceVersion)
+	rootResource := resource.NewResource(pkg.ResourceKindFileSystem, s.name, s.rootDirectory, s.name, nextVersion)
 
 	mappings := map[string]func() string{
 		fileSystemFieldRootDirectory: func() string { return s.rootDirectory },
@@ -61,10 +90,9 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource, nextResourceVer
 	rootResource.AddMetaData(resourceMeta)
 
 	resourceChannel <- rootResource
-
 	for _, f := range files {
 		//nr := resource.NewResourceV1("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
-		nr := resource.NewResource("FilePath", s.name, f.Path, s.name, nextResourceVersion)
+		nr := resource.NewResource(pkg.ResourceKindFileSystem, s.name, f.Path, s.name, nextVersion)
 		nr.AddRelation(rootResource)
 		nr.AddMetaData(resourceMeta)
 

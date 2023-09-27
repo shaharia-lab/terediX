@@ -5,7 +5,10 @@ import (
 	"context"
 
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
@@ -38,17 +41,33 @@ type AWSEC2 struct {
 	Region     string
 	AccountID  string
 	Fields     []string
+	storage    storage.Storage
+	logger     *logrus.Logger
+	schedule   string
 }
 
-// NewAWSEC2 construct AWS EC2 source
-func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2Client, fields []string) *AWSEC2 {
-	return &AWSEC2{
-		SourceName: sourceName,
-		Ec2Client:  ec2Client,
-		Region:     region,
-		AccountID:  accountID,
-		Fields:     fields,
-	}
+// GetName return source name
+func (a *AWSEC2) GetName() string {
+	return a.SourceName
+}
+
+// GetSchedule return schedule
+func (a *AWSEC2) GetSchedule() string {
+	return a.schedule
+}
+
+// Setup AWS EC2 source
+func (a *AWSEC2) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	a.SourceName = name
+	a.Ec2Client = ec2.NewFromConfig(buildAWSConfig(cfg))
+	a.Region = cfg.Configuration["region"]
+	a.AccountID = cfg.Configuration["account_id"]
+	a.Fields = cfg.Fields
+	a.schedule = cfg.Schedule
+	a.storage = dependencies.GetStorage()
+	a.logger = dependencies.GetLogger()
+
+	return nil
 }
 
 // GetKind return resource kind
@@ -57,7 +76,12 @@ func (a *AWSEC2) GetKind() string {
 }
 
 // Scan discover resource and send to resource channel
-func (a *AWSEC2) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
+func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
+	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSEC2)
+	if err != nil {
+		return err
+	}
+
 	pageNum := 0
 	nextToken := ""
 
@@ -70,7 +94,7 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource, nextResourceVersio
 		// Loop through instances and their tags
 		for _, reservation := range resp.Reservations {
 			for _, instance := range reservation.Instances {
-				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, nextResourceVersion)
+				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, nextVersion)
 				res.AddMetaData(a.getMetaData(instance))
 				resourceChannel <- res
 			}
@@ -86,6 +110,7 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource, nextResourceVersio
 	return nil
 }
 
+// getMetaData build metadata
 func (a *AWSEC2) getMetaData(instance types.Instance) map[string]string {
 	mappings := map[string]func() string{
 		fieldInstanceID:        func() string { return safeDereference(instance.InstanceId) },

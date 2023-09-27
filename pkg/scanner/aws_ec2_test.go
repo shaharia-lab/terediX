@@ -2,17 +2,17 @@ package scanner
 
 import (
 	"context"
-	"errors"
 	"testing"
 
-	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -57,6 +57,7 @@ func TestAWSEC2_Scan(t *testing.T) {
 		sourceFields          []string
 		awsEc2Instances       []types.Instance
 		expectedTotalResource int
+		expectedMetaDataCount int
 		expectedMetaDataKeys  []string
 	}{
 		{
@@ -99,6 +100,7 @@ func TestAWSEC2_Scan(t *testing.T) {
 				},
 			},
 			expectedTotalResource: 1,
+			expectedMetaDataCount: 9,
 			expectedMetaDataKeys: []string{
 				fieldInstanceID,
 				fieldImageID,
@@ -125,21 +127,27 @@ func TestAWSEC2_Scan(t *testing.T) {
 			}
 			mc.On("DescribeInstances", mock.Anything, mock.Anything, mock.Anything).Return(instanceOutput, nil)
 
-			res := RunScannerForTests(NewAWSEC2("test-source", "us-west-2", "1234567890", mc, tc.sourceFields))
-			assert.Equal(t, tc.expectedTotalResource, len(res))
-			util.CheckIfMetaKeysExistsInResources(t, res, tc.expectedMetaDataKeys)
+			storageMock := new(storage.Mock)
+			storageMock.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
+
+			sc := config.Source{
+				Type:       pkg.SourceTypeAWSEC2,
+				ConfigFrom: "",
+				Configuration: map[string]string{
+					"region":        "us-west-2",
+					"account_id":    "1234567890",
+					"access_key":    "xxx",
+					"secret_key":    "xxx",
+					"session_token": "xxx",
+				},
+				Fields:   tc.sourceFields,
+				Schedule: "@every 1h",
+			}
+
+			e := AWSEC2{}
+			_ = e.Setup("test-source", sc, NewScannerDependencies(scheduler.NewCron(), storageMock, &logrus.Logger{}))
+			e.Ec2Client = mc
+			RunCommonScannerAssertionTest(t, &e, tc.expectedTotalResource, tc.expectedMetaDataCount, tc.expectedMetaDataKeys)
 		})
 	}
-}
-
-func TestAWSEC2_Scan_Return_Error(t *testing.T) {
-	// Setup
-	mc := new(Ec2ClientMock)
-
-	mc.On("DescribeInstances", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("failed to fetch"))
-	a := NewAWSEC2("test-source", "us-west-2", "1234567890", mc, []string{})
-
-	resCh := make(chan resource.Resource, 1)
-	err := a.Scan(resCh, 1)
-	assert.Error(t, err)
 }

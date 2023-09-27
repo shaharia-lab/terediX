@@ -9,11 +9,11 @@ import (
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-
-	"github.com/stretchr/testify/assert"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 )
 
-func TestFsScanner_ScanV2(t *testing.T) {
+func TestFsScanner_Scan(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	tests := []struct {
@@ -73,20 +73,20 @@ func TestFsScanner_ScanV2(t *testing.T) {
 				t.Errorf(err.Error())
 			}
 
-			res := RunScannerForTests(NewFsScanner("scanner_name", tmpDir, []string{"rootDirectory", "machineHost"}))
-
-			assert.Equal(t, tt.expectedResourceCount, len(res), fmt.Sprintf("expected %d resource, but got %d resource", tt.expectedResourceCount, len(res)))
-			data := res[0].GetMetaData()
-			assert.Equal(t, tt.expectedMetaDataCount, len(data.Get()))
-
-			fmt.Printf("%v", data)
-
-			for k, v := range res {
-				exists, missingKeys := checkKeysInMetaData(v, tt.expectedMetaDataKeys)
-				if !exists {
-					t.Errorf("Metadata missing. Missing keys [%d]: %v", k, missingKeys)
-				}
+			sc := config.Source{
+				Type:          pkg.SourceTypeFileSystem,
+				Configuration: map[string]string{"root_directory": tmpDir},
+				Fields:        []string{fileSystemFieldRootDirectory, fileSystemFieldMachineHost},
+				Schedule:      "@every 1s",
 			}
+
+			mockStorage := new(storage.Mock)
+			mockStorage.On("GetNextVersionForResource", "scanner_name", pkg.SourceTypeFileSystem).Return(1, nil)
+
+			fs := FsScanner{}
+			_ = fs.Setup("scanner_name", sc, NewScannerDependencies(scheduler.NewCron(), mockStorage, nil))
+
+			RunCommonScannerAssertionTest(t, &fs, tt.expectedResourceCount, tt.expectedMetaDataCount, tt.expectedMetaDataKeys)
 		})
 	}
 }

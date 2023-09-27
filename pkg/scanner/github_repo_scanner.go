@@ -9,7 +9,11 @@ import (
 
 	"github.com/google/go-github/v50/github"
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -69,11 +73,38 @@ type GitHubRepositoryScanner struct {
 	user     string
 	name     string
 	fields   []string
+	schedule string
+	storage  storage.Storage
+	logger   *logrus.Logger
 }
 
-// NewGitHubRepositoryScanner construct a new GitHub repository scanner
-func NewGitHubRepositoryScanner(name string, ghClient GitHubClient, user string, fields []string) *GitHubRepositoryScanner {
-	return &GitHubRepositoryScanner{ghClient: ghClient, user: user, name: name, fields: fields}
+// Setup GitHub repository scanner
+func (r *GitHubRepositoryScanner) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	r.storage = dependencies.GetStorage()
+	r.logger = dependencies.GetLogger()
+	r.schedule = cfg.Schedule
+	r.name = name
+	r.user = cfg.Configuration["user_or_org"]
+	r.fields = cfg.Fields
+
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: cfg.Configuration["token"]},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	gc := NewGitHubRepositoryClient(client)
+	r.ghClient = gc
+
+	return nil
+}
+
+func (r *GitHubRepositoryScanner) GetName() string {
+	return r.name
+}
+
+func (r *GitHubRepositoryScanner) GetSchedule() string {
+	return r.schedule
 }
 
 // GetKind return resource kind
@@ -82,7 +113,12 @@ func (r *GitHubRepositoryScanner) GetKind() string {
 }
 
 // Scan scans GitHub to get the list of repositories as resources
-func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
+func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) error {
+	nextResourceVersion, err := r.storage.GetNextVersionForResource(r.name, pkg.ResourceKindGitHubRepository)
+	if err != nil {
+		return err
+	}
+
 	opt := &github.RepositoryListOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
 	}

@@ -4,17 +4,18 @@ package processor
 import (
 	"errors"
 	"fmt"
-	"sync"
+	"log"
+	"time"
 
 	"github.com/kyokomi/emoji"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 )
 
 // Processor manages the processing of resources from various sources.
 type Processor struct {
-	Sources  []scanner.Source
 	Config   Config
 	Storage  storage.Storage
 	scanners []scanner.Scanner
@@ -26,81 +27,71 @@ type Config struct {
 }
 
 // NewProcessor initializes a new Processor instance.
-func NewProcessor(config Config, storage storage.Storage, sources []scanner.Source, scanners []scanner.Scanner) Processor {
-	return Processor{Sources: sources, Config: config, Storage: storage, scanners: scanners}
+func NewProcessor(config Config, storage storage.Storage, scanners []scanner.Scanner) Processor {
+	return Processor{Config: config, Storage: storage, scanners: scanners}
 }
 
 // Process initiates resource processing.
 // It starts scanners for all sources and processes resources in batches.
-func (p *Processor) Process(resourceChan chan resource.Resource) {
-	var wg sync.WaitGroup
-
-	// This WaitGroup will be for the processResources goroutine.
-	var processWg sync.WaitGroup
-	processWg.Add(1) // Add 1 for the processResources goroutine
-
+func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.Scheduler) {
 	// Start a goroutine to process resources as they become available
 	go func() {
-		defer processWg.Done() // Decrement the counter when processResources completes
 		p.processResources(resourceChan)
 	}()
 
-	// Start goroutines to scan in parallel
-	for _, s := range p.Sources {
-		wg.Add(1)
-		go func(s scanner.Source) {
-			defer wg.Done()
-			i, err := p.Storage.GetNextVersionForResource(s.Name, s.Scanner.GetKind())
-			if err != nil {
-				fmt.Printf("Failed to get the next resource version for the scanner. Scanner: %s. Error: %s\n", s.Name, err)
-			}
-			if err := s.Scanner.Scan(resourceChan, i); err != nil {
-				fmt.Printf("Failed to start the scanner. Scanner: %s. Error: %s\n", s.Name, err)
-			}
-		}(s)
+	for _, sc := range p.scanners {
+		err := sch.AddFunc(sc.GetSchedule(), func() {
+			sc.Scan(resourceChan)
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	// Wait for all the scanners to finish
-	wg.Wait()
-
-	// Close the channel to signal that all resources have been sent
-	close(resourceChan)
-	fmt.Println("Resource channel has been closed.")
-
-	// Wait for processResources goroutine to complete
-	processWg.Wait()
-	fmt.Println("processResources has completed.")
+	err := sch.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (p *Processor) processResources(resourceChan <-chan resource.Resource) {
 	var resources []resource.Resource
 
-	for res := range resourceChan {
-		fmt.Println("Received resource:", res.GetKind(), res.GetName())
-		resources = append(resources, res)
+	flushTimer := time.NewTimer(2 * time.Second)
+	defer flushTimer.Stop()
 
-		if p.shouldProcessBatch(resources) {
-			if err := p.processBatch(resources); err != nil {
-				fmt.Println("Error processing batch:", err)
+	for {
+		select {
+		case res, ok := <-resourceChan:
+			if !ok {
+				// Channel closed, break out of the loop
+				break
 			}
-			resources = resetResourceBatch(p.Config.BatchSize)
-		}
-	}
-	fmt.Println("Exited the resource channel loop.")
+			fmt.Println("Received resource:", res.GetKind(), res.GetName())
+			resources = append(resources, res)
 
-	fmt.Println("Checking if there are remaining resources to be processed...")
-	if len(resources) > 0 {
-		fmt.Println("Processing remaining resources...")
-		if err := p.processBatch(resources); err != nil {
-			fmt.Println("Error processing batch:", err)
+			if p.shouldProcessBatch(resources) {
+				if err := p.processBatch(resources); err != nil {
+					fmt.Println("Error processing batch:", err)
+				}
+				resources = resetResourceBatch(p.Config.BatchSize)
+				flushTimer.Reset(2 * time.Second)
+			}
+
+		case <-flushTimer.C:
+			if len(resources) > 0 {
+				if err := p.processBatch(resources); err != nil {
+					fmt.Println("Error processing batch:", err)
+				}
+				resources = resetResourceBatch(p.Config.BatchSize)
+			}
+			flushTimer.Reset(2 * time.Second)
 		}
-	} else {
-		fmt.Println("No remaining resources to be processed.")
 	}
 }
 
 func (p *Processor) shouldProcessBatch(resources []resource.Resource) bool {
-	return len(resources) == p.Config.BatchSize
+	return len(resources) >= p.Config.BatchSize
 }
 
 func resetResourceBatch(capacity int) []resource.Resource {

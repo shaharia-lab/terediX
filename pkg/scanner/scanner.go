@@ -5,21 +5,17 @@ import (
 	"fmt"
 	"strings"
 
+	"context"
+
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/aws/aws-sdk-go-v2/service/ecr"
-	"github.com/aws/aws-sdk-go-v2/service/rds"
-	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/google/go-github/v50/github"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
-	"golang.org/x/oauth2"
-
-	"context"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 )
@@ -28,10 +24,81 @@ const (
 	fieldTags = "tags"
 )
 
+type ScannerFactory func() Scanner
+
+var scannerFactories = map[string]ScannerFactory{
+	pkg.ResourceKindAWSEC2:         func() Scanner { return &AWSEC2{} },
+	pkg.ResourceKindAWSECR:         func() Scanner { return &AWSECR{} },
+	pkg.ResourceKindAWSRDS:         func() Scanner { return &AWSRDS{} },
+	pkg.ResourceKindAWSS3:          func() Scanner { return &AWSS3{} },
+	pkg.SourceTypeFileSystem:       func() Scanner { return &FsScanner{} },
+	pkg.SourceTypeGitHubRepository: func() Scanner { return &GitHubRepositoryScanner{} },
+}
+
+func getScanner(sType string) Scanner {
+	if factory, found := scannerFactories[sType]; found {
+		return factory()
+	}
+	return nil
+}
+
+// BuildScanners build source based on configuration
+func BuildScanners(appConfig *config.AppConfig, dependencies *Dependencies) []Scanner {
+	var scanners []Scanner
+	for sourceKey, s := range appConfig.Sources {
+		scanner := getScanner(s.Type)
+		if scanner == nil {
+			// Handle unsupported scanner type
+			continue
+		}
+
+		err := scanner.Setup(sourceKey, s, dependencies)
+		if err != nil {
+			return nil
+		}
+		scanners = append(scanners, scanner)
+	}
+
+	return scanners
+}
+
+type Dependencies struct {
+	scheduler scheduler.Scheduler
+	storage   storage.Storage
+	logger    *logrus.Logger
+}
+
+// NewScannerDependencies construct new scanner dependencies
+func NewScannerDependencies(scheduler scheduler.Scheduler, storage storage.Storage, logger *logrus.Logger) *Dependencies {
+	return &Dependencies{scheduler: scheduler, storage: storage, logger: logger}
+}
+
+// GetScheduler return scheduler
+func (d *Dependencies) GetScheduler() scheduler.Scheduler {
+	return d.scheduler
+}
+
+// GetStorage return storage
+func (d *Dependencies) GetStorage() storage.Storage {
+	return d.storage
+}
+
+// GetLogger return logger
+func (d *Dependencies) GetLogger() *logrus.Logger {
+	return d.logger
+}
+
 // Scanner interface to build different scanner
 type Scanner interface {
-	Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error
+	Setup(name string, cfg config.Source, dependencies *Dependencies) error
+	Scan(resourceChannel chan resource.Resource) error
+	GetName() string
 	GetKind() string
+	GetSchedule() string
+}
+
+type Scanners struct {
+	Scanners []Scanner
 }
 
 // MetaDataMapper map the fields
@@ -44,26 +111,6 @@ type MetaDataMapper struct {
 type ResourceTag struct {
 	Key   string
 	Value string
-}
-
-// RunScannerForTests initiates a scan using the provided scanner and collects
-// the resources it discovers into a slice. This function is specifically
-// designed to help with testing, allowing you to run a scanner and easily
-// gather its results for verification.
-func RunScannerForTests(scanner Scanner) []resource.Resource {
-	resourceChannel := make(chan resource.Resource)
-
-	var res []resource.Resource
-
-	go func() {
-		scanner.Scan(resourceChannel, 1)
-		close(resourceChannel)
-	}()
-
-	for r := range resourceChannel {
-		res = append(res, r)
-	}
-	return res
 }
 
 func safeDereference(s *string) string {
@@ -131,141 +178,6 @@ func (f *FieldMapper) getResourceMetaData() map[string]string {
 	}
 
 	return md
-}
-
-// Source represent source configuration
-type Source struct {
-	Name    string
-	Scanner Scanner
-	Kind    string
-}
-
-// BuildSources build source based on configuration
-func BuildSources(appConfig *config.AppConfig) []Source {
-	var finalSources []Source
-	for sourceKey, s := range appConfig.Sources {
-		if s.Type == pkg.SourceTypeFileSystem {
-			fs := NewFsScanner(sourceKey, s.Configuration["root_directory"], s.Fields)
-			finalSources = append(finalSources, Source{
-				Name:    sourceKey,
-				Scanner: fs,
-			})
-		}
-
-		if s.Type == pkg.SourceTypeGitHubRepository {
-
-			ctx := context.Background()
-			ts := oauth2.StaticTokenSource(
-				&oauth2.Token{AccessToken: s.Configuration["token"]},
-			)
-			tc := oauth2.NewClient(ctx, ts)
-			client := github.NewClient(tc)
-			gc := NewGitHubRepositoryClient(client)
-
-			gh := NewGitHubRepositoryScanner(sourceKey, gc, s.Configuration["user_or_org"], s.Fields)
-			finalSources = append(finalSources, Source{
-				Name:    sourceKey,
-				Scanner: gh,
-			})
-		}
-
-		if s.Type == pkg.SourceTypeAWSS3 {
-			s3Client := s3.NewFromConfig(buildAWSConfig(s))
-
-			awsS3 := NewAWSS3(sourceKey, s.Configuration["region"], s3Client, s.Fields)
-			finalSources = append(finalSources, Source{
-				Name:    sourceKey,
-				Scanner: awsS3,
-			})
-		}
-
-		if s.Type == pkg.SourceTypeAWSRDS {
-			rdsClient := rds.NewFromConfig(buildAWSConfig(s))
-
-			awsS3 := NewAWSRDS(sourceKey, s.Configuration["region"], s.Configuration["account_id"], rdsClient, s.Fields)
-			finalSources = append(finalSources, Source{
-				Name:    sourceKey,
-				Scanner: awsS3,
-			})
-		}
-
-		if s.Type == pkg.SourceTypeAWSEC2 {
-			finalSources = append(finalSources, Source{
-				Name:    sourceKey,
-				Scanner: NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2.NewFromConfig(buildAWSConfig(s)), s.Fields),
-			})
-		}
-
-		if s.Type == pkg.SourceTypeAWSECR {
-			finalSources = append(finalSources, Source{
-				Name: sourceKey,
-				Scanner: NewAWSECR(
-					sourceKey,
-					s.Configuration["region"],
-					s.Configuration["account_id"],
-					ecr.NewFromConfig(buildAWSConfig(s)),
-					resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(s)),
-					s.Fields,
-				),
-			})
-		}
-	}
-	return finalSources
-}
-
-// BuildScanners build source based on configuration
-func BuildScanners(appConfig *config.AppConfig) []Scanner {
-	var scanners []Scanner
-	for sourceKey, s := range appConfig.Sources {
-		if s.Type == pkg.SourceTypeFileSystem {
-			fs := NewFsScanner(sourceKey, s.Configuration["root_directory"], s.Fields)
-			scanners = append(scanners, fs)
-		}
-
-		if s.Type == pkg.SourceTypeGitHubRepository {
-
-			ctx := context.Background()
-			ts := oauth2.StaticTokenSource(
-				&oauth2.Token{AccessToken: s.Configuration["token"]},
-			)
-			tc := oauth2.NewClient(ctx, ts)
-			client := github.NewClient(tc)
-			gc := NewGitHubRepositoryClient(client)
-
-			gh := NewGitHubRepositoryScanner(sourceKey, gc, s.Configuration["user_or_org"], s.Fields)
-			scanners = append(scanners, gh)
-		}
-
-		if s.Type == pkg.SourceTypeAWSS3 {
-			s3Client := s3.NewFromConfig(buildAWSConfig(s))
-
-			awsS3 := NewAWSS3(sourceKey, s.Configuration["region"], s3Client, s.Fields)
-			scanners = append(scanners, awsS3)
-		}
-
-		if s.Type == pkg.SourceTypeAWSRDS {
-			rdsClient := rds.NewFromConfig(buildAWSConfig(s))
-
-			awsS3 := NewAWSRDS(sourceKey, s.Configuration["region"], s.Configuration["account_id"], rdsClient, s.Fields)
-			scanners = append(scanners, awsS3)
-		}
-
-		if s.Type == pkg.SourceTypeAWSEC2 {
-			scanners = append(scanners, NewAWSEC2(sourceKey, s.Configuration["region"], s.Configuration["account_id"], ec2.NewFromConfig(buildAWSConfig(s)), s.Fields))
-		}
-
-		if s.Type == pkg.SourceTypeAWSECR {
-			scanners = append(scanners, NewAWSECR(
-				sourceKey,
-				s.Configuration["region"],
-				s.Configuration["account_id"],
-				ecr.NewFromConfig(buildAWSConfig(s)),
-				resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(s)),
-				s.Fields,
-			))
-		}
-	}
-	return scanners
 }
 
 func buildAWSConfig(s config.Source) aws.Config {

@@ -1,6 +1,8 @@
-package processor
+package scheduler
 
-import "github.com/robfig/cron/v3"
+import (
+	"github.com/robfig/cron/v3"
+)
 
 type Scheduler interface {
 	AddFunc(spec string, cmd func()) error
@@ -26,5 +28,23 @@ func (cr *CronRunner) AddFunc(spec string, cmd func()) error {
 
 func (cr *CronRunner) Start() error {
 	cr.cron.Start()
+	return nil
+}
+
+type StaticScheduler struct {
+	job func()
+}
+
+func NewStaticScheduler() *StaticScheduler {
+	return &StaticScheduler{}
+}
+
+func (ss *StaticScheduler) AddFunc(spec string, cmd func()) error {
+	ss.job = cmd
+	return nil
+}
+
+func (ss *StaticScheduler) Start() error {
+	ss.job()
 	return nil
 }

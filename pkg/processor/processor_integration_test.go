@@ -13,11 +13,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
-	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -55,6 +57,7 @@ source:
     fields: &file_system_fields
       - rootDirectory
       - machineHost
+    schedule: "@every 10s"
 relations:
   criteria:
     - name: "file-system-rule1"
@@ -81,24 +84,25 @@ func TestProcessor_Process_Integration(t *testing.T) {
 	appConfig, err := config.Load("config.yaml")
 	assert.NoError(t, err)
 
-	sources := source.BuildSources(appConfig)
-	scanners := scanner.BuildScanners(appConfig)
 	st := storage.BuildStorage(appConfig)
 	err = st.Prepare()
 	assert.NoError(t, err)
 
+	sch := scheduler.NewStaticScheduler()
+	scanners := scanner.BuildScanners(appConfig, scanner.NewScannerDependencies(sch, st, &logrus.Logger{}))
+
 	processConfig := Config{BatchSize: appConfig.Storage.BatchSize}
-	p := NewProcessor(processConfig, st, sources, scanners)
+	p := NewProcessor(processConfig, st, scanners)
 
 	resourceChan := make(chan resource.Resource)
-	p.Process(resourceChan)
+	p.Process(resourceChan, sch)
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 
-	resources, err := st.Find(storage.ResourceFilter{Kind: "FilePath"})
+	resources, err := st.Find(storage.ResourceFilter{Kind: pkg.ResourceKindFileSystem})
 	assert.NoError(t, err)
 
-	assert.Equal(t, 2, len(resources))
+	assert.Equal(t, 3, len(resources))
 
 	resetDatabase(testDBHost)
 }

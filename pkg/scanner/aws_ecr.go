@@ -5,9 +5,13 @@ import (
 	"context"
 
 	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
+	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -36,18 +40,33 @@ type AWSECR struct {
 	AccountID              string
 	ResourceTaggingService util.ResourceTaggingServiceClient
 	Fields                 []string
+	storage                storage.Storage
+	logger                 *logrus.Logger
+	schedule               string
 }
 
-// NewAWSECR construct AWS ECR source
-func NewAWSECR(sourceName string, region string, accountID string, ecrClient EcrClient, resourceTaggingService util.ResourceTaggingServiceClient, fields []string) *AWSECR {
-	return &AWSECR{
-		SourceName:             sourceName,
-		ECRClient:              ecrClient,
-		Region:                 region,
-		AccountID:              accountID,
-		ResourceTaggingService: resourceTaggingService,
-		Fields:                 fields,
-	}
+//	GetName return source name
+func (a *AWSECR) GetName() string {
+	return a.SourceName
+}
+
+// GetSchedule return schedule
+func (a *AWSECR) GetSchedule() string {
+	return a.schedule
+}
+
+// Setup AWS ECR source
+func (a *AWSECR) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	a.SourceName = name
+	a.ECRClient = ecr.NewFromConfig(buildAWSConfig(cfg))
+	a.Region = cfg.Configuration["region"]
+	a.AccountID = cfg.Configuration["account_id"]
+	a.Fields = cfg.Fields
+	a.ResourceTaggingService = resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(cfg))
+	a.storage = dependencies.GetStorage()
+	a.logger = dependencies.GetLogger()
+
+	return nil
 }
 
 // GetKind return resource kind
@@ -56,8 +75,12 @@ func (a *AWSECR) GetKind() string {
 }
 
 // Scan discover resource and send to resource channel
-// Scan discover resource and send to resource channel
-func (a *AWSECR) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
+func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
+	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSECR)
+	if err != nil {
+		return err
+	}
+
 	// Set initial values for pagination
 	pageNum := 0
 	nextToken := ""
@@ -78,7 +101,7 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource, nextResourceVersio
 
 		// Loop through repositories and their tags
 		for _, repository := range resp.Repositories {
-			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, nextResourceVersion)
+			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, nextVersion)
 			res.AddMetaData(a.getMetaData(repository))
 			resourceChannel <- res
 		}

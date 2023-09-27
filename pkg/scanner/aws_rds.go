@@ -6,9 +6,12 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/rds"
-	types "github.com/aws/aws-sdk-go-v2/service/rds/types"
+	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 )
@@ -34,17 +37,33 @@ type AWSRDS struct {
 	Region     string
 	AccountID  string
 	Fields     []string
+	storage    storage.Storage
+	logger     *logrus.Logger
+	schedule   string
 }
 
-// NewAWSRDS construct AWS S3 source
-func NewAWSRDS(sourceName string, region string, accountID string, rdsClient RdsClient, fields []string) *AWSRDS {
-	return &AWSRDS{
-		SourceName: sourceName,
-		RdsClient:  rdsClient,
-		Region:     region,
-		AccountID:  accountID,
-		Fields:     fields,
-	}
+// GetName return source name
+func (a *AWSRDS) GetName() string {
+	return a.SourceName
+}
+
+// GetSchedule return schedule
+func (a *AWSRDS) GetSchedule() string {
+	return a.schedule
+}
+
+// Setup AWS S3 source
+func (a *AWSRDS) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	a.SourceName = name
+	a.storage = dependencies.GetStorage()
+	a.logger = dependencies.GetLogger()
+	a.schedule = cfg.Schedule
+	a.Region = cfg.Configuration["region"]
+	a.AccountID = cfg.Configuration["accountID"]
+	a.RdsClient = rds.NewFromConfig(buildAWSConfig(cfg))
+	a.Fields = cfg.Fields
+
+	return nil
 }
 
 // GetKind return resource kind
@@ -53,7 +72,12 @@ func (a *AWSRDS) GetKind() string {
 }
 
 // Scan discover resource and send to resource channel
-func (a *AWSRDS) Scan(resourceChannel chan resource.Resource, nextResourceVersion int) error {
+func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
+	nextResourceVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSRDS)
+	if err != nil {
+		return err
+	}
+
 	rdsInstances, err := listAllRDSInstances(a.RdsClient)
 
 	for _, rdsInstance := range rdsInstances {
