@@ -4,7 +4,6 @@ package scanner
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
@@ -137,7 +136,7 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 		"total_resource_discovered": totalResourceDiscovered,
 	}).Info("scan completed")
 
-	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), strconv.Itoa(nextVersion), float64(totalResourceDiscovered))
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 

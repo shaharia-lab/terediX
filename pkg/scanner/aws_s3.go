@@ -4,7 +4,6 @@ package scanner
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/shaharia-lab/teredix/pkg"
@@ -120,7 +119,7 @@ func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
 		"total_resource_discovered": totalResourceDiscovered,
 	}).Info("scan completed")
 
-	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), strconv.Itoa(nextResourceVersion), float64(totalResourceDiscovered))
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 

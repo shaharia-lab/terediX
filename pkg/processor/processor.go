@@ -41,7 +41,6 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 		p.logger.Info("Starting resource processing goroutine")
 		p.processResources(resourceChan)
 	}()
-
 	for _, sc := range p.scanners {
 		lf := logrus.Fields{"scanner_name": sc.GetName(), "scanner_kind": sc.GetKind()}
 

@@ -47,7 +47,6 @@ func getScanner(sType string) Scanner {
 // BuildScanners build source based on configuration
 func BuildScanners(appConfig *config.AppConfig, dependencies *Dependencies) []Scanner {
 	var scanners []Scanner
-	totalScannerSetup := 0
 	for sourceKey, s := range appConfig.Sources {
 		scanner := getScanner(s.Type)
 		if scanner == nil {
@@ -61,12 +60,10 @@ func BuildScanners(appConfig *config.AppConfig, dependencies *Dependencies) []Sc
 		}
 		scanners = append(scanners, scanner)
 
-		dependencies.GetMetrics().CollectTotalScannerBuildByName(scanner.GetName(), scanner.GetKind())
-
-		totalScannerSetup++
+		dependencies.GetMetrics().CollectTotalScannerBuildByKind(scanner.GetKind())
 	}
 
-	dependencies.GetMetrics().CollectTotalScannerBuild(float64(totalScannerSetup))
+	dependencies.GetMetrics().CollectTotalScannerBuild(float64(len(scanners)))
 	return scanners
 }
 

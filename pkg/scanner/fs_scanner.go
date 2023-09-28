@@ -4,9 +4,9 @@ package scanner
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
@@ -72,6 +72,9 @@ func (s *FsScanner) GetKind() string {
 
 // Scan scans the file system
 func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
+	if s.name == "file_system_three" {
+		log.Println("file_system_three")
+	}
 	s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "running")
 	nextVersion, err := s.storage.GetNextVersionForResource(s.name, pkg.ResourceKindFileSystem)
 	if err != nil {
@@ -128,7 +131,7 @@ func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
 	}).Info("scan completed")
 
 	s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "finished")
-	s.metrics.CollectTotalResourceDiscoveredByScanner(s.name, s.GetKind(), strconv.Itoa(nextVersion), float64(totalResourceDiscovered))
+	s.metrics.CollectTotalResourceDiscoveredByScanner(s.name, s.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 

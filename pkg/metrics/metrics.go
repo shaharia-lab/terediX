@@ -5,15 +5,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-var totalScannerBuild = promauto.NewCounter(prometheus.CounterOpts{
+var totalScannerBuild = promauto.NewGauge(prometheus.GaugeOpts{
 	Name: "teredix_scanner_build_total",
 	Help: "The total number of scanner built",
 })
 
-var totalScannerBuildByName = promauto.NewCounterVec(prometheus.CounterOpts{
-	Name: "teredix_scanner_build_by_name",
-	Help: "The total number of scanner build by name",
-}, []string{"scanner_name", "scanner_kind"})
+var totalScannerBuildByKind = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	Name: "teredix_scanner_build_by_kind",
+	Help: "The total number of scanner build by kind",
+}, []string{"scanner_kind"})
 
 var totalScannerJobAddedToQueue = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "teredix_scanner_job_added_to_queue",
@@ -68,7 +68,7 @@ var totalStorageBatchPersistingLatencyInMs = promauto.NewGauge(prometheus.GaugeO
 var totalResourceDiscoveredByScanner = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	Name: "teredix_resource_discovered_by_scanner",
 	Help: "The total resource discovered by scanner",
-}, []string{"scanner_name", "scanner_kind", "resource_version"})
+}, []string{"scanner_name", "scanner_kind"})
 
 type Collector struct {
 }
@@ -79,12 +79,12 @@ func NewCollector() *Collector {
 
 // CollectTotalScannerBuild collect total scanner build
 func (c *Collector) CollectTotalScannerBuild(totalScanners float64) {
-	totalScannerBuild.Add(totalScanners)
+	totalScannerBuild.Set(totalScanners)
 }
 
-// CollectTotalScannerBuildByName collect total scanner build by name
-func (c *Collector) CollectTotalScannerBuildByName(scannerName, scannerKind string) {
-	totalScannerBuildByName.WithLabelValues(scannerName, scannerKind).Inc()
+// CollectTotalScannerBuildByKind collect total scanner build by name
+func (c *Collector) CollectTotalScannerBuildByKind(scannerKind string) {
+	totalScannerBuildByKind.WithLabelValues(scannerKind).Inc()
 }
 
 // CollectTotalScannerJobAddedToQueue collect total scanner job added to queue
@@ -138,6 +138,6 @@ func (c *Collector) CollectTotalStorageBatchPersistingLatencyInMs(totalLatency f
 }
 
 // CollectTotalResourceDiscoveredByScanner collect total resource discovered by scanner
-func (c *Collector) CollectTotalResourceDiscoveredByScanner(scannerName, scannerKind, resourceVersion string, totalResourceDiscovered float64) {
-	totalResourceDiscoveredByScanner.WithLabelValues(scannerName, scannerKind, resourceVersion).Set(totalResourceDiscovered)
+func (c *Collector) CollectTotalResourceDiscoveredByScanner(scannerName, scannerKind string, totalResourceDiscovered float64) {
+	totalResourceDiscoveredByScanner.WithLabelValues(scannerName, scannerKind).Set(totalResourceDiscovered)
 }

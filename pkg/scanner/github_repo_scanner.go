@@ -163,7 +163,7 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 		"total_resource_discovered": totalResourceDiscovered,
 	}).Info("scan completed")
 
-	r.metrics.CollectTotalResourceDiscoveredByScanner(r.name, r.GetKind(), strconv.Itoa(nextResourceVersion), float64(totalResourceDiscovered))
+	r.metrics.CollectTotalResourceDiscoveredByScanner(r.name, r.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 
