@@ -14,7 +14,7 @@ func NewGoCron() *GoCron {
 	gc := gocron.NewScheduler(time.UTC)
 	gc.TagsUnique()
 	gc.WaitForScheduleAll()
-	return &GoCron{cron: gocron.NewScheduler(time.UTC)}
+	return &GoCron{cron: gc}
 }
 
 func (gc *GoCron) AddFunc(spec string, cmd func()) error {
