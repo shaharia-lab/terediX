@@ -44,13 +44,15 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 	for _, sc := range p.scanners {
 		lf := logrus.Fields{"scanner_name": sc.GetName(), "scanner_kind": sc.GetKind()}
 
+		// necessary to store the current scanner in a new variable because of passing this inside closure
+		scannerCopyForClosure := sc
 		err := sch.AddFunc(sc.GetSchedule(), func() {
 			start := time.Now()
 			// Track initial memory
 			var m1 runtime.MemStats
 			runtime.ReadMemStats(&m1)
 
-			err := sc.Scan(resourceChan)
+			err := scannerCopyForClosure.Scan(resourceChan)
 
 			if err != nil {
 				p.metrics.CollectTotalProcessErrorCount("scanner_scan")
