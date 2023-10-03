@@ -59,6 +59,14 @@ source:
       - rootDirectory
       - machineHost
     schedule: "@every 10s"
+  fs_two:
+    type: file_system
+    configuration:
+      root_directory: "{{ROOT_DIRECTORY}}"
+    fields: &file_system_fields
+      - rootDirectory
+      - machineHost
+    schedule: "@every 10s"
 relations:
   criteria:
     - name: "file-system-rule1"
@@ -91,7 +99,7 @@ func TestProcessor_Process_Integration(t *testing.T) {
 	assert.NoError(t, err)
 
 	sch := scheduler.NewStaticScheduler()
-	scanners := scanner.BuildScanners(appConfig, scanner.NewScannerDependencies(sch, st, logger))
+	scanners := scanner.BuildScanners(appConfig, scanner.NewScannerDependencies(sch, st, logger, metrics.NewCollector()))
 
 	processConfig := Config{BatchSize: appConfig.Storage.BatchSize}
 	p := NewProcessor(processConfig, st, scanners, logger, metrics.NewCollector())
@@ -104,7 +112,21 @@ func TestProcessor_Process_Integration(t *testing.T) {
 	resources, err := st.Find(storage.ResourceFilter{Kind: pkg.ResourceKindFileSystem})
 	assert.NoError(t, err)
 
-	assert.Equal(t, 3, len(resources))
+	scannerNamesMap := make(map[string]bool)
+	for _, r := range resources {
+		scannerNamesMap[r.GetScanner()] = true
+	}
+
+	// Convert map keys to a slice
+	scannerNames := []string{}
+	for name := range scannerNamesMap {
+		scannerNames = append(scannerNames, name)
+	}
+
+	assert.Equal(t, 6, len(resources))
+
+	// verify that the scheduler is working for multiple scanner
+	assert.Equal(t, 2, len(scannerNames))
 
 	resetDatabase(testDBHost)
 }

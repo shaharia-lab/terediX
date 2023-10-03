@@ -82,19 +82,19 @@ func TestPostgreSQL_Find(t *testing.T) {
 		{
 			name:                  "find without any filtering parameter",
 			resourceFilter:        ResourceFilter{},
-			expectedQuery:         "SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id",
+			expectedQuery:         "SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id",
 			expectedResourceCount: 2,
 		},
 		{
 			name:                  "find by resource name",
 			resourceFilter:        ResourceFilter{Name: "name1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.name = \$1`,
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.name = \$1`,
 			expectedResourceCount: 0,
 		},
 		{
 			name:                  "find by resource uuid",
 			resourceFilter:        ResourceFilter{UUID: "uuid1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.uuid = \$1`,
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.uuid = \$1`,
 			expectedResourceCount: 0,
 		},
 		{
@@ -120,9 +120,9 @@ func TestPostgreSQL_Find(t *testing.T) {
 	p := &PostgreSQL{DB: db}
 
 	// expected rows returned by the mock database query
-	expectedRows := sqlmock.NewRows([]string{"kind", "uuid", "name", "external_id", "meta_key", "meta_value", "related_kind", "related_uuid", "related_name", "related_external_id"}).
-		AddRow("kind1", "uuid1", "name1", "external_id1", "meta_key1", "meta_value1", "related_kind1", "related_uuid1", "related_name1", "related_external_id1").
-		AddRow("kind2", "uuid2", "name2", "external_id2", "meta_key2", "meta_value2", "related_kind2", "related_uuid2", "related_name2", "related_external_id2")
+	expectedRows := sqlmock.NewRows([]string{"kind", "uuid", "name", "external_id", "scan1", "meta_key", "meta_value", "related_kind", "related_uuid", "related_name", "related_external_id"}).
+		AddRow("kind1", "uuid1", "name1", "external_id1", "scan2", "meta_key1", "meta_value1", "related_kind1", "related_uuid1", "related_name1", "related_external_id1").
+		AddRow("kind2", "uuid2", "name2", "external_id2", "scan3", "meta_key2", "meta_value2", "related_kind2", "related_uuid2", "related_name2", "related_external_id2")
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

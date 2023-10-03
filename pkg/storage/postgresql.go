@@ -142,10 +142,11 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 
 	// Parse the results
 	for rows.Next() {
-		var kind, uuid, name, externalID, metaKey, metaValue string
+		var kind, uuid, name, externalID, metaKey, metaValue, source string
+		var version int
 		var relatedKind, relatedUUID, relatedName, relatedExternalID sql.NullString
 
-		err := rows.Scan(&kind, &uuid, &name, &externalID, &metaKey, &metaValue, &relatedKind, &relatedUUID, &relatedName, &relatedExternalID)
+		err := rows.Scan(&kind, &uuid, &name, &externalID, &source, &version, &metaKey, &metaValue, &relatedKind, &relatedUUID, &relatedName, &relatedExternalID)
 		if err != nil {
 			return resources, fmt.Errorf("failed to scan row to fetch the resource result: %w", err)
 		}
@@ -159,7 +160,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 			}
 		}
 		if res == nil {
-			r := resource.NewResource(kind, name, externalID, "", 1)
+			r := resource.NewResource(kind, name, externalID, source, version)
 			r.SetUUID(uuid)
 			res = &r
 			resources = append(resources, r)
