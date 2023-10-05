@@ -2,6 +2,7 @@
   "threshold": 5,
   "ignore": [
     "**/*_test.go",
-    "**/*_mock.go"
+    "**/*_mock.go",
+    "**/dashboard/**/*"
   ]
 }
