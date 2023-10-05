@@ -1,3 +1,4 @@
+// Package scheduler helps to schedule the task
 package scheduler
 
 // Scheduler interface
