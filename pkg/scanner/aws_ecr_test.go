@@ -223,8 +223,7 @@ func TestAWSECR_Scan(t *testing.T) {
 			mockStorage.On("GetNextVersionForResource", "test-source", pkg.ResourceKindAWSECR).Return(1, nil)
 
 			sc := config.Source{
-				Type:       pkg.SourceTypeAWSECR,
-				ConfigFrom: "",
+				Type: pkg.SourceTypeAWSECR,
 				Configuration: map[string]string{
 					"region":        "us-west-2",
 					"account_id":    "1234567890",

@@ -35,7 +35,6 @@ type SourceConfiguration struct {
 // Source holds source configuration
 type Source struct {
 	Type          string            `yaml:"type"`
-	ConfigFrom    string            `yaml:"config_from,omitempty"`
 	Configuration map[string]string `yaml:"configuration"`
 	Fields        []string          `yaml:"fields"`
 	DependsOn     []string          `yaml:"depends_on,omitempty"`
@@ -99,14 +98,6 @@ func Load(path string) (*AppConfig, error) {
 	sourceConfigs := map[string]map[string]string{}
 	for sourceName, s := range appConfig.Sources {
 		sourceConfigs[sourceName] = s.Configuration
-	}
-
-	for name, source := range appConfig.Sources {
-		if source.ConfigFrom != "" && sourceConfigs[source.ConfigFrom] != nil {
-			sourceConfiguration := sourceConfigs[source.ConfigFrom]
-			source.Configuration = sourceConfiguration
-			appConfig.Sources[name] = source
-		}
 	}
 
 	return &appConfig, nil

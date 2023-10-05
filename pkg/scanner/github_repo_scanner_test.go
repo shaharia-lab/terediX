@@ -115,8 +115,7 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			sc := config.Source{
-				Type:       pkg.SourceTypeGitHubRepository,
-				ConfigFrom: "",
+				Type: pkg.SourceTypeGitHubRepository,
 				Configuration: map[string]string{
 					"token":       "test",
 					"user_or_org": "shaharia-lab",

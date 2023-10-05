@@ -132,8 +132,7 @@ func TestAWSEC2_Scan(t *testing.T) {
 			storageMock.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			sc := config.Source{
-				Type:       pkg.SourceTypeAWSEC2,
-				ConfigFrom: "",
+				Type: pkg.SourceTypeAWSEC2,
 				Configuration: map[string]string{
 					"region":        "us-west-2",
 					"account_id":    "1234567890",

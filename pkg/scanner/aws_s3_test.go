@@ -121,8 +121,7 @@ func TestAWSS3_Scan(t *testing.T) {
 			storageMock.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			sc := config.Source{
-				Type:       pkg.SourceTypeAWSS3,
-				ConfigFrom: "",
+				Type: pkg.SourceTypeAWSS3,
 				Configuration: map[string]string{
 					"region":        "us-east-1",
 					"account_id":    "123456789012",
