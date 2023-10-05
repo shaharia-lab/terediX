@@ -5,8 +5,14 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -82,4 +88,47 @@ func RunCommonScannerAssertionTest(t *testing.T, scanner Scanner, expectedResour
 	assert.Equal(t, expectedMetaDataCount, len(data.Get()))
 
 	util.CheckIfMetaKeysExistsInResources(t, res, expectedMetaDataKeys)
+}
+
+// TestBuildScanners tests the BuildScanners function
+func TestBuildScanners(t *testing.T) {
+	var testCases = []struct {
+		name                 string
+		sources              map[string]config.Source
+		expectedTotalScanner int
+	}{
+		{
+			name: "build file system scanner successfully",
+			sources: map[string]config.Source{
+				"fs_one": {
+					Type: pkg.SourceTypeFileSystem,
+					Configuration: map[string]string{
+						"root_directory": "/tmp",
+					},
+				},
+			},
+			expectedTotalScanner: 1,
+		},
+		{
+			name: "should not build scanner if scanner type is not supported",
+			sources: map[string]config.Source{
+				"fs_one": {
+					Type: "unsupported type",
+					Configuration: map[string]string{
+						"root_directory": "/tmp",
+					},
+				},
+			},
+			expectedTotalScanner: 0,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			storageMock := new(storage.Mock)
+
+			scanners := BuildScanners(testCase.sources, NewScannerDependencies(scheduler.NewStaticScheduler(), storageMock, &logrus.Logger{}, metrics.NewCollector()))
+			assert.Equal(t, testCase.expectedTotalScanner, len(scanners))
+		})
+	}
 }

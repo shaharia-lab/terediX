@@ -59,7 +59,7 @@ func run(cfgFile string, logger *logrus.Logger) error {
 	scDeps := scanner.NewScannerDependencies(sch, st, logger, metricsCollector)
 
 	resourceChan := make(chan resource.Resource)
-	p := processor.NewProcessor(processor.Config{BatchSize: appConfig.Storage.BatchSize}, st, scanner.BuildScanners(appConfig, scDeps), logger, metricsCollector)
+	p := processor.NewProcessor(processor.Config{BatchSize: appConfig.Storage.BatchSize}, st, scanner.BuildScanners(appConfig.Sources, scDeps), logger, metricsCollector)
 	err = p.Process(resourceChan, sch)
 	if err != nil {
 		logger.WithError(err).Error("failed to start processing scheduler jobs")

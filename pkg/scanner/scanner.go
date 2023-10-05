@@ -45,9 +45,9 @@ func getScanner(sType string) Scanner {
 }
 
 // BuildScanners build source based on configuration
-func BuildScanners(appConfig *config.AppConfig, dependencies *Dependencies) []Scanner {
+func BuildScanners(sources map[string]config.Source, dependencies *Dependencies) []Scanner {
 	var scanners []Scanner
-	for sourceKey, s := range appConfig.Sources {
+	for sourceKey, s := range sources {
 		scanner := getScanner(s.Type)
 		if scanner == nil {
 			// Handle unsupported scanner type
