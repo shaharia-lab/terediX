@@ -129,9 +129,8 @@ func TestAWSS3_Scan(t *testing.T) {
 					"secret_key":    "xxx",
 					"session_token": "xxx",
 				},
-				Fields:    tt.sourceFields,
-				DependsOn: nil,
-				Schedule:  "",
+				Fields:   tt.sourceFields,
+				Schedule: "",
 			}
 
 			s := AWSS3{}

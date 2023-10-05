@@ -120,9 +120,8 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 					"token":       "test",
 					"user_or_org": "shaharia-lab",
 				},
-				Fields:    tc.sourceFields,
-				DependsOn: nil,
-				Schedule:  "",
+				Fields:   tc.sourceFields,
+				Schedule: "",
 			}
 
 			gh := GitHubRepositoryScanner{}
