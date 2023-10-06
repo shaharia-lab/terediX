@@ -70,9 +70,11 @@ var totalResourceDiscoveredByScanner = promauto.NewGaugeVec(prometheus.GaugeOpts
 	Help: "The total resource discovered by scanner",
 }, []string{"scanner_name", "scanner_kind"})
 
+// Collector collect metrics
 type Collector struct {
 }
 
+// NewCollector create new collector
 func NewCollector() *Collector {
 	return &Collector{}
 }
