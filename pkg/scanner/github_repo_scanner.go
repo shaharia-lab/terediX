@@ -108,10 +108,12 @@ func (r *GitHubRepositoryScanner) Setup(name string, cfg config.Source, dependen
 	return nil
 }
 
+// GetName return name
 func (r *GitHubRepositoryScanner) GetName() string {
 	return r.name
 }
 
+// GetSchedule return schedule
 func (r *GitHubRepositoryScanner) GetSchedule() string {
 	return r.schedule
 }
