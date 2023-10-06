@@ -99,7 +99,7 @@ func TestProcessor_Process_Integration(t *testing.T) {
 	assert.NoError(t, err)
 
 	sch := scheduler.NewStaticScheduler()
-	scanners := scanner.BuildScanners(appConfig, scanner.NewScannerDependencies(sch, st, logger, metrics.NewCollector()))
+	scanners := scanner.BuildScanners(appConfig.Sources, scanner.NewScannerDependencies(sch, st, logger, metrics.NewCollector()))
 
 	processConfig := Config{BatchSize: appConfig.Storage.BatchSize}
 	p := NewProcessor(processConfig, st, scanners, logger, metrics.NewCollector())
