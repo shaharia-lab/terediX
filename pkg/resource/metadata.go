@@ -37,13 +37,6 @@ func (ml *MetaDataLists) Add(key, value string) {
 	ml.data = append(ml.data, MetaData{Key: key, Value: value})
 }
 
-// AddMap adds metadata from map
-func (ml *MetaDataLists) AddMap(metaMap map[string]string) {
-	for k, v := range metaMap {
-		ml.Add(k, v)
-	}
-}
-
 // Find returns metadata by key
 func (ml *MetaDataLists) Find(key string) *MetaData {
 	if !ml.IsExists(key) {
