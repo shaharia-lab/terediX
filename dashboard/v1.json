@@ -91,6 +91,7 @@
               "mode": "off"
             }
           },
+          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -178,6 +179,7 @@
               "mode": "off"
             }
           },
+          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -271,6 +273,7 @@
               "mode": "off"
             }
           },
+          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -364,6 +367,7 @@
               "mode": "off"
             }
           },
+          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -457,6 +461,7 @@
               "mode": "off"
             }
           },
+          "unit": "decmbytes",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -550,6 +555,7 @@
               "mode": "off"
             }
           },
+          "unit": "deckbytes",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -643,6 +649,7 @@
               "mode": "off"
             }
           },
+          "unit": "bytes",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -736,6 +743,7 @@
               "mode": "off"
             }
           },
+          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -878,6 +886,7 @@
               "mode": "off"
             }
           },
+          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -971,6 +980,7 @@
               "mode": "off"
             }
           },
+          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1064,6 +1074,7 @@
               "mode": "off"
             }
           },
+          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1157,6 +1168,7 @@
               "mode": "off"
             }
           },
+          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
