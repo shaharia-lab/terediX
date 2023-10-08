@@ -3,7 +3,6 @@ package processor
 
 import (
 	"fmt"
-	"log"
 	"runtime"
 	"time"
 
@@ -99,8 +98,6 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 
 func (p *Processor) processResources(resourceChan <-chan resource.Resource) {
 	var resources []resource.Resource
-
-	log.Println("processing resources")
 
 	const flushTimerInterval = 2 * time.Second
 
