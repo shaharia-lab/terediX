@@ -1,3 +1,4 @@
+// Package metrics provide metrics for teredix
 package metrics
 
 import (
