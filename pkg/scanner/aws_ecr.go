@@ -48,7 +48,7 @@ type AWSECR struct {
 	metrics                *metrics.Collector
 }
 
-//	GetName return source name
+// GetName return source name
 func (a *AWSECR) GetName() string {
 	return a.SourceName
 }
