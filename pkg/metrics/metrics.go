@@ -21,7 +21,7 @@ var totalScannerJobAddedToQueue = promauto.NewCounterVec(prometheus.CounterOpts{
 	Help: "The total number of scanner job added to queue",
 }, []string{"scanner_name", "scanner_kind", "result"})
 
-var totalSchedulerStartCount = promauto.NewCounter(prometheus.CounterOpts{
+var totalSchedulerStartCount = promauto.NewGauge(prometheus.GaugeOpts{
 	Name: "teredix_scheduler_start_count",
 	Help: "The total number of scheduler start count",
 })
@@ -41,9 +41,9 @@ var totalScanTimeDurationInSecs = promauto.NewCounterVec(prometheus.CounterOpts{
 	Help: "The total number of scan time duration in seconds",
 }, []string{"scanner_name", "scanner_kind"})
 
-var totalScanTimeDurationInMs = promauto.NewCounterVec(prometheus.CounterOpts{
-	Name: "teredix_scan_time_duration_in_ms",
-	Help: "The total number of scan time duration in milliseconds",
+var scanDurationInSec = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	Name: "teredix_scan_duration_seconds",
+	Help: "Duration taken by scanner to finish a job",
 }, []string{"scanner_name", "scanner_kind"})
 
 var totalMemoryUsageByScannerInMB = promauto.NewGaugeVec(prometheus.GaugeOpts{
@@ -97,7 +97,7 @@ func (c *Collector) CollectTotalScannerJobAddedToQueue(scannerName, scannerKind,
 
 // CollectTotalSchedulerStartCount collect total scheduler start count
 func (c *Collector) CollectTotalSchedulerStartCount() {
-	totalSchedulerStartCount.Inc()
+	totalSchedulerStartCount.Set(1)
 }
 
 // CollectTotalProcessErrorCount collect total process error count
@@ -105,14 +105,8 @@ func (c *Collector) CollectTotalProcessErrorCount(failureType string) {
 	totalProcessErrorCount.WithLabelValues(failureType).Inc()
 }
 
-// CollectTotalScanTimeDurationInSecs collect total scan time duration
-func (c *Collector) CollectTotalScanTimeDurationInSecs(scannerName, scannerKind string, duration float64) {
-	totalScanTimeDurationInSecs.WithLabelValues(scannerName, scannerKind).Add(duration)
-}
-
-// CollectTotalScanTimeDurationInMs collect total scan time duration
-func (c *Collector) CollectTotalScanTimeDurationInMs(scannerName, scannerKind string, duration float64) {
-	totalScanTimeDurationInMs.WithLabelValues(scannerName, scannerKind).Add(duration)
+func (c *Collector) RecordScanTimeInSecs(scannerName, scannerKind string, duration float64) {
+	scanDurationInSec.WithLabelValues(scannerName, scannerKind).Set(duration)
 }
 
 // CollectTotalScannerJobStatusCount collect total scanner job status count

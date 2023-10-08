@@ -66,26 +66,15 @@ func TestCollectTotalProcessErrorCount(t *testing.T) {
 	assert.Equal(t, 1.0, testutil.ToFloat64(totalProcessErrorCount.WithLabelValues(failureType)))
 }
 
-func TestCollectTotalScanTimeDurationInSecs(t *testing.T) {
+func TestRecordScanDurationInSecs(t *testing.T) {
 	c := NewCollector()
 	name := "someScanner"
 	kind := "someKind"
 	duration := 2.5
 
-	c.CollectTotalScanTimeDurationInSecs(name, kind, duration)
+	c.RecordScanTimeInSecs(name, kind, duration)
 
 	assert.Equal(t, duration, testutil.ToFloat64(totalScanTimeDurationInSecs.WithLabelValues(name, kind)))
-}
-
-func TestCollectTotalScanTimeDurationInMs(t *testing.T) {
-	c := NewCollector()
-	name := "someScanner"
-	kind := "someKind"
-	duration := 100.5
-
-	c.CollectTotalScanTimeDurationInMs(name, kind, duration)
-
-	assert.Equal(t, duration, testutil.ToFloat64(totalScanTimeDurationInMs.WithLabelValues(name, kind)))
 }
 
 func TestCollectTotalScannerJobStatusCount(t *testing.T) {

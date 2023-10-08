@@ -64,8 +64,7 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 			var m2 runtime.MemStats
 			runtime.ReadMemStats(&m2)
 
-			p.metrics.CollectTotalScanTimeDurationInSecs(sc.GetName(), sc.GetKind(), duration.Seconds())
-			p.metrics.CollectTotalScanTimeDurationInMs(sc.GetName(), sc.GetKind(), float64(duration.Milliseconds()))
+			p.metrics.RecordScanTimeInSecs(sc.GetName(), sc.GetKind(), duration.Seconds())
 
 			p.metrics.CollectTotalMemoryUsageByScannerInMB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/(1024*1024))
 			p.metrics.CollectTotalMemoryUsageByScannerInKB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/1024)
