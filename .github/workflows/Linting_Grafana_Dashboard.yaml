@@ -26,4 +26,6 @@ jobs:
         run: go install github.com/grafana/dashboard-linter@latest
 
       - name: Lint dashboard
-        run: dashboard-linter lint dashboard/dashboard.json
+        run: |
+          dashboard-linter lint dashboard/teredix_general.json
+          dashboard-linter lint dashboard/teredix_go_runtime.json
