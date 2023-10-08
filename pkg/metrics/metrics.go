@@ -36,11 +36,6 @@ var totalProcessErrorCount = promauto.NewCounterVec(prometheus.CounterOpts{
 	Help: "The total number of process error count",
 }, []string{"failure_type"})
 
-var totalScanTimeDurationInSecs = promauto.NewCounterVec(prometheus.CounterOpts{
-	Name: "teredix_scan_time_duration_in_secs",
-	Help: "The total number of scan time duration in seconds",
-}, []string{"scanner_name", "scanner_kind"})
-
 var scanDurationInSec = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	Name: "teredix_scan_duration_seconds",
 	Help: "Duration taken by scanner to finish a job",
@@ -105,6 +100,7 @@ func (c *Collector) CollectTotalProcessErrorCount(failureType string) {
 	totalProcessErrorCount.WithLabelValues(failureType).Inc()
 }
 
+// RecordScanTimeInSecs collect total scan time duration in seconds
 func (c *Collector) RecordScanTimeInSecs(scannerName, scannerKind string, duration float64) {
 	scanDurationInSec.WithLabelValues(scannerName, scannerKind).Set(duration)
 }

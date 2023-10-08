@@ -1,32 +1,22 @@
 {
   "__elements": {},
-  "__inputs": [
-    {
-      "description": "",
-      "label": "Prometheus",
-      "name": "DS_PROMETHEUS",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus",
-      "type": "datasource"
-    }
-  ],
   "__requires": [
     {
+      "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "type": "grafana",
       "version": "10.0.3"
     },
     {
+      "type": "datasource",
       "id": "prometheus",
       "name": "Prometheus",
-      "type": "datasource",
       "version": "1.0.0"
     },
     {
+      "type": "panel",
       "id": "timeseries",
       "name": "Time series",
-      "type": "panel",
       "version": ""
     }
   ],
@@ -46,6 +36,7 @@
       }
     ]
   },
+  "description": "TerediX general dashboard. Managed by https://github.com/shaharia-lab/terediX",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -54,7 +45,10 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": "${datasource}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
       "description": "Total Resource Discovered",
       "fieldConfig": {
         "defaults": {
@@ -91,7 +85,6 @@
               "mode": "off"
             }
           },
-          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -105,7 +98,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -130,7 +124,10 @@
       },
       "targets": [
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
           "expr": "teredix_resource_discovered_by_scanner{scanner_name=~\"$scanner_name\", scanner_kind=~\"$scanner_kind\", instance=~\"$instance\", job=~\"$job\"}",
           "instant": false,
@@ -142,7 +139,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${datasource}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
       "description": "Total Count by Job Status",
       "fieldConfig": {
         "defaults": {
@@ -179,7 +179,6 @@
               "mode": "off"
             }
           },
-          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -193,7 +192,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -273,7 +273,6 @@
               "mode": "off"
             }
           },
-          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -287,7 +286,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -367,7 +367,6 @@
               "mode": "off"
             }
           },
-          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -381,7 +380,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -461,7 +461,6 @@
               "mode": "off"
             }
           },
-          "unit": "decmbytes",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -475,7 +474,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "decmbytes"
         },
         "overrides": []
       },
@@ -555,7 +555,6 @@
               "mode": "off"
             }
           },
-          "unit": "deckbytes",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -569,7 +568,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "deckbytes"
         },
         "overrides": []
       },
@@ -649,21 +649,20 @@
               "mode": "off"
             }
           },
-          "unit": "bytes",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -743,21 +742,20 @@
               "mode": "off"
             }
           },
-          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": [
           {
@@ -886,21 +884,20 @@
               "mode": "off"
             }
           },
-          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -980,21 +977,20 @@
               "mode": "off"
             }
           },
-          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -1074,21 +1070,20 @@
               "mode": "off"
             }
           },
-          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -1168,21 +1163,20 @@
               "mode": "off"
             }
           },
-          "unit": "none",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -1228,12 +1222,17 @@
   "refresh": "",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": [],
+  "tags": [
+    "terediX",
+    "tech-resource-discovery",
+    "go",
+    "golang"
+  ],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "default",
           "value": "default"
         },
@@ -1251,6 +1250,7 @@
         "type": "datasource"
       },
       {
+        "allValue": ".+",
         "current": {},
         "datasource": {
           "type": "prometheus",
@@ -1263,7 +1263,6 @@
         "multi": true,
         "name": "instance",
         "options": [],
-        "allValue": ".+",
         "query": {
           "query": "label_values(teredix_scheduler_start_count,instance)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
@@ -1299,7 +1298,10 @@
       },
       {
         "current": {},
-        "datasource": "${datasource}",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$datasource"
+        },
         "definition": "label_values(scanner_kind)",
         "description": "Scanner Kind",
         "hide": 0,
@@ -1319,14 +1321,17 @@
         "type": "query"
       },
       {
+        "allValue": ".+",
         "current": {},
-        "datasource": "${datasource}",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$datasource"
+        },
         "definition": "label_values(teredix_scheduler_start_count,job)",
         "hide": 0,
         "includeAll": true,
         "label": "Job",
         "multi": true,
-        "allValue": ".+",
         "name": "job",
         "options": [],
         "query": {
@@ -1347,8 +1352,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "TerediX",
-  "uid": "b1833591-2a86-45f1-8591-1aa960f90700",
-  "version": 17,
+  "title": "TerediX General",
+  "version": 2,
   "weekStart": ""
 }

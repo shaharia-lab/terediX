@@ -74,7 +74,7 @@ func TestRecordScanDurationInSecs(t *testing.T) {
 
 	c.RecordScanTimeInSecs(name, kind, duration)
 
-	assert.Equal(t, duration, testutil.ToFloat64(totalScanTimeDurationInSecs.WithLabelValues(name, kind)))
+	assert.Equal(t, duration, testutil.ToFloat64(scanDurationInSec.WithLabelValues(name, kind)))
 }
 
 func TestCollectTotalScannerJobStatusCount(t *testing.T) {
