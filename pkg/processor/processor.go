@@ -59,6 +59,14 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 				p.logger.WithFields(lf).WithError(err).Error("Failed to scan resources")
 			}
 
+			// Cleanup old resources
+			totalCleanedUpResources, err := p.Storage.CleanupOldVersion(scannerCopyForClosure.GetName(), scannerCopyForClosure.GetKind())
+			if err != nil {
+				p.logger.WithFields(lf).WithError(err).Error("Failed to cleanup old resources")
+			} else {
+				p.logger.WithFields(lf).WithField("total_resources_cleaned_up", totalCleanedUpResources).Info("Old resources has been cleaned up")
+			}
+
 			duration := time.Since(start)
 			// Track end memory
 			var m2 runtime.MemStats

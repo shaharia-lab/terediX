@@ -10,6 +10,8 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/resource"
 )
 
+const noOfVersionToKeep = 2
+
 // ResourceFilter configure the filter
 type ResourceFilter struct {
 	Kind       string
@@ -37,7 +39,7 @@ type Storage interface {
 
 	GetNextVersionForResource(source, kind string) (int, error)
 
-	CleanupOldVersion(source, kind string) (int, error)
+	CleanupOldVersion(source, kind string) (int64, error)
 }
 
 // Query build query based on filters

@@ -366,23 +366,33 @@ func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (int, error)
 }
 
 // CleanupOldVersion cleanup old version of resources
-func (p *PostgreSQL) CleanupOldVersion(source, kind string) (int, error) {
-	query := `DELETE FROM resources WHERE (kind, external_id, name, version) NOT IN (
-    SELECT kind, external_id, name, max(version)
-    FROM resources
-    WHERE kind = $1 AND source = $2
-    GROUP BY kind, external_id, name
-) AND kind = $1 AND source = $2`
+func (p *PostgreSQL) CleanupOldVersion(source, kind string) (int64, error) {
+	// Construct the SQL statement
+	query := `
+	DELETE FROM resources
+	WHERE source = $1
+	  AND kind = $2
+	  AND version NOT IN (
+		SELECT DISTINCT version
+		FROM resources
+		WHERE source = $1
+		  AND kind = $2
+		ORDER BY version DESC
+		LIMIT $3
+	  );
+	`
 
-	result, err := p.DB.Exec(query, kind, source)
+	// Execute the query
+	result, err := p.DB.Exec(query, source, kind, noOfVersionToKeep)
 	if err != nil {
-		return 0, fmt.Errorf("failed to cleanup old version of resources: %w", err)
+		return 0, fmt.Errorf("failed to cleanup the resources: %v", err)
 	}
 
+	// Get the count of affected rows
 	affectedRows, err := result.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("failed to get affected rows: %w", err)
+		return 0, fmt.Errorf("failed to retrieve affected rows count: %v", err)
 	}
 
-	return int(affectedRows), nil
+	return affectedRows, nil
 }

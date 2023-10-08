@@ -147,14 +147,14 @@ func (_m *Mock) GetNextVersionForResource(source string, kind string) (int, erro
 }
 
 // CleanupOldVersion provides a mock function with given fields: source, kind
-func (_m *Mock) CleanupOldVersion(source string, kind string) (int, error) {
+func (_m *Mock) CleanupOldVersion(source string, kind string) (int64, error) {
 	ret := _m.Called(source, kind)
 
-	var r0 int
-	if rf, ok := ret.Get(0).(func(string, string) int); ok {
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(string, string) int64); ok {
 		r0 = rf(source, kind)
 	} else {
-		r0 = ret.Get(0).(int)
+		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
