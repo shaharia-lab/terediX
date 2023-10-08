@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -160,11 +159,7 @@ func Test_run(t *testing.T) {
 			defer cancel() // Always defer the cancellation, which ensures resources are cleaned up.
 
 			err = run(ctx, appConfig, &logrus.Logger{})
-			if err != nil {
-				fmt.Println(err)
-			}
-
-			log.Println("Done")
+			assert.NoError(t, err)
 		})
 	}
 }
