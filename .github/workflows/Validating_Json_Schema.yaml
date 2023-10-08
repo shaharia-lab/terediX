@@ -1,17 +1,18 @@
-name: Linting Grafana Dashboard
+name: Validating JSON Schema
 
 on:
   push:
     branches: [ master ]
     paths:
-      - 'dashboard/**'
+      - 'pkg/config/testdata/**'
+      - 'pkg/config/schema.json'
   pull_request:
     branches: [ master ]
     types: [opened, synchronize, reopened]
 
 jobs:
-  linting_grafana_dashboard_json:
-    name: Linting Grafana Dashboard JSON
+  validating_json_schema:
+    name: Validating JSON Schema
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,8 +23,6 @@ jobs:
         with:
           go-version: '^1.20'
 
-      - name: Install dashboard-linter
-        run: go install github.com/grafana/dashboard-linter@latest
-
-      - name: Lint dashboard
-        run: dashboard-linter lint dashboard/dashboard.json
+      - name: Run configuration validation against JSON schema
+        run: |
+          make validate_json_schema
