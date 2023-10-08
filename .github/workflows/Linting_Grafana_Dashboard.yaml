@@ -7,6 +7,8 @@ on:
       - 'dashboard/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - 'dashboard/**'
     types: [opened, synchronize, reopened]
 
 jobs:

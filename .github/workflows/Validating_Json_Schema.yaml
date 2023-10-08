@@ -8,6 +8,9 @@ on:
       - 'pkg/config/schema.json'
   pull_request:
     branches: [ master ]
+    paths:
+      - 'pkg/config/testdata/**'
+      - 'pkg/config/schema.json'
     types: [opened, synchronize, reopened]
 
 jobs:
