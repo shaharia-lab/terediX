@@ -1,7 +1,10 @@
+//go:build integration
+
 package cmd
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -144,6 +147,13 @@ func Test_run(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			testDBHost := os.Getenv("TEST_DB_HOST")
+			if testDBHost == "" {
+				testDBHost = "localhost"
+			}
+
+			commonAppConfig.Storage.Engines["postgresql"].(map[string]interface{})["host"] = testDBHost
+
 			commonAppConfig.Sources = tc.sourceConfig
 
 			configFilePath, err := SaveToTempYAML(commonAppConfig)
@@ -160,6 +170,8 @@ func Test_run(t *testing.T) {
 
 			err = run(ctx, appConfig, &logrus.Logger{})
 			assert.NoError(t, err)
+
+			defer resetDatabase(testDBHost)
 		})
 	}
 }
@@ -191,4 +203,32 @@ func SaveToTempYAML(data interface{}) (string, error) {
 	}
 
 	return tmpfile.Name(), nil
+}
+
+func resetDatabase(testDBHost string) {
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		testDBHost,
+		5432,
+		"app",
+		"pass",
+		"app",
+	)
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		panic(err)
+	}
+
+	deleteTables(db, []string{"metadata", "relations", "resources"})
+}
+
+func deleteTables(db *sql.DB, tables []string) error {
+	for _, table := range tables {
+		query := fmt.Sprintf("DROP TABLE IF EXISTS %s CASCADE;", table)
+		if _, err := db.Exec(query); err != nil {
+			return fmt.Errorf("error deleting table %s: %v", table, err)
+		}
+		fmt.Printf("Deleted table %s successfully\n", table)
+	}
+	return nil
 }
