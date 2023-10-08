@@ -29,7 +29,7 @@ func NewDisplayCommand() *cobra.Command {
 				return err
 			}
 
-			st := storage.BuildStorage(appConfig)
+			st, _ := storage.BuildStorage(appConfig)
 			c := cytoscape.NewCytoscapa(st)
 			v := visualize.NewVisualizer(c)
 			html, err := v.Render()

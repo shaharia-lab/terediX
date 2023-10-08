@@ -1,11 +1,18 @@
 package scanner
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
+	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -52,110 +59,76 @@ func TestGetResourceMetaData(t *testing.T) {
 	}
 }
 
-func TestSources_BuildFromAppConfig(t *testing.T) {
-	sources := NewSourceRegistry(GetScannerRegistries())
-	tests := []struct {
-		name            string
-		sourceConfig    config.Source
-		expectedScanner Scanner
+// runScannerForTest initiates a scan using the provided scanner and collects
+// the resources it discovers into a slice. This function is specifically
+// designed to help with testing, allowing you to run a scanner and easily
+// gather its results for verification.
+func runScannerForTest(scanner Scanner) []resource.Resource {
+	resourceChannel := make(chan resource.Resource)
+
+	var res []resource.Resource
+
+	go func() {
+		scanner.Scan(resourceChannel)
+		close(resourceChannel)
+	}()
+
+	for r := range resourceChannel {
+		res = append(res, r)
+	}
+
+	return res
+}
+
+func RunCommonScannerAssertionTest(t *testing.T, scanner Scanner, expectedResourceCount int, expectedMetaDataCount int, expectedMetaDataKeys []string) {
+	res := runScannerForTest(scanner)
+
+	assert.Equal(t, expectedResourceCount, len(res), fmt.Sprintf("expected %d resource, but got %d resource", expectedResourceCount, len(res)))
+	data := res[0].GetMetaData()
+	assert.Equal(t, expectedMetaDataCount, len(data.Get()))
+
+	util.CheckIfMetaKeysExistsInResources(t, res, expectedMetaDataKeys)
+}
+
+// TestBuildScanners tests the BuildScanners function
+func TestBuildScanners(t *testing.T) {
+	var testCases = []struct {
+		name                 string
+		sources              map[string]config.Source
+		expectedTotalScanner int
 	}{
 		{
-			name: "build aws ec2 scanner",
-			sourceConfig: config.Source{
-				Type: pkg.SourceTypeAWSEC2,
-				Configuration: map[string]string{
-					"region":        "ap-southeast-1",
-					"account_id":    "xxx",
-					"access_key":    "xxx",
-					"secret_key":    "xxx",
-					"session_token": "xxx",
+			name: "build file system scanner successfully",
+			sources: map[string]config.Source{
+				"fs_one": {
+					Type: pkg.SourceTypeFileSystem,
+					Configuration: map[string]string{
+						"root_directory": "/tmp",
+					},
 				},
-				Fields:   []string{fieldInstanceID, fieldImageID},
-				Schedule: config.Schedule{},
 			},
-			expectedScanner: &AWSEC2{},
+			expectedTotalScanner: 1,
 		},
 		{
-			name: "build aws ecr scanner",
-			sourceConfig: config.Source{
-				Type: pkg.SourceTypeAWSECR,
-				Configuration: map[string]string{
-					"region":        "ap-southeast-1",
-					"account_id":    "xxx",
-					"access_key":    "xxx",
-					"secret_key":    "xxx",
-					"session_token": "xxx",
+			name: "should not build scanner if scanner type is not supported",
+			sources: map[string]config.Source{
+				"fs_one": {
+					Type: "unsupported type",
+					Configuration: map[string]string{
+						"root_directory": "/tmp",
+					},
 				},
-				Fields:   []string{ecrFieldRegistryID},
-				Schedule: config.Schedule{},
 			},
-			expectedScanner: &AWSECR{},
-		},
-		{
-			name: "build aws rds scanner",
-			sourceConfig: config.Source{
-				Type: pkg.SourceTypeAWSRDS,
-				Configuration: map[string]string{
-					"region":        "ap-southeast-1",
-					"account_id":    "xxx",
-					"access_key":    "xxx",
-					"secret_key":    "xxx",
-					"session_token": "xxx",
-				},
-				Fields:   []string{rdsFieldInstanceID},
-				Schedule: config.Schedule{},
-			},
-			expectedScanner: &AWSRDS{},
-		},
-		{
-			name: "build AWS S3 scanner",
-			sourceConfig: config.Source{
-				Type: pkg.SourceTypeAWSS3,
-				Configuration: map[string]string{
-					"region":        "ap-southeast-1",
-					"account_id":    "xxx",
-					"access_key":    "xxx",
-					"secret_key":    "xxx",
-					"session_token": "xxx",
-				},
-				Fields:   []string{s3fieldRegion},
-				Schedule: config.Schedule{},
-			},
-			expectedScanner: &AWSS3{},
-		},
-		{
-			name: "build file system scanner",
-			sourceConfig: config.Source{
-				Type: pkg.SourceTypeFileSystem,
-				Configuration: map[string]string{
-					"root_directory": "/tmp",
-				},
-				Fields:   []string{fileSystemFieldMachineHost},
-				Schedule: config.Schedule{},
-			},
-			expectedScanner: &FsScanner{},
-		},
-		{
-			name: "build GitHub repository scanner",
-			sourceConfig: config.Source{
-				Type: pkg.SourceTypeGitHubRepository,
-				Configuration: map[string]string{
-					"token":       "xxx",
-					"user_or_org": "xxx",
-				},
-				Fields:   []string{fieldCompany},
-				Schedule: config.Schedule{},
-			},
-			expectedScanner: &GitHubRepositoryScanner{},
+			expectedTotalScanner: 0,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			scanners := sources.BuildFromAppConfig(map[string]config.Source{
-				"hello": tt.sourceConfig,
-			})
 
-			assert.IsType(t, tt.expectedScanner, scanners[0])
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			storageMock := new(storage.Mock)
+
+			scanners := BuildScanners(testCase.sources, NewScannerDependencies(scheduler.NewStaticScheduler(), storageMock, &logrus.Logger{}, metrics.NewCollector()))
+			assert.Equal(t, testCase.expectedTotalScanner, len(scanners))
 		})
 	}
 }

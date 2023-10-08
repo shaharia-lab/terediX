@@ -6,15 +6,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/mock"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestFsScanner_Scan(t *testing.T) {
@@ -77,33 +75,20 @@ func TestFsScanner_Scan(t *testing.T) {
 				t.Errorf(err.Error())
 			}
 
-			sm := new(storage.Mock)
-			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
-
 			sc := config.Source{
-				Configuration: map[string]string{
-					"root_directory": tmpDir,
-				},
-				Fields: tt.fsSource.Fields,
+				Type:          pkg.SourceTypeFileSystem,
+				Configuration: map[string]string{"root_directory": tmpDir},
+				Fields:        []string{fileSystemFieldRootDirectory, fileSystemFieldMachineHost},
+				Schedule:      "@every 1s",
 			}
 
-			f := FsScanner{}
-			f.Build("test-source", sc, sm, &gocron.Scheduler{}, &logrus.Logger{})
+			mockStorage := new(storage.Mock)
+			mockStorage.On("GetNextVersionForResource", "scanner_name", pkg.SourceTypeFileSystem).Return(1, nil)
 
-			res := RunScannerForTests(&f)
+			fs := FsScanner{}
+			_ = fs.Setup("scanner_name", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}, metrics.NewCollector()))
 
-			assert.Equal(t, tt.expectedResourceCount, len(res), fmt.Sprintf("expected %d resource, but got %d resource", tt.expectedResourceCount, len(res)))
-			data := res[0].GetMetaData()
-			assert.Equal(t, tt.expectedMetaDataCount, len(data.Get()))
-
-			fmt.Printf("%v", data)
-
-			for k, v := range res {
-				exists, missingKeys := checkKeysInMetaData(v, tt.expectedMetaDataKeys)
-				if !exists {
-					t.Errorf("Metadata missing. Missing keys [%d]: %v", k, missingKeys)
-				}
-			}
+			RunCommonScannerAssertionTest(t, &fs, tt.expectedResourceCount, tt.expectedMetaDataCount, tt.expectedMetaDataKeys)
 		})
 	}
 }

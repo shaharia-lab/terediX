@@ -3,16 +3,17 @@ package scanner
 
 import (
 	"context"
+	"fmt"
 
 	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
-	"github.com/go-co-op/gocron"
+	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/sirupsen/logrus"
-
 	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -41,33 +42,40 @@ type AWSECR struct {
 	AccountID              string
 	ResourceTaggingService util.ResourceTaggingServiceClient
 	Fields                 []string
-	Schedule               config.Schedule
-	scheduler              *gocron.Scheduler
 	storage                storage.Storage
 	logger                 *logrus.Logger
+	schedule               string
+	metrics                *metrics.Collector
 }
 
-func (a *AWSECR) setECRClient(ecrClient EcrClient) {
-	a.ECRClient = ecrClient
+// GetName return source name
+func (a *AWSECR) GetName() string {
+	return a.SourceName
 }
 
-func (a *AWSECR) setResourceTaggingService(resourceTaggingService util.ResourceTaggingServiceClient) {
-	a.ResourceTaggingService = resourceTaggingService
+// GetSchedule return schedule
+func (a *AWSECR) GetSchedule() string {
+	return a.schedule
 }
 
-// Build AWS ECR source
-func (a *AWSECR) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
-	a.SourceName = sourceKey
-	a.ECRClient = ecr.NewFromConfig(BuildAWSConfig(cfg))
+// Setup AWS ECR source
+func (a *AWSECR) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	a.SourceName = name
+	a.ECRClient = ecr.NewFromConfig(buildAWSConfig(cfg))
 	a.Region = cfg.Configuration["region"]
 	a.AccountID = cfg.Configuration["account_id"]
 	a.Fields = cfg.Fields
-	a.Schedule = cfg.Schedule
-	a.scheduler = scheduler
-	a.storage = storage
-	a.logger = logger
+	a.ResourceTaggingService = resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(cfg))
+	a.storage = dependencies.GetStorage()
+	a.logger = dependencies.GetLogger()
+	a.metrics = dependencies.GetMetrics()
 
-	return a
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
+	return nil
 }
 
 // GetKind return resource kind
@@ -76,16 +84,17 @@ func (a *AWSECR) GetKind() string {
 }
 
 // Scan discover resource and send to resource channel
-// Scan discover resource and send to resource channel
 func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
+	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSECR)
+	if err != nil {
+		return fmt.Errorf("unable to get next version for resource: %w", err)
+	}
+
+	totalResourceDiscovered := 0
+
 	// Set initial values for pagination
 	pageNum := 0
 	nextToken := ""
-
-	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSEC2)
-	if err != nil {
-		return err
-	}
 
 	// Loop through pages of ECR repositories
 	for {
@@ -98,7 +107,12 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 		}
 		resp, err := a.ECRClient.DescribeRepositories(context.TODO(), params)
 		if err != nil {
-			return err
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to make api call to aws ecr endpoint")
+
+			return fmt.Errorf("unable to make api call to aws ecr endpoint: %w", err)
 		}
 
 		// Loop through repositories and their tags
@@ -106,6 +120,8 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, nextVersion)
 			res.AddMetaData(a.getMetaData(repository))
 			resourceChannel <- res
+
+			totalResourceDiscovered++
 		}
 
 		// Check if there are more pages
@@ -116,6 +132,13 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 		pageNum++
 	}
 
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
+
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 

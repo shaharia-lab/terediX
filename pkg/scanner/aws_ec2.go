@@ -3,10 +3,11 @@ package scanner
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -42,28 +43,40 @@ type AWSEC2 struct {
 	Region     string
 	AccountID  string
 	Fields     []string
-	Schedule   config.Schedule
-	scheduler  *gocron.Scheduler
-	logger     *logrus.Logger
 	storage    storage.Storage
+	logger     *logrus.Logger
+	schedule   string
+	metrics    *metrics.Collector
 }
 
-func (a *AWSEC2) setEC2Client(ec2Client Ec2Client) {
-	a.Ec2Client = ec2Client
+// GetName return source name
+func (a *AWSEC2) GetName() string {
+	return a.SourceName
 }
 
-// Build AWS EC2 source
-func (a *AWSEC2) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
-	a.SourceName = sourceKey
-	a.Ec2Client = ec2.NewFromConfig(BuildAWSConfig(cfg))
+// GetSchedule return schedule
+func (a *AWSEC2) GetSchedule() string {
+	return a.schedule
+}
+
+// Setup AWS EC2 source
+func (a *AWSEC2) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	a.SourceName = name
+	a.Ec2Client = ec2.NewFromConfig(buildAWSConfig(cfg))
 	a.Region = cfg.Configuration["region"]
 	a.AccountID = cfg.Configuration["account_id"]
 	a.Fields = cfg.Fields
-	a.Schedule = cfg.Schedule
-	a.scheduler = scheduler
-	a.storage = storage
-	a.logger = logger
-	return a
+	a.schedule = cfg.Schedule
+	a.storage = dependencies.GetStorage()
+	a.logger = dependencies.GetLogger()
+	a.metrics = dependencies.GetMetrics()
+
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
+	return nil
 }
 
 // GetKind return resource kind
@@ -73,18 +86,30 @@ func (a *AWSEC2) GetKind() string {
 
 // Scan discover resource and send to resource channel
 func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
-	pageNum := 0
-	nextToken := ""
-
 	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSEC2)
 	if err != nil {
-		return err
+		a.logger.WithFields(logrus.Fields{
+			"scanner_name": a.SourceName,
+			"scanner_kind": a.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
+
+	totalResourceDiscovered := 0
+
+	pageNum := 0
+	nextToken := ""
 
 	for {
 		resp, err := a.makeAPICallToAWS(nextToken)
 		if err != nil {
-			return err
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to make api call to aws ec2 endpoint")
+
+			return fmt.Errorf("unable to make api call to aws ec2 endpoint: %w", err)
 		}
 
 		// Loop through instances and their tags
@@ -93,6 +118,8 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, nextVersion)
 				res.AddMetaData(a.getMetaData(instance))
 				resourceChannel <- res
+
+				totalResourceDiscovered++
 			}
 		}
 
@@ -103,9 +130,17 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 		pageNum++
 	}
 
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
+
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 
+// getMetaData build metadata
 func (a *AWSEC2) getMetaData(instance types.Instance) map[string]string {
 	mappings := map[string]func() string{
 		fieldInstanceID:        func() string { return safeDereference(instance.InstanceId) },

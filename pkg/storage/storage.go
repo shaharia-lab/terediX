@@ -58,11 +58,11 @@ func (q *Query) Build() (string, []interface{}) {
 	if len(q.filters) > 0 {
 		whereClause = "WHERE " + strings.Join(q.filters, " AND ")
 	}
-	return fmt.Sprintf("SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id %s", whereClause), q.params
+	return fmt.Sprintf("SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id %s", whereClause), q.params
 }
 
 // BuildStorage build storage based on configuration
-func BuildStorage(appConfig *config.AppConfig) Storage {
+func BuildStorage(appConfig *config.AppConfig) (Storage, error) {
 	var st Storage
 
 	for engineKey, engine := range appConfig.Storage.Engines {
@@ -78,12 +78,12 @@ func BuildStorage(appConfig *config.AppConfig) Storage {
 
 			db, err := sql.Open("postgres", connStr)
 			if err != nil {
-				panic(ec)
+				return nil, fmt.Errorf("failed to connect to postgresql: %w", err)
 			}
 
 			st = &PostgreSQL{DB: db}
 		}
 	}
 
-	return st
+	return st, nil
 }

@@ -5,15 +5,14 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/go-co-op/gocron"
-	"github.com/shaharia-lab/teredix/pkg/config"
-	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/shaharia-lab/teredix/pkg/util"
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -89,6 +88,7 @@ func TestAWSS3_Scan(t *testing.T) {
 		buckets               []types.Bucket
 		tags                  []types.Tag
 		expectedTotalResource int
+		expectedTotalMetaData int
 		expectedMetaDataKeys  []string
 	}{
 		{
@@ -107,6 +107,7 @@ func TestAWSS3_Scan(t *testing.T) {
 				{Key: aws.String("tag1"), Value: aws.String("value1")},
 			},
 			expectedTotalResource: 2,
+			expectedTotalMetaData: 4,
 			expectedMetaDataKeys:  []string{s3fieldRegion, s3fieldARN, s3fieldBucketName, "tag_tag1"},
 		},
 	}
@@ -116,25 +117,27 @@ func TestAWSS3_Scan(t *testing.T) {
 			s3ClientMock.On("ListBuckets", mock.Anything, mock.Anything, mock.Anything).Return(&s3.ListBucketsOutput{Buckets: tt.buckets}, nil)
 			s3ClientMock.On("GetBucketTagging", mock.Anything, mock.Anything, mock.Anything).Return(&s3.GetBucketTaggingOutput{TagSet: tt.tags}, nil)
 
-			sm := new(storage.Mock)
-			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
+			storageMock := new(storage.Mock)
+			storageMock.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			sc := config.Source{
+				Type: pkg.SourceTypeAWSS3,
 				Configuration: map[string]string{
-					"region":     "us-east-1",
-					"account_id": "123456789012",
+					"region":        "us-east-1",
+					"account_id":    "123456789012",
+					"access_key":    "xxx",
+					"secret_key":    "xxx",
+					"session_token": "xxx",
 				},
-				Fields: tt.sourceFields,
+				Fields:   tt.sourceFields,
+				Schedule: "",
 			}
 
 			s := AWSS3{}
-			s.Build("source-name", sc, sm, &gocron.Scheduler{}, &logrus.Logger{})
-			s.setS3Client(s3ClientMock)
+			s.Setup("source-name", sc, NewScannerDependencies(scheduler.NewGoCron(), storageMock, &logrus.Logger{}, metrics.NewCollector()))
+			s.S3Client = s3ClientMock
 
-			resources := RunScannerForTests(&s)
-
-			assert.Equal(t, tt.expectedTotalResource, len(resources))
-			util.CheckIfMetaKeysExistsInResources(t, resources, tt.expectedMetaDataKeys)
+			RunCommonScannerAssertionTest(t, &s, tt.expectedTotalResource, tt.expectedTotalMetaData, tt.expectedMetaDataKeys)
 		})
 	}
 }

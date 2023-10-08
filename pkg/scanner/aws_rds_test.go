@@ -7,12 +7,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/go-co-op/gocron"
+	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -57,6 +57,7 @@ func TestAWSRDS_Scan(t *testing.T) {
 		sourceFields          []string
 		rdsInstances          []types.DBInstance
 		expectedTotalResource int
+		expectedTotalMetaData int
 		expectedMetaDataKeys  []string
 	}{
 		{
@@ -72,6 +73,7 @@ func TestAWSRDS_Scan(t *testing.T) {
 				{DBInstanceIdentifier: aws.String("instance2"), TagList: []types.Tag{{Key: aws.String("Environment"), Value: aws.String("Production")}}},
 			},
 			expectedTotalResource: 2,
+			expectedTotalMetaData: 4,
 			expectedMetaDataKeys: []string{
 				rdsFieldInstanceID,
 				"tag_Environment",
@@ -92,24 +94,27 @@ func TestAWSRDS_Scan(t *testing.T) {
 			// Return mockOutput as a result of the DescribeDBInstances method
 			rdsClientMock.On("DescribeDBInstances", mock.Anything, rdsInput, mock.Anything).Return(mockOutput, nil)
 
-			sm := new(storage.Mock)
-			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
+			mockStorage := new(storage.Mock)
+			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			sc := config.Source{
+				Type: pkg.ResourceKindAWSRDS,
 				Configuration: map[string]string{
-					"region":     "us-east-1",
-					"account_id": "123456789012",
+					"region":        "us-east-1",
+					"account_id":    "123456789012",
+					"access_key":    "xxx",
+					"secret_key":    "xxx",
+					"session_token": "xxx",
 				},
-				Fields: tt.sourceFields,
+				Fields:   tt.sourceFields,
+				Schedule: "",
 			}
-			r := AWSRDS{}
-			r.Build("source-name", sc, sm, &gocron.Scheduler{}, &logrus.Logger{})
-			r.setRDSClient(rdsClientMock)
 
-			res := RunScannerForTests(&r)
+			rd := AWSRDS{}
+			rd.Setup("source-name", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}, metrics.NewCollector()))
+			rd.RdsClient = rdsClientMock
 
-			assert.Equal(t, tt.expectedTotalResource, len(res))
-			util.CheckIfMetaKeysExistsInResources(t, res, tt.expectedMetaDataKeys)
+			RunCommonScannerAssertionTest(t, &rd, tt.expectedTotalResource, tt.expectedTotalMetaData, tt.expectedMetaDataKeys)
 		})
 	}
 }

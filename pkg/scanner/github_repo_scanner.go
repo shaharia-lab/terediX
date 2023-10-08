@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/go-co-op/gocron"
 	"github.com/google/go-github/v50/github"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -37,11 +37,12 @@ type GitHubClient interface {
 // GitHubRepositoryClient GitHub repository client
 type GitHubRepositoryClient struct {
 	client *github.Client
+	logger *logrus.Logger
 }
 
 // NewGitHubRepositoryClient construct new GitHub repository client
-func NewGitHubRepositoryClient(client *github.Client) *GitHubRepositoryClient {
-	return &GitHubRepositoryClient{client: client}
+func NewGitHubRepositoryClient(client *github.Client, logger *logrus.Logger) *GitHubRepositoryClient {
+	return &GitHubRepositoryClient{client: client, logger: logger}
 }
 
 // ListRepositories provide list of repositories from GitHub
@@ -70,17 +71,51 @@ func (c *GitHubRepositoryClient) ListRepositories(ctx context.Context, user stri
 
 // GitHubRepositoryScanner GitHub repository scanner
 type GitHubRepositoryScanner struct {
-	ghClient  GitHubClient
-	user      string
-	name      string
-	fields    []string
-	scheduler *gocron.Scheduler
-	storage   storage.Storage
-	logger    *logrus.Logger
+	ghClient GitHubClient
+	user     string
+	name     string
+	fields   []string
+	schedule string
+	storage  storage.Storage
+	logger   *logrus.Logger
+	metrics  *metrics.Collector
 }
 
-func (r *GitHubRepositoryScanner) setGitHubClient(ghClient GitHubClient) {
-	r.ghClient = ghClient
+// Setup GitHub repository scanner
+func (r *GitHubRepositoryScanner) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	r.storage = dependencies.GetStorage()
+	r.logger = dependencies.GetLogger()
+	r.schedule = cfg.Schedule
+	r.name = name
+	r.user = cfg.Configuration["user_or_org"]
+	r.fields = cfg.Fields
+	r.metrics = dependencies.GetMetrics()
+
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: cfg.Configuration["token"]},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	gc := NewGitHubRepositoryClient(client, r.logger)
+	r.ghClient = gc
+
+	r.logger.WithFields(logrus.Fields{
+		"scanner_name": r.name,
+		"scanner_kind": r.GetKind(),
+	}).Info("Scanner has been setup")
+
+	return nil
+}
+
+// GetName return name
+func (r *GitHubRepositoryScanner) GetName() string {
+	return r.name
+}
+
+// GetSchedule return schedule
+func (r *GitHubRepositoryScanner) GetSchedule() string {
+	return r.schedule
 }
 
 // GetKind return resource kind
@@ -88,31 +123,16 @@ func (r *GitHubRepositoryScanner) GetKind() string {
 	return pkg.ResourceKindGitHubRepository
 }
 
-// Build GitHub repository scanner
-func (r *GitHubRepositoryScanner) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: cfg.Configuration["token"]},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
-
-	r.name = sourceKey
-	r.ghClient = NewGitHubRepositoryClient(client)
-	r.user = cfg.Configuration["user"]
-	r.fields = cfg.Fields
-	r.scheduler = scheduler
-	r.storage = storage
-	r.logger = logger
-
-	return r
-}
-
 // Scan scans GitHub to get the list of repositories as resources
 func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) error {
-	nextVersion, err := r.storage.GetNextVersionForResource(r.name, pkg.ResourceKindGitHubRepository)
+	nextResourceVersion, err := r.storage.GetNextVersionForResource(r.name, pkg.ResourceKindGitHubRepository)
 	if err != nil {
-		return err
+		r.logger.WithFields(logrus.Fields{
+			"scanner_name": r.name,
+			"scanner_kind": r.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
 
 	opt := &github.RepositoryListOptions{
@@ -121,15 +141,31 @@ func (r *GitHubRepositoryScanner) Scan(resourceChannel chan resource.Resource) e
 
 	repos, err := r.ghClient.ListRepositories(context.Background(), r.user, opt)
 	if err != nil {
+		r.logger.WithFields(logrus.Fields{
+			"scanner_name": r.name,
+			"scanner_kind": r.GetKind(),
+		}).WithError(err).Error("Unable to get repository list from GitHub")
+
 		return err
 	}
 
+	totalResourceDiscovered := 0
+
 	for _, repo := range repos {
-		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, nextVersion)
+		res := resource.NewResource(pkg.ResourceKindGitHubRepository, repo.GetFullName(), repo.GetFullName(), r.name, nextResourceVersion)
 		res.AddMetaData(r.getMetaData(repo))
 		resourceChannel <- res
+
+		totalResourceDiscovered++
 	}
 
+	r.logger.WithFields(logrus.Fields{
+		"scanner_name":              r.name,
+		"scanner_kind":              r.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
+
+	r.metrics.CollectTotalResourceDiscoveredByScanner(r.name, r.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 

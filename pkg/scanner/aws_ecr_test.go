@@ -5,10 +5,11 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
-	"github.com/go-co-op/gocron"
+	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -17,7 +18,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi/types"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -153,12 +153,13 @@ func (_m *ResourceTaggingServiceClientMock) GetResources(_a0 context.Context, _a
 
 func TestAWSECR_Scan(t *testing.T) {
 	testCases := []struct {
-		name                  string
-		sourceFields          []string
-		awsECRRepositories    []ecrTypes.Repository
-		awsECRTags            []types.Tag
-		expectedTotalResource int
-		expectedMetaDataKeys  []string
+		name                       string
+		sourceFields               []string
+		awsECRRepositories         []ecrTypes.Repository
+		awsECRTags                 []types.Tag
+		expectedTotalResource      int
+		expectedTotalMetaDataCount int
+		expectedMetaDataKeys       []string
 	}{
 		{
 			name: "returns resources",
@@ -183,7 +184,8 @@ func TestAWSECR_Scan(t *testing.T) {
 					Value: aws.String("prod"),
 				},
 			},
-			expectedTotalResource: 1,
+			expectedTotalResource:      1,
+			expectedTotalMetaDataCount: 5,
 			expectedMetaDataKeys: []string{
 				ecrFieldRepositoryName,
 				ecrFieldRepositoryURI,
@@ -217,26 +219,27 @@ func TestAWSECR_Scan(t *testing.T) {
 
 			mockSvc.On("GetResources", mock.Anything, mock.Anything, mock.Anything).Return(expectedOutput, nil)
 
-			cfgSource := config.Source{
+			mockStorage := new(storage.Mock)
+			mockStorage.On("GetNextVersionForResource", "test-source", pkg.ResourceKindAWSECR).Return(1, nil)
+
+			sc := config.Source{
+				Type: pkg.SourceTypeAWSECR,
 				Configuration: map[string]string{
-					"region":     "us-west-2",
-					"account_id": "1234567890",
+					"region":        "us-west-2",
+					"account_id":    "1234567890",
+					"access_key":    "xxx",
+					"secret_key":    "xxx",
+					"session_token": "xxx",
 				},
-				Fields: tc.sourceFields,
+				Fields:   tc.sourceFields,
+				Schedule: "@every 1s",
 			}
+			er := AWSECR{}
+			er.Setup("test-source", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}, metrics.NewCollector()))
+			er.ECRClient = mockEcrClient
+			er.ResourceTaggingService = mockSvc
 
-			sm := new(storage.Mock)
-			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
-
-			e := &AWSECR{}
-			e.Build("test-source", cfgSource, sm, &gocron.Scheduler{}, &logrus.Logger{})
-			e.setECRClient(mockEcrClient)
-			e.setResourceTaggingService(mockSvc)
-
-			// create an instance of AWSECR that uses the mock ECR client
-			res := RunScannerForTests(e)
-			assert.Equal(t, tc.expectedTotalResource, len(res))
-			util.CheckIfMetaKeysExistsInResources(t, res, tc.expectedMetaDataKeys)
+			RunCommonScannerAssertionTest(t, &er, tc.expectedTotalResource, tc.expectedTotalMetaDataCount, tc.expectedMetaDataKeys)
 		})
 
 	}

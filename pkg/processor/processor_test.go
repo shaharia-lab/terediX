@@ -4,10 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -20,14 +24,6 @@ func (ms *mockScanner) Scan(ch chan<- resource.Resource) error {
 	for _, res := range ms.resources {
 		ch <- res
 	}
-	return ms.err
-}
-
-type mockStorage struct {
-	err error
-}
-
-func (ms *mockStorage) Persist(resources []resource.Resource) error {
 	return ms.err
 }
 
@@ -45,7 +41,7 @@ func TestProcess(t *testing.T) {
 			name: "Successful processing",
 			resources: []resource.Resource{
 				resource.NewResource("GitHubRepository", "repo1", "externalID", "scannerName", 1),
-				resource.NewResource("GitHubRepository", "repo1", "externalID", "scannerName", 1),
+				resource.NewResource("GitHubRepository", "repo2", "externalID", "scannerName", 1),
 			},
 			scanError:    nil,
 			persistError: nil,
@@ -65,22 +61,28 @@ func TestProcess(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			resourceChan := make(chan resource.Resource)
 
-			mockStorage := new(storage.Mock)
-			if tc.resources != nil {
-				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
-			}
-			//mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
-
 			// Setup mock scanner and storage
 			firstScanner := new(scanner.Mock)
+			firstScanner.On("GetSchedule").Return("@every 1s")
+			firstScanner.On("GetName").Return("scannerName")
+			firstScanner.On("GetKind").Return("kindName")
 			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
 				for _, res := range tc.resources {
 					resourceChan <- res
 				}
-			}).Return(tc.scanError)
+			}).Return(nil)
 
-			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner})
-			p.Process(resourceChan)
+			mockStorage := new(storage.Mock)
+			if tc.resources != nil {
+				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
+			}
+
+			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{}, &metrics.Collector{})
+
+			staticScheduler := scheduler.NewStaticScheduler()
+			p.Process(resourceChan, staticScheduler)
+
+			time.Sleep(3 * time.Second)
 
 			// Assert that the expected calls were made
 			firstScanner.AssertExpectations(t)
@@ -117,6 +119,9 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 
 			// Setup mock scanner and storage
 			firstScanner := new(scanner.Mock)
+			firstScanner.On("GetSchedule").Return("@every 1s")
+			firstScanner.On("GetName").Return("scannerName")
+			firstScanner.On("GetKind").Return("kindName")
 			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
 				for _, res := range resources {
 					resourceChan <- res
@@ -126,9 +131,14 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			mockStorage := new(storage.Mock)
 			// This will ensure the Persist method is called expectedBatches times
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
+			//mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
-			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner})
-			p.Process(resourceChan)
+			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{}, &metrics.Collector{})
+
+			staticScheduler := scheduler.NewStaticScheduler()
+			p.Process(resourceChan, staticScheduler)
+
+			time.Sleep(3 * time.Second)
 
 			// Assert that the expected calls were made
 			firstScanner.AssertExpectations(t)

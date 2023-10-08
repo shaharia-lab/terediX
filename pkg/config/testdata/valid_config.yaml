@@ -29,9 +29,7 @@ source:
     fields:
       - machineHost
       - rootDirectory
-    schedule: &schedule
-      type: "cron"
-      expression: "*/5 * * * *"
+    schedule: &schedule "@every 1m"
   github_repo:
     type: github_repository
     configuration:

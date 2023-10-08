@@ -29,9 +29,7 @@ source:
     fields:
       - machineHost
       - rootDirectory
-    schedule: &schedule
-      type: "cron"
-      expression: "*/5 * * * *" # Every 5 minutes
+    schedule: &schedule "@every 1m"
 
   fs_two:
     type: file_system
@@ -58,7 +56,6 @@ source:
       - owner_name
       - topics
     schedule: *schedule
-
   aws_ec2_one:
     type: aws_ec2
     configuration: &aws_conf
@@ -99,6 +96,7 @@ source:
       - arn
       - tags
     schedule: *schedule
+
   aws_s3_one:
     type: aws_s3
     configuration: *aws_conf

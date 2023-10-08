@@ -2,12 +2,8 @@
 package scanner
 
 import (
-	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/sirupsen/logrus"
-
 	"github.com/stretchr/testify/mock"
 )
 
@@ -16,24 +12,36 @@ type Mock struct {
 	mock.Mock
 }
 
-// Build provides a mock function with given fields: sourceKey, source, _a2, scheduler, logger
-func (_m *Mock) Build(sourceKey string, source config.Source, _a2 storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
-	ret := _m.Called(sourceKey, source, _a2, scheduler, logger)
+// GetKind provides a mock function with given fields:
+func (_m *Mock) GetKind() string {
+	ret := _m.Called()
 
-	var r0 Scanner
-	if rf, ok := ret.Get(0).(func(string, config.Source, storage.Storage, *gocron.Scheduler, *logrus.Logger) Scanner); ok {
-		r0 = rf(sourceKey, source, _a2, scheduler, logger)
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(Scanner)
-		}
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0
 }
 
-// GetKind provides a mock function with given fields:
-func (_m *Mock) GetKind() string {
+// GetName provides a mock function with given fields:
+func (_m *Mock) GetName() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// GetSchedule provides a mock function with given fields:
+func (_m *Mock) GetSchedule() string {
 	ret := _m.Called()
 
 	var r0 string
@@ -53,6 +61,20 @@ func (_m *Mock) Scan(resourceChannel chan resource.Resource) error {
 	var r0 error
 	if rf, ok := ret.Get(0).(func(chan resource.Resource) error); ok {
 		r0 = rf(resourceChannel)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Setup provides a mock function with given fields: name, cfg, dependencies
+func (_m *Mock) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	ret := _m.Called(name, cfg, dependencies)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, config.Source, *Dependencies) error); ok {
+		r0 = rf(name, cfg, dependencies)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -3,6 +3,7 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/shaharia-lab/teredix/pkg/config"
@@ -50,7 +51,7 @@ func (p *PostgreSQL) Prepare() error {
 
 	_, err := p.DB.Exec(sqlString)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create tables in database: %v", err)
 	}
 
 	return nil
@@ -62,7 +63,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 		// Prepare the SQL statements
 		resourcesStmt, err := tx.Prepare("INSERT INTO resources (kind, uuid, name, external_id, source, version) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (kind, uuid, external_id, version) DO UPDATE SET kind = excluded.kind, uuid = excluded.uuid, name = excluded.name, source = excluded.source, version = excluded.version RETURNING id")
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to prepare resources statement: %w", err)
 		}
 		defer func(resourcesStmt *sql.Stmt) {
 			err := resourcesStmt.Close()
@@ -73,7 +74,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 
 		metadataStmt, err := tx.Prepare("INSERT INTO metadata (resource_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (resource_id, key, value) DO UPDATE SET value = excluded.value")
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to prepare metadata statement: %w", err)
 		}
 		defer func(metadataStmt *sql.Stmt) {
 			err := metadataStmt.Close()
@@ -88,7 +89,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 			var id int
 			err := resourcesStmt.QueryRow(res.GetKind(), res.GetUUID(), res.GetName(), res.GetExternalID(), res.GetScanner(), res.GetVersion()).Scan(&id)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to insert or update resource: %w", err)
 			}
 
 			// Insert or update the metadata
@@ -96,7 +97,7 @@ func (p *PostgreSQL) Persist(resources []resource.Resource) error {
 			for _, meta := range data.Get() {
 				_, err = metadataStmt.Exec(id, meta.Key, meta.Value)
 				if err != nil {
-					return err
+					return fmt.Errorf("failed to insert or update metadata: %w", err)
 				}
 			}
 		}
@@ -130,7 +131,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	// Execute the query
 	rows, err := p.DB.Query(query, args...)
 	if err != nil {
-		return resources, err
+		return resources, fmt.Errorf("failed to execute query to find resource: %w", err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -141,12 +142,13 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 
 	// Parse the results
 	for rows.Next() {
-		var kind, uuid, name, externalID, metaKey, metaValue string
+		var kind, uuid, name, externalID, metaKey, metaValue, source string
+		var version int
 		var relatedKind, relatedUUID, relatedName, relatedExternalID sql.NullString
 
-		err := rows.Scan(&kind, &uuid, &name, &externalID, &metaKey, &metaValue, &relatedKind, &relatedUUID, &relatedName, &relatedExternalID)
+		err := rows.Scan(&kind, &uuid, &name, &externalID, &source, &version, &metaKey, &metaValue, &relatedKind, &relatedUUID, &relatedName, &relatedExternalID)
 		if err != nil {
-			return resources, err
+			return resources, fmt.Errorf("failed to scan row to fetch the resource result: %w", err)
 		}
 
 		// Create a resource object if it doesn't exist in the slice yet
@@ -158,7 +160,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 			}
 		}
 		if res == nil {
-			r := resource.NewResource(kind, name, externalID, "", 1)
+			r := resource.NewResource(kind, name, externalID, source, version)
 			r.SetUUID(uuid)
 			res = &r
 			resources = append(resources, r)
@@ -189,7 +191,7 @@ func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
 		// Prepare the SQL statement to insert relationships into the relations table
 		relationsStmt, err := tx.Prepare("INSERT INTO relations (resource_id, related_resource_id) VALUES ($1, $2)")
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to prepare relations statement: %w", err)
 		}
 		defer func(relationsStmt *sql.Stmt) {
 			err := relationsStmt.Close()
@@ -201,7 +203,7 @@ func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
 		for _, rc := range relation.RelationCriteria {
 			err = p.storeRelationMatrix(rc, relationsStmt)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to store relation matrix: %w", err)
 			}
 		}
 
@@ -212,14 +214,14 @@ func (p *PostgreSQL) StoreRelations(relation config.Relation) error {
 func (p *PostgreSQL) storeRelationMatrix(rc config.RelationCriteria, relationsStmt *sql.Stmt) error {
 	relationMatrix, err := p.analyzeRelationMatrix(rc)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to analyze relation matrix: %w", err)
 	}
 
 	// Insert relationships for the matching resources
 	for _, c := range relationMatrix {
 		for k, v := range c {
 			if _, err := relationsStmt.Exec(k, v); err != nil {
-				return err
+				return fmt.Errorf("failed to insert relation: %w", err)
 			}
 		}
 	}
@@ -271,7 +273,7 @@ func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 	// Query all resources
 	rows, err := p.DB.Query("SELECT kind, uuid, name, external_id FROM resources")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to execute query to get resources: %w", err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -294,7 +296,7 @@ func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 		resources = append(resources, r)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to scan row to fetch the resource result: %w", err)
 	}
 
 	return resources, nil
@@ -307,7 +309,7 @@ func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
 	// Query all relations
 	rows, err := p.DB.Query("SELECT r.uuid as resource_uuid, r2.uuid as related_resource_uuid FROM relations left join resources r on r.id = relations.resource_id left join resources r2 on r2.id = relations.related_resource_id")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to execute query to get relations: %w", err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -321,13 +323,13 @@ func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
 		r := map[string]string{}
 		var resourceUUID, relatedResourceUUID string
 		if err := rows.Scan(&resourceUUID, &relatedResourceUUID); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to scan row to fetch the relation result: %w", err)
 		}
 		r[resourceUUID] = relatedResourceUUID
 		relations = append(relations, r)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to scan row to fetch the relation result: %w", err)
 	}
 
 	return relations, nil
@@ -336,7 +338,7 @@ func (p *PostgreSQL) GetRelations() ([]map[string]string, error) {
 func (p *PostgreSQL) runInTransaction(f func(tx *sql.Tx) error) error {
 	tx, err := p.DB.Begin()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to start transaction: %w", err)
 	}
 	defer func() {
 		if err != nil {
@@ -357,7 +359,7 @@ func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (int, error)
 	var version int
 	err := p.DB.QueryRow("SELECT COALESCE(max(version), 0) + 1 FROM resources WHERE source = $1 AND kind = $2", source, kind).Scan(&version)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to get next version for resource: %w", err)
 	}
 
 	return version, nil
@@ -374,12 +376,12 @@ func (p *PostgreSQL) CleanupOldVersion(source, kind string) (int, error) {
 
 	result, err := p.DB.Exec(query, kind, source)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to cleanup old version of resources: %w", err)
 	}
 
 	affectedRows, err := result.RowsAffected()
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to get affected rows: %w", err)
 	}
 
 	return int(affectedRows), nil

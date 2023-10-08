@@ -2,64 +2,116 @@
 package scanner
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
-	"github.com/go-co-op/gocron"
+	"context"
+
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-
-	awsConfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 )
 
 const (
 	fieldTags = "tags"
 )
 
-// GetScannerRegistries get all scanner registries
-func GetScannerRegistries() map[string]Scanner {
-	return map[string]Scanner{
-		pkg.SourceTypeFileSystem:       &FsScanner{},
-		pkg.SourceTypeGitHubRepository: &GitHubRepositoryScanner{},
-		pkg.SourceTypeAWSS3:            &AWSS3{},
-		pkg.SourceTypeAWSRDS:           &AWSRDS{},
-		pkg.SourceTypeAWSEC2:           &AWSEC2{},
-		pkg.SourceTypeAWSECR:           &AWSECR{},
+// Factory is a function that returns a new instance of a Scanner.
+type Factory func() Scanner
+
+var scannerFactories = map[string]Factory{
+	pkg.ResourceKindAWSEC2:         func() Scanner { return &AWSEC2{} },
+	pkg.ResourceKindAWSECR:         func() Scanner { return &AWSECR{} },
+	pkg.ResourceKindAWSRDS:         func() Scanner { return &AWSRDS{} },
+	pkg.ResourceKindAWSS3:          func() Scanner { return &AWSS3{} },
+	pkg.SourceTypeFileSystem:       func() Scanner { return &FsScanner{} },
+	pkg.SourceTypeGitHubRepository: func() Scanner { return &GitHubRepositoryScanner{} },
+}
+
+func getScanner(sType string) Scanner {
+	if factory, found := scannerFactories[sType]; found {
+		return factory()
 	}
+	return nil
+}
+
+// BuildScanners build source based on configuration
+func BuildScanners(sources map[string]config.Source, dependencies *Dependencies) []Scanner {
+	var scanners []Scanner
+	for sourceKey, s := range sources {
+		scanner := getScanner(s.Type)
+		if scanner == nil {
+			// Handle unsupported scanner type
+			continue
+		}
+
+		err := scanner.Setup(sourceKey, s, dependencies)
+		if err != nil {
+			return nil
+		}
+		scanners = append(scanners, scanner)
+
+		dependencies.GetMetrics().CollectTotalScannerBuildByKind(scanner.GetKind())
+	}
+
+	dependencies.GetMetrics().CollectTotalScannerBuild(float64(len(scanners)))
+	return scanners
+}
+
+// Dependencies scanner dependencies
+type Dependencies struct {
+	scheduler scheduler.Scheduler
+	storage   storage.Storage
+	logger    *logrus.Logger
+	metrics   *metrics.Collector
+}
+
+// NewScannerDependencies construct new scanner dependencies
+func NewScannerDependencies(scheduler scheduler.Scheduler, storage storage.Storage, logger *logrus.Logger, metricsCollector *metrics.Collector) *Dependencies {
+	return &Dependencies{scheduler: scheduler, storage: storage, logger: logger, metrics: metricsCollector}
+}
+
+// GetScheduler return scheduler
+func (d *Dependencies) GetScheduler() scheduler.Scheduler {
+	return d.scheduler
+}
+
+// GetStorage return storage
+func (d *Dependencies) GetStorage() storage.Storage {
+	return d.storage
+}
+
+// GetLogger return logger
+func (d *Dependencies) GetLogger() *logrus.Logger {
+	return d.logger
+}
+
+// GetMetrics return metrics
+func (d *Dependencies) GetMetrics() *metrics.Collector {
+	return d.metrics
 }
 
 // Scanner interface to build different scanner
 type Scanner interface {
-	Build(sourceKey string, source config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner
+	Setup(name string, cfg config.Source, dependencies *Dependencies) error
 	Scan(resourceChannel chan resource.Resource) error
+	GetName() string
 	GetKind() string
+	GetSchedule() string
 }
 
-// Sources registry
-type Sources struct {
-	Scanners map[string]Scanner
-}
-
-// NewSourceRegistry build source registry
-func NewSourceRegistry(scanners map[string]Scanner) *Sources {
-	return &Sources{Scanners: scanners}
-}
-
-// BuildFromAppConfig build source based on configuration
-func (s *Sources) BuildFromAppConfig(sourceConfigs map[string]config.Source) []Scanner {
-	var scanners []Scanner
-	for sourceKey, sc := range sourceConfigs {
-		scanners = append(scanners, s.Scanners[sc.Type].Build(sourceKey, sc, nil, nil, nil))
-	}
-	return scanners
+// Scanners list of scanners
+type Scanners struct {
+	Scanners []Scanner
 }
 
 // MetaDataMapper map the fields
@@ -72,26 +124,6 @@ type MetaDataMapper struct {
 type ResourceTag struct {
 	Key   string
 	Value string
-}
-
-// RunScannerForTests initiates a scan using the provided scanner and collects
-// the resources it discovers into a slice. This function is specifically
-// designed to help with testing, allowing you to run a scanner and easily
-// gather its results for verification.
-func RunScannerForTests(scanner Scanner) []resource.Resource {
-	resourceChannel := make(chan resource.Resource)
-
-	var res []resource.Resource
-
-	go func() {
-		scanner.Scan(resourceChannel)
-		close(resourceChannel)
-	}()
-
-	for r := range resourceChannel {
-		res = append(res, r)
-	}
-	return res
 }
 
 func safeDereference(s *string) string {
@@ -161,8 +193,7 @@ func (f *FieldMapper) getResourceMetaData() map[string]string {
 	return md
 }
 
-// BuildAWSConfig build aws config
-func BuildAWSConfig(s config.Source) aws.Config {
+func buildAWSConfig(s config.Source) aws.Config {
 	cfg, _ := awsConfig.LoadDefaultConfig(context.TODO())
 	awsCredentials := credentials.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
 

@@ -9,11 +9,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-co-op/gocron"
 	"github.com/google/go-github/v50/github"
+	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -53,6 +54,7 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 		sourceFields          []string
 		ghRepositories        []*github.Repository
 		expectedTotalResource int
+		expectedTotalMetaData int
 		expectedMetaDataKeys  []string
 	}{
 		{
@@ -89,6 +91,7 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 				},
 			},
 			expectedTotalResource: 1,
+			expectedTotalMetaData: 9,
 			expectedMetaDataKeys: []string{
 				fieldCompany,
 				fieldHomepage,
@@ -108,24 +111,24 @@ func TestGitHubRepositoryScanner_Scan(t *testing.T) {
 			mockClient := new(GitHubClientMock)
 			mockClient.On("ListRepositories", mock.Anything, mock.Anything, mock.Anything).Return(tc.ghRepositories, nil)
 
-			sm := new(storage.Mock)
-			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
+			mockStorage := new(storage.Mock)
+			mockStorage.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			sc := config.Source{
+				Type: pkg.SourceTypeGitHubRepository,
 				Configuration: map[string]string{
 					"token":       "test",
 					"user_or_org": "shaharia-lab",
 				},
-				Fields: tc.sourceFields,
+				Fields:   tc.sourceFields,
+				Schedule: "",
 			}
 
 			gh := GitHubRepositoryScanner{}
-			gh.Build("test", sc, sm, &gocron.Scheduler{}, &logrus.Logger{})
-			gh.setGitHubClient(mockClient)
+			gh.Setup("test", sc, NewScannerDependencies(scheduler.NewGoCron(), mockStorage, &logrus.Logger{}, metrics.NewCollector()))
+			gh.ghClient = mockClient
 
-			res := RunScannerForTests(&gh)
-			assert.Equal(t, tc.expectedTotalResource, len(res))
-			util.CheckIfMetaKeysExistsInResources(t, res, tc.expectedMetaDataKeys)
+			RunCommonScannerAssertionTest(t, &gh, tc.expectedTotalResource, tc.expectedTotalMetaData, tc.expectedMetaDataKeys)
 		})
 	}
 }
@@ -145,7 +148,7 @@ func TestNewGitHubRepositoryClient_ListRepositories_Return_Data(t *testing.T) {
 	defer ts.Close()
 
 	client, _ := github.NewEnterpriseClient(ts.URL, "", ts.Client())
-	gc := NewGitHubRepositoryClient(client)
+	gc := NewGitHubRepositoryClient(client, &logrus.Logger{})
 	repositories, err := gc.ListRepositories(ctx, "HI", &github.RepositoryListOptions{})
 
 	assert.NoError(t, err)
@@ -160,7 +163,7 @@ func TestNewGitHubRepositoryClient_ListRepositories_Bad_Response_Code(t *testing
 	defer ts.Close()
 
 	client, _ := github.NewEnterpriseClient(ts.URL, "", ts.Client())
-	gc := NewGitHubRepositoryClient(client)
+	gc := NewGitHubRepositoryClient(client, &logrus.Logger{})
 	_, err := gc.ListRepositories(ctx, "HI", &github.RepositoryListOptions{})
 
 	assert.Error(t, err)

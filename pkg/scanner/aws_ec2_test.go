@@ -4,17 +4,16 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-co-op/gocron"
+	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -59,6 +58,7 @@ func TestAWSEC2_Scan(t *testing.T) {
 		sourceFields          []string
 		awsEc2Instances       []types.Instance
 		expectedTotalResource int
+		expectedMetaDataCount int
 		expectedMetaDataKeys  []string
 	}{
 		{
@@ -101,6 +101,7 @@ func TestAWSEC2_Scan(t *testing.T) {
 				},
 			},
 			expectedTotalResource: 1,
+			expectedMetaDataCount: 9,
 			expectedMetaDataKeys: []string{
 				fieldInstanceID,
 				fieldImageID,
@@ -127,24 +128,26 @@ func TestAWSEC2_Scan(t *testing.T) {
 			}
 			mc.On("DescribeInstances", mock.Anything, mock.Anything, mock.Anything).Return(instanceOutput, nil)
 
-			sm := new(storage.Mock)
-			sm.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
+			storageMock := new(storage.Mock)
+			storageMock.On("GetNextVersionForResource", mock.Anything, mock.Anything).Return(1, nil)
 
 			sc := config.Source{
-				Type:          "",
-				ConfigFrom:    "",
-				Configuration: map[string]string{"region": "us-west-2", "account_id": "1234567890"},
-				Fields:        tc.sourceFields,
-				DependsOn:     nil,
-				Schedule:      config.Schedule{},
+				Type: pkg.SourceTypeAWSEC2,
+				Configuration: map[string]string{
+					"region":        "us-west-2",
+					"account_id":    "1234567890",
+					"access_key":    "xxx",
+					"secret_key":    "xxx",
+					"session_token": "xxx",
+				},
+				Fields:   tc.sourceFields,
+				Schedule: "@every 1h",
 			}
-			e := AWSEC2{}
-			e.Build("test-source", sc, sm, &gocron.Scheduler{}, &logrus.Logger{})
-			e.setEC2Client(mc)
 
-			res := RunScannerForTests(&e)
-			assert.Equal(t, tc.expectedTotalResource, len(res))
-			util.CheckIfMetaKeysExistsInResources(t, res, tc.expectedMetaDataKeys)
+			e := AWSEC2{}
+			_ = e.Setup("test-source", sc, NewScannerDependencies(scheduler.NewGoCron(), storageMock, &logrus.Logger{}, metrics.NewCollector()))
+			e.Ec2Client = mc
+			RunCommonScannerAssertionTest(t, &e, tc.expectedTotalResource, tc.expectedMetaDataCount, tc.expectedMetaDataKeys)
 		})
 	}
 }

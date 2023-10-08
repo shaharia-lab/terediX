@@ -6,14 +6,13 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/go-co-op/gocron"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/sirupsen/logrus"
-
 	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 
@@ -41,28 +40,39 @@ type AWSS3 struct {
 	S3Client   AWSS3Client
 	Region     string
 	Fields     []string
-	Schedule   config.Schedule
-	scheduler  *gocron.Scheduler
+	schedule   string
 	storage    storage.Storage
 	logger     *logrus.Logger
+	metrics    *metrics.Collector
 }
 
-// Build AWS S3 source
-func (a *AWSS3) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
-	a.SourceName = sourceKey
-	a.S3Client = s3.NewFromConfig(BuildAWSConfig(cfg))
+// Setup AWS S3 source
+func (a *AWSS3) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	a.storage = dependencies.GetStorage()
+	a.logger = dependencies.GetLogger()
+	a.schedule = cfg.Schedule
+	a.S3Client = s3.NewFromConfig(buildAWSConfig(cfg))
 	a.Region = cfg.Configuration["region"]
 	a.Fields = cfg.Fields
-	a.Schedule = cfg.Schedule
-	a.storage = storage
-	a.scheduler = scheduler
-	a.logger = logger
+	a.SourceName = name
+	a.metrics = dependencies.GetMetrics()
 
-	return a
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
+	return nil
 }
 
-func (a *AWSS3) setS3Client(s3Client AWSS3Client) {
-	a.S3Client = s3Client
+// GetName return source name
+func (a *AWSS3) GetName() string {
+	return a.SourceName
+}
+
+// GetSchedule return schedule
+func (a *AWSS3) GetSchedule() string {
+	return a.schedule
 }
 
 // GetKind return resource kind
@@ -72,22 +82,44 @@ func (a *AWSS3) GetKind() string {
 
 // Scan discover resource and send to resource channel
 func (a *AWSS3) Scan(resourceChannel chan resource.Resource) error {
-	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSS3)
+	nextResourceVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSS3)
 	if err != nil {
-		return err
+		a.logger.WithFields(logrus.Fields{
+			"scanner_name": a.SourceName,
+			"scanner_kind": a.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
+
 	// List all S3 buckets
 	output, err := a.S3Client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
-		return fmt.Errorf("unable to list buckets: %w", err)
+		a.logger.WithFields(logrus.Fields{
+			"scanner_name": a.SourceName,
+			"scanner_kind": a.GetKind(),
+		}).WithError(err).Error("Unable to get bucket list from aws s3 endpoint")
+
+		return fmt.Errorf("unable to get bucket list from aws s3 endpoint: %w", err)
 	}
+
+	totalResourceDiscovered := 0
 
 	for _, bucket := range output.Buckets {
-		res := resource.NewResource(pkg.ResourceKindAWSS3, aws.ToString(bucket.Name), aws.ToString(bucket.Name), a.SourceName, nextVersion)
+		res := resource.NewResource(pkg.ResourceKindAWSS3, aws.ToString(bucket.Name), aws.ToString(bucket.Name), a.SourceName, nextResourceVersion)
 		res.AddMetaData(a.getMetaData(bucket))
 		resourceChannel <- res
+
+		totalResourceDiscovered++
 	}
 
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
+
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 

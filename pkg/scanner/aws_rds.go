@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/rds"
-	types "github.com/aws/aws-sdk-go-v2/service/rds/types"
-	"github.com/go-co-op/gocron"
+	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
@@ -38,25 +38,40 @@ type AWSRDS struct {
 	Region     string
 	AccountID  string
 	Fields     []string
-	Schedule   config.Schedule
-	scheduler  *gocron.Scheduler
 	storage    storage.Storage
 	logger     *logrus.Logger
+	schedule   string
+	metrics    *metrics.Collector
 }
 
-// Build AWS S3 source
-func (a *AWSRDS) Build(sourceKey string, cfg config.Source, storage storage.Storage, scheduler *gocron.Scheduler, logger *logrus.Logger) Scanner {
-	a.SourceName = sourceKey
-	a.RdsClient = rds.NewFromConfig(BuildAWSConfig(cfg))
-	a.Region = cfg.Configuration["region"]
-	a.AccountID = cfg.Configuration["account_id"]
-	a.Fields = cfg.Fields
-	a.Schedule = cfg.Schedule
-	a.scheduler = scheduler
-	a.storage = storage
-	a.logger = logger
+// GetName return source name
+func (a *AWSRDS) GetName() string {
+	return a.SourceName
+}
 
-	return a
+// GetSchedule return schedule
+func (a *AWSRDS) GetSchedule() string {
+	return a.schedule
+}
+
+// Setup AWS S3 source
+func (a *AWSRDS) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	a.SourceName = name
+	a.storage = dependencies.GetStorage()
+	a.logger = dependencies.GetLogger()
+	a.schedule = cfg.Schedule
+	a.Region = cfg.Configuration["region"]
+	a.AccountID = cfg.Configuration["accountID"]
+	a.RdsClient = rds.NewFromConfig(buildAWSConfig(cfg))
+	a.Fields = cfg.Fields
+	a.metrics = dependencies.GetMetrics()
+
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
+	return nil
 }
 
 // GetKind return resource kind
@@ -66,24 +81,47 @@ func (a *AWSRDS) GetKind() string {
 
 // Scan discover resource and send to resource channel
 func (a *AWSRDS) Scan(resourceChannel chan resource.Resource) error {
-	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSEC2)
+	nextResourceVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSRDS)
 	if err != nil {
-		return err
+		a.logger.WithFields(logrus.Fields{
+			"scanner_name": a.SourceName,
+			"scanner_kind": a.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
 	}
-	rdsInstances, err := listAllRDSInstances(a.RdsClient)
+
+	totalResourceDiscovered := 0
+
+	rdsInstances, err := a.listAllRDSInstances(a.RdsClient)
 
 	for _, rdsInstance := range rdsInstances {
 		instanceID := aws.StringValue(rdsInstance.DBInstanceIdentifier)
 
 		if err != nil {
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to get tags for RDS instance")
+
 			return fmt.Errorf("failed to get tags for RDS instance %s. error: %w", instanceID, err)
 		}
 
-		r := resource.NewResource(pkg.ResourceKindAWSRDS, instanceID, instanceID, a.SourceName, nextVersion)
+		r := resource.NewResource(pkg.ResourceKindAWSRDS, instanceID, instanceID, a.SourceName, nextResourceVersion)
 		r.AddMetaData(a.getMetaData(rdsInstance))
 
 		resourceChannel <- r
+
+		totalResourceDiscovered++
 	}
+
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
+
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), float64(totalResourceDiscovered))
 
 	return nil
 }
@@ -112,11 +150,7 @@ func (a *AWSRDS) getMetaData(rdsInstance types.DBInstance) map[string]string {
 	return NewFieldMapper(mappings, getTags, a.Fields).getResourceMetaData()
 }
 
-func (a *AWSRDS) setRDSClient(rdsClient RdsClient) {
-	a.RdsClient = rdsClient
-}
-
-func listAllRDSInstances(client RdsClient) ([]types.DBInstance, error) {
+func (a *AWSRDS) listAllRDSInstances(client RdsClient) ([]types.DBInstance, error) {
 	var allInstances []types.DBInstance
 
 	// Define Pagination logic
@@ -124,8 +158,14 @@ func listAllRDSInstances(client RdsClient) ([]types.DBInstance, error) {
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			return nil, err
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to make api call to aws rds endpoint")
+
+			return nil, fmt.Errorf("unable to make api call to aws rds endpoint: %w", err)
 		}
+
 		allInstances = append(allInstances, output.DBInstances...)
 	}
 
