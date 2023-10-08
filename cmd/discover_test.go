@@ -13,7 +13,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shaharia-lab/teredix/pkg"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
@@ -170,6 +172,14 @@ func Test_run(t *testing.T) {
 
 			err = run(ctx, appConfig, &logrus.Logger{})
 			assert.NoError(t, err)
+
+			st, err := storage.BuildStorage(appConfig)
+			assert.NoError(t, err)
+
+			resources, err := st.Find(storage.ResourceFilter{Kind: pkg.ResourceKindFileSystem})
+			assert.NoError(t, err)
+
+			assert.Equal(t, 3, len(resources))
 
 			defer resetDatabase(testDBHost)
 		})
