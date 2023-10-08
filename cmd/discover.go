@@ -2,7 +2,10 @@
 package cmd
 
 import (
+	"context"
+	"errors"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/shaharia-lab/teredix/pkg/config"
@@ -26,7 +29,15 @@ func NewDiscoverCommand() *cobra.Command {
 		Long:  "Start discovering resources",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger := logrus.New()
-			return run(cfgFile, logger)
+			appConfig, err := config.Load(cfgFile)
+			if err != nil {
+				logger.WithError(err).Error("failed to load and parse configuration file")
+				return err
+			}
+
+			ctx := context.Background()
+
+			return run(ctx, appConfig, logger)
 		},
 	}
 
@@ -35,13 +46,7 @@ func NewDiscoverCommand() *cobra.Command {
 	return &cmd
 }
 
-func run(cfgFile string, logger *logrus.Logger) error {
-	appConfig, err := config.Load(cfgFile)
-	if err != nil {
-		logger.WithError(err).Error("failed to load and parse configuration file")
-		return err
-	}
-
+func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger) error {
 	st, err := storage.BuildStorage(appConfig)
 	if err != nil {
 		logger.WithError(err).Error("failed to build storage")
@@ -68,10 +73,30 @@ func run(cfgFile string, logger *logrus.Logger) error {
 
 	logger.Info("started processing scheduled jobs")
 
+	// Set up your handler
 	http.Handle("/metrics", promhttp.Handler())
-	err = http.ListenAndServe(":2112", nil)
-	if err != nil {
-		logger.WithError(err).Error("failed to start prometheus server")
+
+	// Use http.Server directly to gain control over its lifecycle
+	server := &http.Server{
+		Addr: ":2112",
+	}
+
+	// Start server in a separate goroutine so it doesn't block
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.WithError(err).Error("failed to start http server")
+		}
+	}()
+
+	// Wait for context cancellation (in your case, the timeout)
+	<-ctx.Done()
+
+	// Shutdown the server gracefully with a timeout.
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("failed to shutdown server gracefully")
 		return err
 	}
 
