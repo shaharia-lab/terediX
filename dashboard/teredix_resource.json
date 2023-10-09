@@ -1,4 +1,5 @@
 {
+  "__inputs": [],
   "__elements": {},
   "__requires": [
     {
@@ -87,7 +88,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 11,
+        "w": 12,
         "x": 0,
         "y": 0
       },
@@ -149,8 +150,8 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 13,
-        "x": 11,
+        "w": 12,
+        "x": 12,
         "y": 0
       },
       "id": 5,
@@ -724,6 +725,6 @@
   "timezone": "",
   "title": "TerediX Resources",
   "uid": "a8f7bb98-4868-4528-820d-997425a2c47e",
-  "version": 12,
+  "version": 2,
   "weekStart": ""
 }
