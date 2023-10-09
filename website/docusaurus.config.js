@@ -41,17 +41,15 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          breadcrumbs: true,
+          showLastUpdateTime: true,
+          editUrl: 'https://github.com/shaharia-lab/teredix/tree/main/website/docs',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/shaharia-lab/teredix/tree/main/website/blog',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
