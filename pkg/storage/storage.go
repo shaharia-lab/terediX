@@ -20,6 +20,20 @@ type ResourceFilter struct {
 	ExternalID string
 }
 
+type ResourceCount struct {
+	Source     string
+	Kind       string
+	TotalCount int
+}
+
+type MetadataCount struct {
+	Source     string
+	Kind       string
+	Key        string
+	Value      string
+	TotalCount int
+}
+
 // Storage interface helps to build different storage
 type Storage interface {
 	// Prepare to prepare the Storage schema
@@ -40,6 +54,10 @@ type Storage interface {
 	GetNextVersionForResource(source, kind string) (int, error)
 
 	CleanupOldVersion(source, kind string) (int64, error)
+
+	GetResourceCount() ([]ResourceCount, error)
+
+	GetResourceCountByMetaData() ([]MetadataCount, error)
 }
 
 // Query build query based on filters

@@ -42,6 +42,29 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 		p.processResources(resourceChan)
 	}()
 
+	// Add some system specific jobs
+	// Collect total resource count every 1 minute and expose to prometheus metrics
+	sch.AddFunc("@every 1m", func() {
+		p.logger.Info("Collecting total resource count")
+		resourceCounts, err := p.Storage.GetResourceCount()
+		if err != nil {
+			p.logger.WithError(err).Error("Failed to get resource count")
+		}
+
+		metaDataKeyCounts, err := p.Storage.GetResourceCountByMetaData()
+		if err != nil {
+			p.logger.WithError(err).Error("Failed to get metadata key count")
+		}
+
+		for _, rc := range resourceCounts {
+			p.metrics.CollectTotalResourceCount(rc.Source, rc.Kind, rc.TotalCount)
+		}
+
+		for _, md := range metaDataKeyCounts {
+			p.metrics.CollectTotalResourceCountByMetaData(md.Source, md.Kind, md.Key, md.Value, md.TotalCount)
+		}
+	})
+
 	for _, sc := range p.scanners {
 		lf := logrus.Fields{"scanner_name": sc.GetName(), "scanner_kind": sc.GetKind()}
 

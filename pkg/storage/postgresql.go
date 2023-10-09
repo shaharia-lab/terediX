@@ -396,3 +396,77 @@ func (p *PostgreSQL) CleanupOldVersion(source, kind string) (int64, error) {
 
 	return affectedRows, nil
 }
+
+// GetResourceCount get resource count
+func (p *PostgreSQL) GetResourceCount() ([]ResourceCount, error) {
+	const query = `
+	SELECT r.source, r.kind, COUNT(r.id) as total_count
+	FROM resources r
+	JOIN (
+	    SELECT source, kind, MAX(version) as latest_version
+	    FROM resources
+	    GROUP BY kind, source
+	) sub ON r.kind = sub.kind AND r.version = sub.latest_version AND r.source = sub.source
+	GROUP BY r.kind, r.source
+	ORDER BY r.kind;
+	`
+
+	rows, err := p.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var results []ResourceCount
+	for rows.Next() {
+		var rc ResourceCount
+		err := rows.Scan(&rc.Source, &rc.Kind, &rc.TotalCount)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, rc)
+	}
+
+	return results, nil
+}
+
+// GetResourceCountByMetaData get filtered resource count
+func (p *PostgreSQL) GetResourceCountByMetaData() ([]MetadataCount, error) {
+	const query = `
+	SELECT r.source, r.kind, m.key, m.value, COUNT(distinct m.resource_id) as total_count
+	FROM metadata m
+	JOIN resources r ON m.resource_id = r.id
+	JOIN (
+	    SELECT source, kind, MAX(version) as latest_version
+	    FROM resources
+	    GROUP BY source, kind
+	) sub ON r.source = sub.source AND r.kind = sub.kind AND r.version = sub.latest_version
+	GROUP BY r.source, r.kind, m.key, m.value
+	HAVING COUNT(distinct m.resource_id) > 2
+	ORDER BY r.source, r.kind, m.key, total_count DESC;
+	`
+
+	rows, err := p.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []MetadataCount
+	for rows.Next() {
+		var mkvc MetadataCount
+		err := rows.Scan(&mkvc.Source, &mkvc.Kind, &mkvc.Key, &mkvc.Value, &mkvc.TotalCount)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, mkvc)
+	}
+
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
