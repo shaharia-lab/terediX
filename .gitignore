@@ -6,3 +6,23 @@ docker-compose.yml
 
 config.yaml
 coverage_*.out
+
+# docusaurus gitignore
+/website/node_modules
+
+# Production
+/website/build
+
+# Generated files
+/website/.docusaurus
+/website/.cache-loader
+
+# Misc
+/website/.env.local
+/website/.env.development.local
+/website/.env.test.local
+/website/.env.production.local
+
+/website/npm-debug.log*
+/website/yarn-debug.log*
+/website/yarn-error.log*
