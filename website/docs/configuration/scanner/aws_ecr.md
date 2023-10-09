@@ -1,17 +1,17 @@
 ---
-sidebar_position: 2
-title: "AWS EC2"
+sidebar_position: 3
+title: "AWS ECR"
 ---
 
-# AWS EC2
+# AWS ECR
 
-<img src="/img/aws_ec2_icon.png" alt="AWS EC2" width="250"/>
+<img src="/img/aws_ecr_icon.png" alt="AWS ECR" width="250"/>
 
 ## Configuration
 
 ### Type
 
-Resource type. In this case it would be `aws_ec2`.
+Resource type. In this case it would be `aws_ecr`.
 
 ### Configuration
 
@@ -26,14 +26,10 @@ Resource type. In this case it would be `aws_ec2`.
 List of available fields to add with resource add metadata. During scanning resources, scanner will only fetch data 
 from the following fields.
 
-- instance_id
-- image_id
-- private_dns_name
-- instance_type
-- architecture
-- instance_lifecycle
-- instance_state
-- vpc_id
+- repository_name
+- repository_uri
+- registry_id
+- arn
 - tags
 
 ### Schedule
@@ -44,8 +40,8 @@ from the following fields.
 
 ```yaml
 source:
-  aws_ec2_source_one:
-      type: aws_ec2
+  aws_ecr_source_one:
+      type: aws_ecr
       configuration:
         access_key: "xxxx"
         secret_key: "xxxx"
@@ -53,20 +49,16 @@ source:
         region: "x"
         account_id: "xxx"
       fields:
-        - instance_id
-        - image_id
-        - private_dns_name
-        - instance_type
-        - architecture
-        - instance_lifecycle
-        - instance_state
-        - vpc_id
+        - repository_name
+        - repository_uri
+        - registry_id
+        - arn
         - tags
       schedule: "@every 24h"
 ```
 
-In the above example, we have added a source named `aws_ec2_source_one` with type `aws_ec2`. We have added some fields to add with each resource. 
+In the above example, we have added a source named `aws_ecr_source_one` with type `aws_ecr`. We have added some fields to add with each resource. 
 We have also set the schedule to run this source every 24 hours.
 
-Based on the above example, scanner_name would be `aws_ec2_source_one` and scanner_type would be `aws_ec2`. This is 
+Based on the above example, scanner_name would be `aws_ecr_source_one` and scanner_type would be `aws_ecr`. This is 
 important to filter resources in Grafana dashboard.

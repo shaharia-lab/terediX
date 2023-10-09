@@ -1,17 +1,62 @@
 ---
-sidebar_position: 3
+sidebar_position: 5
 title: "AWS S3"
 ---
 
 # AWS S3
 
-| option	                                      | type     | description	                                                                                                                                         |
-|----------------------------------------------|----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 	  [source_name].type                        | text     | `aws_s3`	                                                                                                                                            |
-| 	  [source_name].configuration.access_key    | secret   | AWS Access Key	                                                                                                                                      |
-| 	  [source_name].configuration.secret_key    | secret   | AWS Secret Key	                                                                                                                                      |
-| 	  [source_name].configuration.region        | text     | AWS Region. e.g: us-west-1	                                                                                                                          |
-| 	  [source_name].configuration.session_token | secret   | AWS session token	                                                                                                                                   |
-| 	  [source_name].configuration.account_id    | text     | AWS account ID	                                                                                                                                      |
-| 	  [source_name].fields                      | list     | List of available fields to add with resource add meta data.<br/> <br/>**Available fields:**<br/> - bucket_name<br/>- region<br/>- arn <br/> - tags	 |
-| 	  [source_name].schedule                    | interval | Set interval to schedule this source. e.g: `@every 10s`, `@every <br/>24h` or any valid cron expression `*/10 * * * * *`	                            |
+<img src="/img/aws_s3_icon.png" alt="AWS S3" width="250"/>
+
+## Configuration
+
+### Type
+
+Resource type. In this case it would be `aws_s3`.
+
+### Configuration
+
+- **access_key**: AWS access key
+- **secret_key**: AWS secret key
+- **region**: AWS region. e.g: us-west-1
+- **session_token**: AWS session token
+- **account_id**: AWS account ID
+
+### Fields
+
+List of available fields to add with resource add metadata. During scanning resources, scanner will only fetch data 
+from the following fields.
+
+- bucket_name
+- region
+- arn
+- tags
+
+### Schedule
+
+**🔗 [Check schedule format](/docs/configuration/scanner/overview#schedule-format)**.
+
+## Example
+
+```yaml
+source:
+  aws_s3_source_one:
+      type: aws_s3
+      configuration:
+        access_key: "xxxx"
+        secret_key: "xxxx"
+        session_token: "xxxx"
+        region: "x"
+        account_id: "xxx"
+      fields:
+        - bucket_name
+        - region
+        - arn
+        - tags
+      schedule: "@every 24h"
+```
+
+In the above example, we have added a source named `aws_s3_source_one` with type `aws_s3`. We have added some fields to add with each resource. 
+We have also set the schedule to run this source every 24 hours.
+
+Based on the above example, scanner_name would be `aws_s3_source_one` and scanner_type would be `aws_s3`. This is 
+important to filter resources in Grafana dashboard.

@@ -2,6 +2,7 @@
 sidebar_position: 2
 title: "PostgreSQL"
 ---
+
 # PostgreSQL Storage Engine
 
 Here is the configuration for PostgreSQL storage engine.
@@ -13,3 +14,18 @@ Here is the configuration for PostgreSQL storage engine.
 | 	  engines[postgresql].user | text   | Username of the PostgreSQL server.	      |
 | 	  engines[postgresql].pass | text   | Password of the PostgreSQL server.	      |
 | 	  engines[postgresql].db   | text   | Database name of the PostgreSQL server.	 |
+
+
+## Example
+
+```yaml
+storage:
+  engines:
+    postgresql:
+      host: "localhost"
+      port: 5432
+      user: "user"
+      password: "password"
+      db: "db_name"
+  default_engine: postgresql
+```

@@ -5,7 +5,8 @@ title: "Overview"
 
 # Source
 
-Source is the place where terediX will discover the data. You can add multiple sources in the configuration file.
+Source is the place where terediX will discover the data. You can add multiple sources in the configuration file. 
+Every source will build a scanner based on the source kind and configuration.
 
 ### Common source configuration
 
@@ -27,3 +28,16 @@ Source is the place where terediX will discover the data. You can add multiple s
 | aws_ecr           | Discover data from AWS ECR. You can use this source to discover data from AWS ECR repository. See the configuration for `aws_ecr` source type.	              |
 | file_system       | Discover data from local file system. You can use this source to discover data from local file system. See the configuration for `file_system` source type.	 |
 | github_repository | List of GitHub repositories. See the configuration for `github_repository` source type                                                                       |
+
+
+### Schedule Format
+
+You can set the schedule for each source. The schedule format is similar to the cron expression.
+
+Valid schedule formats are:
+- `@every 10s`
+- `@every 1m`
+- `@every 1h`
+- `@every 1d`
+- `@every 1w`
+- `*/10 * * * * *`  # cron expression that will run in every 10 seconds
