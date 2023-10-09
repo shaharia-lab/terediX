@@ -66,6 +66,22 @@ var totalResourceDiscoveredByScanner = promauto.NewGaugeVec(prometheus.GaugeOpts
 	Help: "The total resource discovered by scanner",
 }, []string{"scanner_name", "scanner_kind"})
 
+var resourceCounter = promauto.NewGaugeVec(
+	prometheus.GaugeOpts{
+		Name: "teredix_total_resource",
+		Help: "Total count of resources by source and kind for the latest version.",
+	},
+	[]string{"scanner_name", "scanner_kind"},
+)
+
+var resourceCounterByMetadata = promauto.NewGaugeVec(
+	prometheus.GaugeOpts{
+		Name: "teredix_total_resource_by_metadata_key_value",
+		Help: "Total count of resources by metadata for the latest version.",
+	},
+	[]string{"scanner_name", "scanner_kind", "metadata_key", "metadata_value"},
+)
+
 // Collector collect metrics
 type Collector struct {
 }
@@ -133,4 +149,14 @@ func (c *Collector) CollectTotalStorageBatchPersistingLatencyInMs(totalLatency f
 // CollectTotalResourceDiscoveredByScanner collect total resource discovered by scanner
 func (c *Collector) CollectTotalResourceDiscoveredByScanner(scannerName, scannerKind string, totalResourceDiscovered float64) {
 	totalResourceDiscoveredByScanner.WithLabelValues(scannerName, scannerKind).Set(totalResourceDiscovered)
+}
+
+// CollectTotalResourceCount collect total resource count
+func (c *Collector) CollectTotalResourceCount(source, kind string, totalResource int) {
+	resourceCounter.WithLabelValues(source, kind).Set(float64(totalResource))
+}
+
+// CollectTotalResourceCountByMetaData collect total resource count by metadata key
+func (c *Collector) CollectTotalResourceCountByMetaData(source, kind, metaDataKey string, metaDataValue string, totalResource int) {
+	resourceCounterByMetadata.WithLabelValues(source, kind, metaDataKey, metaDataValue).Set(float64(totalResource))
 }

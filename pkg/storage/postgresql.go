@@ -366,23 +366,107 @@ func (p *PostgreSQL) GetNextVersionForResource(source, kind string) (int, error)
 }
 
 // CleanupOldVersion cleanup old version of resources
-func (p *PostgreSQL) CleanupOldVersion(source, kind string) (int, error) {
-	query := `DELETE FROM resources WHERE (kind, external_id, name, version) NOT IN (
-    SELECT kind, external_id, name, max(version)
-    FROM resources
-    WHERE kind = $1 AND source = $2
-    GROUP BY kind, external_id, name
-) AND kind = $1 AND source = $2`
+func (p *PostgreSQL) CleanupOldVersion(source, kind string) (int64, error) {
+	// Construct the SQL statement
+	query := `
+	DELETE FROM resources
+	WHERE source = $1
+	  AND kind = $2
+	  AND version NOT IN (
+		SELECT DISTINCT version
+		FROM resources
+		WHERE source = $1
+		  AND kind = $2
+		ORDER BY version DESC
+		LIMIT $3
+	  );
+	`
 
-	result, err := p.DB.Exec(query, kind, source)
+	// Execute the query
+	result, err := p.DB.Exec(query, source, kind, noOfVersionToKeep)
 	if err != nil {
-		return 0, fmt.Errorf("failed to cleanup old version of resources: %w", err)
+		return 0, fmt.Errorf("failed to cleanup the resources: %v", err)
 	}
 
+	// Get the count of affected rows
 	affectedRows, err := result.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("failed to get affected rows: %w", err)
+		return 0, fmt.Errorf("failed to retrieve affected rows count: %v", err)
 	}
 
-	return int(affectedRows), nil
+	return affectedRows, nil
+}
+
+// GetResourceCount get resource count
+func (p *PostgreSQL) GetResourceCount() ([]ResourceCount, error) {
+	const query = `
+	SELECT r.source, r.kind, COUNT(r.id) as total_count
+	FROM resources r
+	JOIN (
+	    SELECT source, kind, MAX(version) as latest_version
+	    FROM resources
+	    GROUP BY kind, source
+	) sub ON r.kind = sub.kind AND r.version = sub.latest_version AND r.source = sub.source
+	GROUP BY r.kind, r.source
+	ORDER BY r.kind;
+	`
+
+	rows, err := p.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var results []ResourceCount
+	for rows.Next() {
+		var rc ResourceCount
+		err := rows.Scan(&rc.Source, &rc.Kind, &rc.TotalCount)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, rc)
+	}
+
+	return results, nil
+}
+
+// GetResourceCountByMetaData get filtered resource count
+func (p *PostgreSQL) GetResourceCountByMetaData() ([]MetadataCount, error) {
+	const query = `
+	SELECT r.source, r.kind, m.key, m.value, COUNT(distinct m.resource_id) as total_count
+	FROM metadata m
+	JOIN resources r ON m.resource_id = r.id
+	JOIN (
+	    SELECT source, kind, MAX(version) as latest_version
+	    FROM resources
+	    GROUP BY source, kind
+	) sub ON r.source = sub.source AND r.kind = sub.kind AND r.version = sub.latest_version
+	GROUP BY r.source, r.kind, m.key, m.value
+	HAVING COUNT(distinct m.resource_id) > 2
+	ORDER BY r.source, r.kind, m.key, total_count DESC;
+	`
+
+	rows, err := p.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []MetadataCount
+	for rows.Next() {
+		var mkvc MetadataCount
+		err := rows.Scan(&mkvc.Source, &mkvc.Kind, &mkvc.Key, &mkvc.Value, &mkvc.TotalCount)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, mkvc)
+	}
+
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }

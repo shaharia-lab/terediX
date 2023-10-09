@@ -41,35 +41,36 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 		p.logger.Info("Starting resource processing goroutine")
 		p.processResources(resourceChan)
 	}()
+
+	// Add some system specific jobs
+	// Collect total resource count every 1 minute and expose to prometheus metrics
+	sch.AddFunc("@every 1m", func() {
+		p.logger.Info("Collecting total resource count")
+		resourceCounts, err := p.Storage.GetResourceCount()
+		if err != nil {
+			p.logger.WithError(err).Error("Failed to get resource count")
+		}
+
+		metaDataKeyCounts, err := p.Storage.GetResourceCountByMetaData()
+		if err != nil {
+			p.logger.WithError(err).Error("Failed to get metadata key count")
+		}
+
+		for _, rc := range resourceCounts {
+			p.metrics.CollectTotalResourceCount(rc.Source, rc.Kind, rc.TotalCount)
+		}
+
+		for _, md := range metaDataKeyCounts {
+			p.metrics.CollectTotalResourceCountByMetaData(md.Source, md.Kind, md.Key, md.Value, md.TotalCount)
+		}
+	})
+
 	for _, sc := range p.scanners {
 		lf := logrus.Fields{"scanner_name": sc.GetName(), "scanner_kind": sc.GetKind()}
 
 		// necessary to store the current scanner in a new variable because of passing this inside closure
 		scannerCopyForClosure := sc
-		err := sch.AddFunc(sc.GetSchedule(), func() {
-			start := time.Now()
-			// Track initial memory
-			var m1 runtime.MemStats
-			runtime.ReadMemStats(&m1)
-
-			err := scannerCopyForClosure.Scan(resourceChan)
-
-			if err != nil {
-				p.metrics.CollectTotalProcessErrorCount("scanner_scan")
-				p.logger.WithFields(lf).WithError(err).Error("Failed to scan resources")
-			}
-
-			duration := time.Since(start)
-			// Track end memory
-			var m2 runtime.MemStats
-			runtime.ReadMemStats(&m2)
-
-			p.metrics.RecordScanTimeInSecs(sc.GetName(), sc.GetKind(), duration.Seconds())
-
-			p.metrics.CollectTotalMemoryUsageByScannerInMB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/(1024*1024))
-			p.metrics.CollectTotalMemoryUsageByScannerInKB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/1024)
-			p.metrics.CollectTotalMemoryUsageByScannerInBytes(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc))
-		})
+		err := sch.AddFunc(sc.GetSchedule(), p.scannerJob(resourceChan, scannerCopyForClosure, lf, sc))
 
 		if err != nil {
 			p.logger.WithFields(lf).WithError(err).Error("Failed to schedule scanner in job queue")
@@ -93,6 +94,41 @@ func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.S
 	p.logger.Info("Scheduler has been started")
 	p.metrics.CollectTotalSchedulerStartCount()
 	return nil
+}
+
+func (p *Processor) scannerJob(resourceChan chan resource.Resource, scannerCopyForClosure scanner.Scanner, lf logrus.Fields, sc scanner.Scanner) func() {
+	return func() {
+		start := time.Now()
+		// Track initial memory
+		var m1 runtime.MemStats
+		runtime.ReadMemStats(&m1)
+
+		err := scannerCopyForClosure.Scan(resourceChan)
+
+		if err != nil {
+			p.metrics.CollectTotalProcessErrorCount("scanner_scan")
+			p.logger.WithFields(lf).WithError(err).Error("Failed to scan resources")
+		}
+
+		// Cleanup old resources
+		totalCleanedUpResources, err := p.Storage.CleanupOldVersion(scannerCopyForClosure.GetName(), scannerCopyForClosure.GetKind())
+		if err != nil {
+			p.logger.WithFields(lf).WithError(err).Error("Failed to cleanup old resources")
+		} else {
+			p.logger.WithFields(lf).WithField("total_resources_cleaned_up", totalCleanedUpResources).Info("Old resources has been cleaned up")
+		}
+
+		duration := time.Since(start)
+		// Track end memory
+		var m2 runtime.MemStats
+		runtime.ReadMemStats(&m2)
+
+		p.metrics.RecordScanTimeInSecs(sc.GetName(), sc.GetKind(), duration.Seconds())
+
+		p.metrics.CollectTotalMemoryUsageByScannerInMB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/(1024*1024))
+		p.metrics.CollectTotalMemoryUsageByScannerInKB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/1024)
+		p.metrics.CollectTotalMemoryUsageByScannerInBytes(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc))
+	}
 }
 
 func (p *Processor) processResources(resourceChan <-chan resource.Resource) {
