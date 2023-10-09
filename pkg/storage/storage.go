@@ -20,12 +20,14 @@ type ResourceFilter struct {
 	ExternalID string
 }
 
+// ResourceCount count resource
 type ResourceCount struct {
 	Source     string
 	Kind       string
 	TotalCount int
 }
 
+// MetadataCount count resources by metadata
 type MetadataCount struct {
 	Source     string
 	Kind       string
