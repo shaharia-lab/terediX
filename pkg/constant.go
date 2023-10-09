@@ -2,6 +2,9 @@
 package pkg
 
 const (
+	// ResourceKindFileSystem file_system kind
+	ResourceKindFileSystem = "file_system"
+
 	// ResourceKindGitHubRepository GitHubRepository kind
 	ResourceKindGitHubRepository = "GitHubRepository"
 

@@ -49,31 +49,15 @@ func TestPostgreSQL_Persist(t *testing.T) {
 	resourcesStmt := mock.ExpectPrepare(`INSERT INTO resources`)
 	metadataStmt := mock.ExpectPrepare(`INSERT INTO metadata`)
 
-	resources := []resource.Resource{
-		{
-			Kind:       "resource1",
-			UUID:       "uuid1",
-			Name:       "name1",
-			ExternalID: "external_id1",
-			MetaData: []resource.MetaData{
-				{
-					Key:   "key1",
-					Value: "value1",
-				},
-			},
-			RelatedWith: []resource.Resource{
-				{
-					Kind:       "resource2",
-					UUID:       "uuid2",
-					Name:       "name2",
-					ExternalID: "external_id2",
-				},
-			},
-		},
-	}
+	r1 := resource.NewResource("resource1", "name1", "external_id1", "scanner_name", 1)
+	r1.SetUUID("uuid1")
+	r1.AddMetaData(map[string]string{"key1": "value1"})
+	r1.AddRelation(resource.NewResource("resource2", "name2", "external_id2", "", 1))
+
+	resources := []resource.Resource{r1}
 
 	// mock Persist statement results
-	resourcesStmt.ExpectQuery().WithArgs("resource1", "uuid1", "name1", "external_id1").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+	resourcesStmt.ExpectQuery().WithArgs("resource1", "uuid1", "name1", "external_id1", "scanner_name", 1).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 	metadataStmt.ExpectExec().WithArgs(1, "key1", "value1").WillReturnResult(sqlmock.NewResult(0, 0))
 
 	// call the method being tested
@@ -98,31 +82,31 @@ func TestPostgreSQL_Find(t *testing.T) {
 		{
 			name:                  "find without any filtering parameter",
 			resourceFilter:        ResourceFilter{},
-			expectedQuery:         "SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id",
+			expectedQuery:         "SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id",
 			expectedResourceCount: 2,
 		},
 		{
 			name:                  "find by resource name",
 			resourceFilter:        ResourceFilter{Name: "name1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.name = \$1`,
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.name = \$1`,
 			expectedResourceCount: 0,
 		},
 		{
 			name:                  "find by resource uuid",
 			resourceFilter:        ResourceFilter{UUID: "uuid1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.uuid = \$1`,
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.uuid = \$1`,
 			expectedResourceCount: 0,
 		},
 		{
-			name:                  "find by resource ExternalID",
+			name:                  "find by resource externalID",
 			resourceFilter:        ResourceFilter{ExternalID: "external_id1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.external_id`,
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.external_id`,
 			expectedResourceCount: 0,
 		},
 		{
 			name:                  "find by resource kind, uuid, name",
 			resourceFilter:        ResourceFilter{Kind: "kind1", UUID: "uuid1", Name: "name1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r\.kind = .+? AND r\.uuid = .+? AND r\.name = `,
+			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r\.kind = .+? AND r\.uuid = .+? AND r\.name = `,
 			expectedResourceCount: 0,
 		},
 	}
@@ -136,9 +120,9 @@ func TestPostgreSQL_Find(t *testing.T) {
 	p := &PostgreSQL{DB: db}
 
 	// expected rows returned by the mock database query
-	expectedRows := sqlmock.NewRows([]string{"kind", "uuid", "name", "external_id", "meta_key", "meta_value", "related_kind", "related_uuid", "related_name", "related_external_id"}).
-		AddRow("kind1", "uuid1", "name1", "external_id1", "meta_key1", "meta_value1", "related_kind1", "related_uuid1", "related_name1", "related_external_id1").
-		AddRow("kind2", "uuid2", "name2", "external_id2", "meta_key2", "meta_value2", "related_kind2", "related_uuid2", "related_name2", "related_external_id2")
+	expectedRows := sqlmock.NewRows([]string{"kind", "uuid", "name", "external_id", "scan1", "1", "meta_key", "meta_value", "related_kind", "related_uuid", "related_name", "related_external_id"}).
+		AddRow("kind1", "uuid1", "name1", "external_id1", "scan2", "1", "meta_key1", "meta_value1", "related_kind1", "related_uuid1", "related_name1", "related_external_id1").
+		AddRow("kind2", "uuid2", "name2", "external_id2", "scan3", "1", "meta_key2", "meta_value2", "related_kind2", "related_uuid2", "related_name2", "related_external_id2")
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

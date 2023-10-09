@@ -1,0 +1,31 @@
+name: Validating JSON Schema
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'pkg/config/testdata/**'
+      - 'pkg/config/schema.json'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'pkg/config/testdata/**'
+      - 'pkg/config/schema.json'
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validating_json_schema:
+    name: Validating JSON Schema
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Go ^1.20
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20'
+
+      - name: Run configuration validation against JSON schema
+        run: |
+          make validate_json_schema

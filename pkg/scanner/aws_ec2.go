@@ -3,9 +3,14 @@ package scanner
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
@@ -38,40 +43,83 @@ type AWSEC2 struct {
 	Region     string
 	AccountID  string
 	Fields     []string
+	storage    storage.Storage
+	logger     *logrus.Logger
+	schedule   string
+	metrics    *metrics.Collector
 }
 
-// NewAWSEC2 construct AWS EC2 source
-func NewAWSEC2(sourceName string, region string, accountID string, ec2Client Ec2Client, fields []string) *AWSEC2 {
-	return &AWSEC2{
-		SourceName: sourceName,
-		Ec2Client:  ec2Client,
-		Region:     region,
-		AccountID:  accountID,
-		Fields:     fields,
-	}
+// GetName return source name
+func (a *AWSEC2) GetName() string {
+	return a.SourceName
+}
+
+// GetSchedule return schedule
+func (a *AWSEC2) GetSchedule() string {
+	return a.schedule
+}
+
+// Setup AWS EC2 source
+func (a *AWSEC2) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	a.SourceName = name
+	a.Ec2Client = ec2.NewFromConfig(buildAWSConfig(cfg))
+	a.Region = cfg.Configuration["region"]
+	a.AccountID = cfg.Configuration["account_id"]
+	a.Fields = cfg.Fields
+	a.schedule = cfg.Schedule
+	a.storage = dependencies.GetStorage()
+	a.logger = dependencies.GetLogger()
+	a.metrics = dependencies.GetMetrics()
+
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
+	return nil
+}
+
+// GetKind return resource kind
+func (a *AWSEC2) GetKind() string {
+	return pkg.ResourceKindAWSEC2
 }
 
 // Scan discover resource and send to resource channel
 func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
+	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSEC2)
+	if err != nil {
+		a.logger.WithFields(logrus.Fields{
+			"scanner_name": a.SourceName,
+			"scanner_kind": a.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
+	}
+
+	totalResourceDiscovered := 0
+
 	pageNum := 0
 	nextToken := ""
 
 	for {
 		resp, err := a.makeAPICallToAWS(nextToken)
 		if err != nil {
-			return err
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to make api call to aws ec2 endpoint")
+
+			return fmt.Errorf("unable to make api call to aws ec2 endpoint: %w", err)
 		}
 
 		// Loop through instances and their tags
 		for _, reservation := range resp.Reservations {
 			for _, instance := range reservation.Instances {
-				resourceChannel <- resource.Resource{
-					Name:       *instance.InstanceId,
-					Kind:       pkg.ResourceKindAWSEC2,
-					UUID:       *instance.InstanceId,
-					ExternalID: *instance.InstanceId,
-					MetaData:   a.getMetaData(instance),
-				}
+				res := resource.NewResource(pkg.ResourceKindAWSEC2, *instance.InstanceId, *instance.InstanceId, a.SourceName, nextVersion)
+				res.AddMetaData(a.getMetaData(instance))
+				resourceChannel <- res
+
+				totalResourceDiscovered++
 			}
 		}
 
@@ -82,10 +130,18 @@ func (a *AWSEC2) Scan(resourceChannel chan resource.Resource) error {
 		pageNum++
 	}
 
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
+
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 
-func (a *AWSEC2) getMetaData(instance types.Instance) []resource.MetaData {
+// getMetaData build metadata
+func (a *AWSEC2) getMetaData(instance types.Instance) map[string]string {
 	mappings := map[string]func() string{
 		fieldInstanceID:        func() string { return safeDereference(instance.InstanceId) },
 		fieldImageID:           func() string { return safeDereference(instance.ImageId) },

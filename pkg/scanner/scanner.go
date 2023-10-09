@@ -5,17 +5,113 @@ import (
 	"fmt"
 	"strings"
 
+	"context"
+
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
 const (
 	fieldTags = "tags"
 )
 
+// Factory is a function that returns a new instance of a Scanner.
+type Factory func() Scanner
+
+var scannerFactories = map[string]Factory{
+	pkg.ResourceKindAWSEC2:         func() Scanner { return &AWSEC2{} },
+	pkg.ResourceKindAWSECR:         func() Scanner { return &AWSECR{} },
+	pkg.ResourceKindAWSRDS:         func() Scanner { return &AWSRDS{} },
+	pkg.ResourceKindAWSS3:          func() Scanner { return &AWSS3{} },
+	pkg.SourceTypeFileSystem:       func() Scanner { return &FsScanner{} },
+	pkg.SourceTypeGitHubRepository: func() Scanner { return &GitHubRepositoryScanner{} },
+}
+
+func getScanner(sType string) Scanner {
+	if factory, found := scannerFactories[sType]; found {
+		return factory()
+	}
+	return nil
+}
+
+// BuildScanners build source based on configuration
+func BuildScanners(sources map[string]config.Source, dependencies *Dependencies) []Scanner {
+	var scanners []Scanner
+	for sourceKey, s := range sources {
+		scanner := getScanner(s.Type)
+		if scanner == nil {
+			// Handle unsupported scanner type
+			continue
+		}
+
+		err := scanner.Setup(sourceKey, s, dependencies)
+		if err != nil {
+			return nil
+		}
+		scanners = append(scanners, scanner)
+
+		dependencies.GetMetrics().CollectTotalScannerBuildByKind(scanner.GetKind())
+	}
+
+	dependencies.GetMetrics().CollectTotalScannerBuild(float64(len(scanners)))
+	return scanners
+}
+
+// Dependencies scanner dependencies
+type Dependencies struct {
+	scheduler scheduler.Scheduler
+	storage   storage.Storage
+	logger    *logrus.Logger
+	metrics   *metrics.Collector
+}
+
+// NewScannerDependencies construct new scanner dependencies
+func NewScannerDependencies(scheduler scheduler.Scheduler, storage storage.Storage, logger *logrus.Logger, metricsCollector *metrics.Collector) *Dependencies {
+	return &Dependencies{scheduler: scheduler, storage: storage, logger: logger, metrics: metricsCollector}
+}
+
+// GetScheduler return scheduler
+func (d *Dependencies) GetScheduler() scheduler.Scheduler {
+	return d.scheduler
+}
+
+// GetStorage return storage
+func (d *Dependencies) GetStorage() storage.Storage {
+	return d.storage
+}
+
+// GetLogger return logger
+func (d *Dependencies) GetLogger() *logrus.Logger {
+	return d.logger
+}
+
+// GetMetrics return metrics
+func (d *Dependencies) GetMetrics() *metrics.Collector {
+	return d.metrics
+}
+
 // Scanner interface to build different scanner
 type Scanner interface {
+	Setup(name string, cfg config.Source, dependencies *Dependencies) error
 	Scan(resourceChannel chan resource.Resource) error
+	GetName() string
+	GetKind() string
+	GetSchedule() string
+}
+
+// Scanners list of scanners
+type Scanners struct {
+	Scanners []Scanner
 }
 
 // MetaDataMapper map the fields
@@ -28,26 +124,6 @@ type MetaDataMapper struct {
 type ResourceTag struct {
 	Key   string
 	Value string
-}
-
-// RunScannerForTests initiates a scan using the provided scanner and collects
-// the resources it discovers into a slice. This function is specifically
-// designed to help with testing, allowing you to run a scanner and easily
-// gather its results for verification.
-func RunScannerForTests(scanner Scanner) []resource.Resource {
-	resourceChannel := make(chan resource.Resource)
-
-	var res []resource.Resource
-
-	go func() {
-		scanner.Scan(resourceChannel)
-		close(resourceChannel)
-	}()
-
-	for r := range resourceChannel {
-		res = append(res, r)
-	}
-	return res
 }
 
 func safeDereference(s *string) string {
@@ -88,7 +164,9 @@ func NewFieldMapper(mappings map[string]func() string, tags func() []ResourceTag
 // For each field in mappings, the associated function is called to retrieve its value.
 // Additionally, if tags are specified in the configuration, they are appended with
 // the "tag_" prefix and included in the final resource.MetaData list.
-func (f *FieldMapper) getResourceMetaData() []resource.MetaData {
+func (f *FieldMapper) getResourceMetaData() map[string]string {
+	md := make(map[string]string)
+
 	var fieldMapper []MetaDataMapper
 	for field, fn := range f.mappings {
 		fieldMapper = append(fieldMapper, MetaDataMapper{field: field, value: fn})
@@ -103,15 +181,23 @@ func (f *FieldMapper) getResourceMetaData() []resource.MetaData {
 		}
 	}
 
-	var resMeta []resource.MetaData
 	for _, mapper := range fieldMapper {
 		if util.IsFieldExistsInConfig(mapper.field, f.fields) || strings.Contains(mapper.field, "tag_") {
 			val := mapper.value()
-			if val != "" {
-				resMeta = append(resMeta, resource.MetaData{Key: mapper.field, Value: val})
+			if val != "" && mapper.field != "" {
+				md[mapper.field] = val
 			}
 		}
 	}
 
-	return resMeta
+	return md
+}
+
+func buildAWSConfig(s config.Source) aws.Config {
+	cfg, _ := awsConfig.LoadDefaultConfig(context.TODO())
+	awsCredentials := credentials.NewStaticCredentialsProvider(s.Configuration["access_key"], s.Configuration["secret_key"], s.Configuration["session_token"])
+
+	cfg.Credentials = awsCredentials
+	cfg.Region = s.Configuration["region"]
+	return cfg
 }

@@ -68,8 +68,8 @@ func (c *Cytoscape) Display() (string, error) {
 
 	for _, r := range resources {
 		nodes = append(nodes, Node{Data: NodeData{
-			ID:    r.UUID,
-			Label: r.Name,
+			ID:    r.GetUUID(),
+			Label: r.GetName(),
 		}})
 	}
 

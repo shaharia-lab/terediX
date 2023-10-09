@@ -2,11 +2,20 @@
 package cmd
 
 import (
+	"context"
+	"errors"
+	"net/http"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/processor"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/scanner"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +28,16 @@ func NewDiscoverCommand() *cobra.Command {
 		Short: "Start discovering resources",
 		Long:  "Start discovering resources",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return run(cfgFile)
+			logger := logrus.New()
+			appConfig, err := config.Load(cfgFile)
+			if err != nil {
+				logger.WithError(err).Error("failed to load and parse configuration file")
+				return err
+			}
+
+			ctx := context.Background()
+
+			return run(ctx, appConfig, logger)
 		},
 	}
 
@@ -28,24 +46,59 @@ func NewDiscoverCommand() *cobra.Command {
 	return &cmd
 }
 
-func run(cfgFile string) error {
-	appConfig, err := config.Load(cfgFile)
+func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger) error {
+	st, err := storage.BuildStorage(appConfig)
 	if err != nil {
+		logger.WithError(err).Error("failed to build storage")
 		return err
 	}
 
-	sources := source.BuildSources(appConfig)
-	st := storage.BuildStorage(appConfig)
 	err = st.Prepare()
 	if err != nil {
+		logger.WithError(err).Error("failed to prepare storage system")
 		return err
 	}
 
-	processConfig := processor.Config{BatchSize: appConfig.Storage.BatchSize}
-	p := processor.NewProcessor(processConfig, st, sources)
+	sch := scheduler.NewGoCron()
+	metricsCollector := metrics.NewCollector()
+	scDeps := scanner.NewScannerDependencies(sch, st, logger, metricsCollector)
 
 	resourceChan := make(chan resource.Resource)
-	p.Process(resourceChan)
+	p := processor.NewProcessor(processor.Config{BatchSize: appConfig.Storage.BatchSize}, st, scanner.BuildScanners(appConfig.Sources, scDeps), logger, metricsCollector)
+	err = p.Process(resourceChan, sch)
+	if err != nil {
+		logger.WithError(err).Error("failed to start processing scheduler jobs")
+		return err
+	}
+
+	logger.Info("started processing scheduled jobs")
+
+	// Set up your handler
+	http.Handle("/metrics", promhttp.Handler())
+
+	// Use http.Server directly to gain control over its lifecycle
+	server := &http.Server{
+		Addr: ":2112",
+	}
+
+	// Start server in a separate goroutine so it doesn't block
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.WithError(err).Error("failed to start http server")
+		}
+	}()
+
+	// Wait for context cancellation (in your case, the timeout)
+	<-ctx.Done()
+
+	// Shutdown the server gracefully with a timeout.
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("failed to shutdown server gracefully")
+		return err
+	}
 
 	return nil
 }

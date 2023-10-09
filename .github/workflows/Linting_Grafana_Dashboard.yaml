@@ -1,0 +1,33 @@
+name: Linting Grafana Dashboard
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'dashboard/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'dashboard/**'
+    types: [opened, synchronize, reopened]
+
+jobs:
+  linting_grafana_dashboard_json:
+    name: Linting Grafana Dashboard JSON
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Go ^1.20
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20'
+
+      - name: Install dashboard-linter
+        run: go install github.com/grafana/dashboard-linter@latest
+
+      - name: Lint dashboard
+        run: |
+          dashboard-linter lint dashboard/teredix_general.json
+          dashboard-linter lint dashboard/teredix_go_runtime.json

@@ -7,40 +7,40 @@ import (
 )
 
 func TestResource_AddRelation(t *testing.T) {
-	res1 := NewResource("test", "1", "test-resource-1", "test-id", "test-scanner")
-	res2 := NewResource("test", "2", "test-resource-2", "test-id", "test-scanner")
+	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", 1)
+	res2 := NewResource("test", "test-resource-2", "test-id2", "test-scanner", 1)
 
 	res1.AddRelation(res2)
 
-	assert.Len(t, res1.RelatedWith, 1)
-	assert.Equal(t, "test", res1.RelatedWith[0].Kind)
-	assert.Equal(t, "2", res1.RelatedWith[0].UUID)
+	assert.Len(t, res1.relatedWith, 1)
+	assert.Equal(t, "test", res1.relatedWith[0].GetKind())
+	assert.Equal(t, "test-id2", res1.relatedWith[0].externalID)
 }
 
 func TestResource_AddMetaData(t *testing.T) {
-	res1 := NewResource("test", "1", "test-resource-1", "test-id", "test-scanner")
+	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", 1)
+	res1.AddMetaData(map[string]string{
+		"key1": "value1",
+		"key2": "value2",
+	})
 
-	res1.AddMetaData("key1", "value1")
-	res1.AddMetaData("key2", "value2")
-
-	assert.Len(t, res1.MetaData, 3)
-	assert.Equal(t, "Scanner", res1.MetaData[0].Key)
-	assert.Equal(t, "test-scanner", res1.MetaData[0].Value)
-	assert.Equal(t, "key1", res1.MetaData[1].Key)
-	assert.Equal(t, "value1", res1.MetaData[1].Value)
-	assert.Equal(t, "key2", res1.MetaData[2].Key)
-	assert.Equal(t, "value2", res1.MetaData[2].Value)
+	data := res1.GetMetaData()
+	assert.Len(t, data.Get(), 2)
+	assert.Equal(t, "value1", data.Find("key1").Value)
+	assert.Equal(t, "value2", data.Find("key2").Value)
 }
 
 func TestResource_FindMetaValue(t *testing.T) {
-	res1 := NewResource("test", "1", "test-resource-1", "test-id", "test-scanner")
+	res1 := NewResource("test", "test-resource-1", "test-id", "test-scanner", 1)
 
-	res1.AddMetaData("key1", "value1")
-	res1.AddMetaData("key2", "value2")
+	res1.AddMetaData(map[string]string{
+		"key1": "value1",
+		"key2": "value2",
+	})
 
-	value := res1.FindMetaValue("key1")
-	assert.Equal(t, "value1", value)
+	value := res1.metaData.Find("key1")
+	assert.Equal(t, "value1", value.Value)
 
-	value = res1.FindMetaValue("key3")
-	assert.Equal(t, "", value)
+	value = res1.metaData.Find("key3")
+	assert.Nil(t, value)
 }

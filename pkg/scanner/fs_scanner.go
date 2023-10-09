@@ -2,13 +2,18 @@
 package scanner
 
 import (
+	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -21,6 +26,10 @@ type FsScanner struct {
 	name          string
 	rootDirectory string
 	fields        []string
+	schedule      string
+	storage       storage.Storage
+	logger        *logrus.Logger
+	metrics       *metrics.Collector
 }
 
 // File represent file information
@@ -28,54 +37,101 @@ type File struct {
 	Path string
 }
 
-// NewFsScanner construct new file system scanner
-func NewFsScanner(name, rootDirectory string, fields []string) FsScanner {
-	return FsScanner{name: name, rootDirectory: rootDirectory, fields: fields}
+// Setup setup file system scanner
+func (s *FsScanner) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	s.name = name
+	s.rootDirectory = cfg.Configuration["root_directory"]
+	s.fields = cfg.Fields
+	s.schedule = cfg.Schedule
+	s.storage = dependencies.GetStorage()
+	s.logger = dependencies.GetLogger()
+	s.metrics = dependencies.GetMetrics()
+
+	s.logger.WithFields(logrus.Fields{
+		"scanner_name": s.name,
+		"scanner_kind": s.GetKind(),
+	}).Info("Scanner has been setup")
+
+	return nil
+}
+
+// GetName return name
+func (s *FsScanner) GetName() string {
+	return s.name
+}
+
+// GetSchedule return schedule
+func (s *FsScanner) GetSchedule() string {
+	return s.schedule
+}
+
+// GetKind return resource kind
+func (s *FsScanner) GetKind() string {
+	return pkg.ResourceKindFileSystem
 }
 
 // Scan scans the file system
 func (s *FsScanner) Scan(resourceChannel chan resource.Resource) error {
+	if s.name == "file_system_three" {
+		log.Println("file_system_three")
+	}
+	s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "running")
+	nextVersion, err := s.storage.GetNextVersionForResource(s.name, pkg.ResourceKindFileSystem)
+	if err != nil {
+		s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "failed")
+		s.logger.WithFields(logrus.Fields{
+			"scanner_name": s.name,
+			"scanner_kind": s.GetKind(),
+		}).WithError(err).Error("Unable to get next version for resource")
+
+		return fmt.Errorf("unable to get next version for resource: %w", err)
+	}
+
 	files, err := s.listFilesRecursive(s.rootDirectory)
 	if err != nil {
+		s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "failed")
 		return nil
 	}
 
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = ""
+	//rootResource := resource.NewResourceV1("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
+	rootResource := resource.NewResource(pkg.ResourceKindFileSystem, s.name, s.rootDirectory, s.name, nextVersion)
+
+	mappings := map[string]func() string{
+		fileSystemFieldRootDirectory: func() string { return s.rootDirectory },
+		fileSystemFieldMachineHost: func() string {
+			hostname, err := os.Hostname()
+			if err != nil {
+				hostname = ""
+			}
+			return hostname
+		},
 	}
 
-	rootResource := resource.NewResource("FileDirectory", util.GenerateUUID(), s.rootDirectory, s.rootDirectory, s.name)
+	totalResourceDiscovered := 1
 
-	if util.IsFieldExistsInConfig(fileSystemFieldRootDirectory, s.fields) {
-		rootResource.AddMetaData(fileSystemFieldRootDirectory, s.rootDirectory)
-	}
-
-	if util.IsFieldExistsInConfig(fileSystemFieldMachineHost, s.fields) {
-		rootResource.AddMetaData(fileSystemFieldMachineHost, hostname)
-	}
-
-	rootResource.AddMetaData(pkg.MetaKeyScannerLabel, s.name)
+	resourceMeta := NewFieldMapper(mappings, nil, s.fields).getResourceMetaData()
+	rootResource.AddMetaData(resourceMeta)
 
 	resourceChannel <- rootResource
-
 	for _, f := range files {
-		nr := resource.NewResource("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
+		//nr := resource.NewResourceV1("FilePath", util.GenerateUUID(), f.Path, f.Path, s.name)
+		nr := resource.NewResource(pkg.ResourceKindFileSystem, s.name, f.Path, s.name, nextVersion)
 		nr.AddRelation(rootResource)
-
-		nr.AddMetaData("Scanner-Label", s.name)
-
-		if util.IsFieldExistsInConfig(fileSystemFieldRootDirectory, s.fields) {
-			nr.AddMetaData(fileSystemFieldRootDirectory, s.rootDirectory)
-		}
-
-		if util.IsFieldExistsInConfig(fileSystemFieldMachineHost, s.fields) {
-			nr.AddMetaData(fileSystemFieldMachineHost, hostname)
-		}
+		nr.AddMetaData(resourceMeta)
 
 		resourceChannel <- nr
+
+		totalResourceDiscovered++
 	}
 
+	s.logger.WithFields(logrus.Fields{
+		"scanner_name":              s.name,
+		"scanner_kind":              s.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
+
+	s.metrics.CollectTotalScannerJobStatusCount(s.name, s.GetKind(), "finished")
+	s.metrics.CollectTotalResourceDiscoveredByScanner(s.name, s.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 

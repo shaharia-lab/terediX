@@ -4,11 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scanner"
-	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -21,14 +24,6 @@ func (ms *mockScanner) Scan(ch chan<- resource.Resource) error {
 	for _, res := range ms.resources {
 		ch <- res
 	}
-	return ms.err
-}
-
-type mockStorage struct {
-	err error
-}
-
-func (ms *mockStorage) Persist(resources []resource.Resource) error {
 	return ms.err
 }
 
@@ -45,9 +40,8 @@ func TestProcess(t *testing.T) {
 		{
 			name: "Successful processing",
 			resources: []resource.Resource{
-				{Kind: "GitHubRepository", Name: "repo1"},
-				{Kind: "GitHubRepository", Name: "repo2"},
-				{Kind: "GitHubRepository", Name: "repo3"},
+				resource.NewResource("GitHubRepository", "repo1", "externalID", "scannerName", 1),
+				resource.NewResource("GitHubRepository", "repo2", "externalID", "scannerName", 1),
 			},
 			scanError:    nil,
 			persistError: nil,
@@ -69,19 +63,29 @@ func TestProcess(t *testing.T) {
 
 			// Setup mock scanner and storage
 			firstScanner := new(scanner.Mock)
+			firstScanner.On("GetSchedule").Return("@every 1s")
+			firstScanner.On("GetName").Return("scannerName")
+			firstScanner.On("GetKind").Return("kindName")
 			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
 				for _, res := range tc.resources {
 					resourceChan <- res
 				}
-			}).Return(tc.scanError)
+			}).Return(nil)
 
 			mockStorage := new(storage.Mock)
 			if tc.resources != nil {
 				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
 			}
+			mockStorage.On("CleanupOldVersion", "scannerName", "kindName").Return(int64(1), nil)
+			mockStorage.On("GetResourceCountByMetaData").Return([]storage.MetadataCount{}, nil)
+			mockStorage.On("GetResourceCount").Return([]storage.ResourceCount{}, nil)
 
-			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []source.Source{{Scanner: firstScanner}})
-			p.Process(resourceChan)
+			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{}, &metrics.Collector{})
+
+			staticScheduler := scheduler.NewStaticScheduler()
+			p.Process(resourceChan, staticScheduler)
+
+			time.Sleep(3 * time.Second)
 
 			// Assert that the expected calls were made
 			firstScanner.AssertExpectations(t)
@@ -95,10 +99,7 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 	generateResources := func(n int) []resource.Resource {
 		var resources []resource.Resource
 		for i := 0; i < n; i++ {
-			resources = append(resources, resource.Resource{
-				Kind: "GitHubRepository",
-				Name: fmt.Sprintf("repo%d", i+1),
-			})
+			resources = append(resources, resource.NewResource("GitHubRepository", fmt.Sprintf("repo%d", i+1), "externalID", "scannerName", 1))
 		}
 		return resources
 	}
@@ -121,6 +122,9 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 
 			// Setup mock scanner and storage
 			firstScanner := new(scanner.Mock)
+			firstScanner.On("GetSchedule").Return("@every 1s")
+			firstScanner.On("GetName").Return("scannerName")
+			firstScanner.On("GetKind").Return("kindName")
 			firstScanner.On("Scan", resourceChan).Run(func(args mock.Arguments) {
 				for _, res := range resources {
 					resourceChan <- res
@@ -130,9 +134,16 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			mockStorage := new(storage.Mock)
 			// This will ensure the Persist method is called expectedBatches times
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
+			mockStorage.On("CleanupOldVersion", "scannerName", "kindName").Return(int64(1), nil)
+			mockStorage.On("GetResourceCountByMetaData").Return([]storage.MetadataCount{}, nil)
+			mockStorage.On("GetResourceCount").Return([]storage.ResourceCount{}, nil)
 
-			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []source.Source{{Scanner: firstScanner}})
-			p.Process(resourceChan)
+			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{}, &metrics.Collector{})
+
+			staticScheduler := scheduler.NewStaticScheduler()
+			p.Process(resourceChan, staticScheduler)
+
+			time.Sleep(3 * time.Second)
 
 			// Assert that the expected calls were made
 			firstScanner.AssertExpectations(t)

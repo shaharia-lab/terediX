@@ -1,17 +1,26 @@
 package scanner
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
+	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 // Data provider structure
 type getResourceMetaDataTestCase struct {
 	name           string
 	inputMapper    *FieldMapper
-	expectedOutput []resource.MetaData
+	expectedOutput map[string]string
 }
 
 func TestGetResourceMetaData(t *testing.T) {
@@ -32,9 +41,9 @@ func TestGetResourceMetaData(t *testing.T) {
 				mockTagsFunc,
 				[]string{"field1", fieldTags},
 			),
-			expectedOutput: []resource.MetaData{
-				{Key: "field1", Value: "value"},
-				{Key: "tag_tagKey", Value: "tagValue"},
+			expectedOutput: map[string]string{
+				"field1":     "value",
+				"tag_tagKey": "tagValue",
 			},
 		},
 	}
@@ -50,14 +59,76 @@ func TestGetResourceMetaData(t *testing.T) {
 	}
 }
 
-// MockScanner is a mock implementation of the Scanner interface
-type MockScanner struct {
-	resources []resource.Resource
+// runScannerForTest initiates a scan using the provided scanner and collects
+// the resources it discovers into a slice. This function is specifically
+// designed to help with testing, allowing you to run a scanner and easily
+// gather its results for verification.
+func runScannerForTest(scanner Scanner) []resource.Resource {
+	resourceChannel := make(chan resource.Resource)
+
+	var res []resource.Resource
+
+	go func() {
+		scanner.Scan(resourceChannel)
+		close(resourceChannel)
+	}()
+
+	for r := range resourceChannel {
+		res = append(res, r)
+	}
+
+	return res
 }
 
-// Scan is a mock method that sends resources to the given channel
-func (m *MockScanner) Scan(ch chan<- resource.Resource) {
-	for _, r := range m.resources {
-		ch <- r
+func RunCommonScannerAssertionTest(t *testing.T, scanner Scanner, expectedResourceCount int, expectedMetaDataCount int, expectedMetaDataKeys []string) {
+	res := runScannerForTest(scanner)
+
+	assert.Equal(t, expectedResourceCount, len(res), fmt.Sprintf("expected %d resource, but got %d resource", expectedResourceCount, len(res)))
+	data := res[0].GetMetaData()
+	assert.Equal(t, expectedMetaDataCount, len(data.Get()))
+
+	util.CheckIfMetaKeysExistsInResources(t, res, expectedMetaDataKeys)
+}
+
+// TestBuildScanners tests the BuildScanners function
+func TestBuildScanners(t *testing.T) {
+	var testCases = []struct {
+		name                 string
+		sources              map[string]config.Source
+		expectedTotalScanner int
+	}{
+		{
+			name: "build file system scanner successfully",
+			sources: map[string]config.Source{
+				"fs_one": {
+					Type: pkg.SourceTypeFileSystem,
+					Configuration: map[string]string{
+						"root_directory": "/tmp",
+					},
+				},
+			},
+			expectedTotalScanner: 1,
+		},
+		{
+			name: "should not build scanner if scanner type is not supported",
+			sources: map[string]config.Source{
+				"fs_one": {
+					Type: "unsupported type",
+					Configuration: map[string]string{
+						"root_directory": "/tmp",
+					},
+				},
+			},
+			expectedTotalScanner: 0,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			storageMock := new(storage.Mock)
+
+			scanners := BuildScanners(testCase.sources, NewScannerDependencies(scheduler.NewStaticScheduler(), storageMock, &logrus.Logger{}, metrics.NewCollector()))
+			assert.Equal(t, testCase.expectedTotalScanner, len(scanners))
+		})
 	}
 }

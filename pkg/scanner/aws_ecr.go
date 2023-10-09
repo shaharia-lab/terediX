@@ -3,11 +3,17 @@ package scanner
 
 import (
 	"context"
+	"fmt"
 
 	ecrTypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
+	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	"github.com/shaharia-lab/teredix/pkg"
+	"github.com/shaharia-lab/teredix/pkg/config"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
+	"github.com/shaharia-lab/teredix/pkg/storage"
 	"github.com/shaharia-lab/teredix/pkg/util"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -36,23 +42,56 @@ type AWSECR struct {
 	AccountID              string
 	ResourceTaggingService util.ResourceTaggingServiceClient
 	Fields                 []string
+	storage                storage.Storage
+	logger                 *logrus.Logger
+	schedule               string
+	metrics                *metrics.Collector
 }
 
-// NewAWSECR construct AWS ECR source
-func NewAWSECR(sourceName string, region string, accountID string, ecrClient EcrClient, resourceTaggingService util.ResourceTaggingServiceClient, fields []string) *AWSECR {
-	return &AWSECR{
-		SourceName:             sourceName,
-		ECRClient:              ecrClient,
-		Region:                 region,
-		AccountID:              accountID,
-		ResourceTaggingService: resourceTaggingService,
-		Fields:                 fields,
-	}
+// GetName return source name
+func (a *AWSECR) GetName() string {
+	return a.SourceName
 }
 
-// Scan discover resource and send to resource channel
+// GetSchedule return schedule
+func (a *AWSECR) GetSchedule() string {
+	return a.schedule
+}
+
+// Setup AWS ECR source
+func (a *AWSECR) Setup(name string, cfg config.Source, dependencies *Dependencies) error {
+	a.SourceName = name
+	a.ECRClient = ecr.NewFromConfig(buildAWSConfig(cfg))
+	a.Region = cfg.Configuration["region"]
+	a.AccountID = cfg.Configuration["account_id"]
+	a.Fields = cfg.Fields
+	a.ResourceTaggingService = resourcegroupstaggingapi.NewFromConfig(buildAWSConfig(cfg))
+	a.storage = dependencies.GetStorage()
+	a.logger = dependencies.GetLogger()
+	a.metrics = dependencies.GetMetrics()
+
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name": a.SourceName,
+		"scanner_kind": a.GetKind(),
+	}).Info("Scanner has been setup")
+
+	return nil
+}
+
+// GetKind return resource kind
+func (a *AWSECR) GetKind() string {
+	return pkg.ResourceKindAWSECR
+}
+
 // Scan discover resource and send to resource channel
 func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
+	nextVersion, err := a.storage.GetNextVersionForResource(a.SourceName, pkg.ResourceKindAWSECR)
+	if err != nil {
+		return fmt.Errorf("unable to get next version for resource: %w", err)
+	}
+
+	totalResourceDiscovered := 0
+
 	// Set initial values for pagination
 	pageNum := 0
 	nextToken := ""
@@ -68,20 +107,21 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 		}
 		resp, err := a.ECRClient.DescribeRepositories(context.TODO(), params)
 		if err != nil {
-			return err
+			a.logger.WithFields(logrus.Fields{
+				"scanner_name": a.SourceName,
+				"scanner_kind": a.GetKind(),
+			}).WithError(err).Error("Unable to make api call to aws ecr endpoint")
+
+			return fmt.Errorf("unable to make api call to aws ecr endpoint: %w", err)
 		}
 
 		// Loop through repositories and their tags
 		for _, repository := range resp.Repositories {
-			res := resource.Resource{
-				Name:       *repository.RepositoryName,
-				Kind:       pkg.ResourceKindAWSECR,
-				UUID:       util.GenerateUUID(),
-				ExternalID: *repository.RepositoryArn,
-				MetaData:   a.getMetaData(repository),
-			}
-
+			res := resource.NewResource(pkg.ResourceKindAWSECR, *repository.RepositoryName, *repository.RepositoryArn, a.SourceName, nextVersion)
+			res.AddMetaData(a.getMetaData(repository))
 			resourceChannel <- res
+
+			totalResourceDiscovered++
 		}
 
 		// Check if there are more pages
@@ -92,10 +132,17 @@ func (a *AWSECR) Scan(resourceChannel chan resource.Resource) error {
 		pageNum++
 	}
 
+	a.logger.WithFields(logrus.Fields{
+		"scanner_name":              a.SourceName,
+		"scanner_kind":              a.GetKind(),
+		"total_resource_discovered": totalResourceDiscovered,
+	}).Info("scan completed")
+
+	a.metrics.CollectTotalResourceDiscoveredByScanner(a.SourceName, a.GetKind(), float64(totalResourceDiscovered))
 	return nil
 }
 
-func (a *AWSECR) getMetaData(repository ecrTypes.Repository) []resource.MetaData {
+func (a *AWSECR) getMetaData(repository ecrTypes.Repository) map[string]string {
 	mappings := map[string]func() string{
 		ecrFieldRepositoryName: func() string { return stringValueOrDefault(*repository.RepositoryName) },
 		ecrFieldArn:            func() string { return stringValueOrDefault(*repository.RepositoryArn) },

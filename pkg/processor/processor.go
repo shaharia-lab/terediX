@@ -2,21 +2,25 @@
 package processor
 
 import (
-	"errors"
 	"fmt"
-	"sync"
+	"runtime"
+	"time"
 
-	"github.com/kyokomi/emoji"
+	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-	"github.com/shaharia-lab/teredix/pkg/source"
+	"github.com/shaharia-lab/teredix/pkg/scanner"
+	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
+	"github.com/sirupsen/logrus"
 )
 
 // Processor manages the processing of resources from various sources.
 type Processor struct {
-	Sources []source.Source
-	Config  Config
-	Storage storage.Storage
+	Config   Config
+	Storage  storage.Storage
+	scanners []scanner.Scanner
+	logger   *logrus.Logger
+	metrics  *metrics.Collector
 }
 
 // Config holds configuration values for the Processor.
@@ -25,77 +29,157 @@ type Config struct {
 }
 
 // NewProcessor initializes a new Processor instance.
-func NewProcessor(config Config, storage storage.Storage, sources []source.Source) Processor {
-	return Processor{Sources: sources, Config: config, Storage: storage}
+func NewProcessor(config Config, storage storage.Storage, scanners []scanner.Scanner, logger *logrus.Logger, metrics *metrics.Collector) Processor {
+	return Processor{Config: config, Storage: storage, scanners: scanners, logger: logger, metrics: metrics}
 }
 
 // Process initiates resource processing.
 // It starts scanners for all sources and processes resources in batches.
-func (p *Processor) Process(resourceChan chan resource.Resource) {
-	var wg sync.WaitGroup
-
-	// This WaitGroup will be for the processResources goroutine.
-	var processWg sync.WaitGroup
-	processWg.Add(1) // Add 1 for the processResources goroutine
-
+func (p *Processor) Process(resourceChan chan resource.Resource, sch scheduler.Scheduler) error {
 	// Start a goroutine to process resources as they become available
 	go func() {
-		defer processWg.Done() // Decrement the counter when processResources completes
+		p.logger.Info("Starting resource processing goroutine")
 		p.processResources(resourceChan)
 	}()
 
-	// Start goroutines to scan in parallel
-	for _, s := range p.Sources {
-		wg.Add(1)
-		go func(s source.Source) {
-			defer wg.Done()
-			if err := s.Scanner.Scan(resourceChan); err != nil {
-				fmt.Printf("Failed to start the scanner. Scanner: %s. Error: %s\n", s.Name, err)
-			}
-		}(s)
+	// Add some system specific jobs
+	// Collect total resource count every 1 minute and expose to prometheus metrics
+	sch.AddFunc("@every 1m", func() {
+		p.logger.Info("Collecting total resource count")
+		resourceCounts, err := p.Storage.GetResourceCount()
+		if err != nil {
+			p.logger.WithError(err).Error("Failed to get resource count")
+		}
+
+		metaDataKeyCounts, err := p.Storage.GetResourceCountByMetaData()
+		if err != nil {
+			p.logger.WithError(err).Error("Failed to get metadata key count")
+		}
+
+		for _, rc := range resourceCounts {
+			p.metrics.CollectTotalResourceCount(rc.Source, rc.Kind, rc.TotalCount)
+		}
+
+		for _, md := range metaDataKeyCounts {
+			p.metrics.CollectTotalResourceCountByMetaData(md.Source, md.Kind, md.Key, md.Value, md.TotalCount)
+		}
+	})
+
+	for _, sc := range p.scanners {
+		lf := logrus.Fields{"scanner_name": sc.GetName(), "scanner_kind": sc.GetKind()}
+
+		// necessary to store the current scanner in a new variable because of passing this inside closure
+		scannerCopyForClosure := sc
+		err := sch.AddFunc(sc.GetSchedule(), p.scannerJob(resourceChan, scannerCopyForClosure, lf, sc))
+
+		if err != nil {
+			p.logger.WithFields(lf).WithError(err).Error("Failed to schedule scanner in job queue")
+			p.metrics.CollectTotalScannerJobAddedToQueue(sc.GetName(), sc.GetKind(), "failed")
+		}
+
+		if err == nil {
+			p.metrics.CollectTotalScannerJobAddedToQueue(sc.GetName(), sc.GetKind(), "success")
+		}
+
+		p.logger.WithFields(lf).WithFields(logrus.Fields{"schedule": sc.GetSchedule()}).Info("Scanner has been scheduled to run")
 	}
 
-	// Wait for all the scanners to finish
-	wg.Wait()
+	err := sch.Start()
+	if err != nil {
+		p.logger.WithError(err).Error("Failed to start scheduler")
+		p.metrics.CollectTotalProcessErrorCount("scheduler_start")
+		return err
+	}
 
-	// Close the channel to signal that all resources have been sent
-	close(resourceChan)
-	fmt.Println("Resource channel has been closed.")
+	p.logger.Info("Scheduler has been started")
+	p.metrics.CollectTotalSchedulerStartCount()
+	return nil
+}
 
-	// Wait for processResources goroutine to complete
-	processWg.Wait()
-	fmt.Println("processResources has completed.")
+func (p *Processor) scannerJob(resourceChan chan resource.Resource, scannerCopyForClosure scanner.Scanner, lf logrus.Fields, sc scanner.Scanner) func() {
+	return func() {
+		start := time.Now()
+		// Track initial memory
+		var m1 runtime.MemStats
+		runtime.ReadMemStats(&m1)
+
+		err := scannerCopyForClosure.Scan(resourceChan)
+
+		if err != nil {
+			p.metrics.CollectTotalProcessErrorCount("scanner_scan")
+			p.logger.WithFields(lf).WithError(err).Error("Failed to scan resources")
+		}
+
+		// Cleanup old resources
+		totalCleanedUpResources, err := p.Storage.CleanupOldVersion(scannerCopyForClosure.GetName(), scannerCopyForClosure.GetKind())
+		if err != nil {
+			p.logger.WithFields(lf).WithError(err).Error("Failed to cleanup old resources")
+		} else {
+			p.logger.WithFields(lf).WithField("total_resources_cleaned_up", totalCleanedUpResources).Info("Old resources has been cleaned up")
+		}
+
+		duration := time.Since(start)
+		// Track end memory
+		var m2 runtime.MemStats
+		runtime.ReadMemStats(&m2)
+
+		p.metrics.RecordScanTimeInSecs(sc.GetName(), sc.GetKind(), duration.Seconds())
+
+		p.metrics.CollectTotalMemoryUsageByScannerInMB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/(1024*1024))
+		p.metrics.CollectTotalMemoryUsageByScannerInKB(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc)/1024)
+		p.metrics.CollectTotalMemoryUsageByScannerInBytes(sc.GetName(), sc.GetKind(), float64(m2.TotalAlloc-m1.TotalAlloc))
+	}
 }
 
 func (p *Processor) processResources(resourceChan <-chan resource.Resource) {
 	var resources []resource.Resource
 
-	for res := range resourceChan {
-		fmt.Println("Received resource:", res.Kind, res.Name)
-		resources = append(resources, res)
+	const flushTimerInterval = 2 * time.Second
 
-		if p.shouldProcessBatch(resources) {
-			if err := p.processBatch(resources); err != nil {
-				fmt.Println("Error processing batch:", err)
+	flushTimer := time.NewTimer(flushTimerInterval)
+	defer flushTimer.Stop()
+
+	p.logger.WithFields(logrus.Fields{"resource_channel_flushed_interval_in_secs": flushTimerInterval.Seconds(), "processing_batch_size": p.Config.BatchSize}).Info("Resource channel config")
+
+	for {
+		select {
+		case res, ok := <-resourceChan:
+			if !ok {
+				// Channel closed, break out of the loop
+				p.logger.Info("Channel closed, break out of the loop")
+				break
 			}
-			resources = resetResourceBatch(p.Config.BatchSize)
-		}
-	}
-	fmt.Println("Exited the resource channel loop.")
 
-	fmt.Println("Checking if there are remaining resources to be processed...")
-	if len(resources) > 0 {
-		fmt.Println("Processing remaining resources...")
-		if err := p.processBatch(resources); err != nil {
-			fmt.Println("Error processing batch:", err)
+			data := res.GetMetaData()
+			rlf := logrus.Fields{"resource_kind": res.GetKind(), "resource_name": res.GetExternalID(), "resource_version": res.GetVersion(), "total_metadata": len(data.Get())}
+			p.logger.WithFields(rlf).Info("Received resource from resource channel")
+
+			resources = append(resources, res)
+
+			if p.shouldProcessBatch(resources) {
+				if err := p.processBatch(resources); err != nil {
+					p.metrics.CollectTotalProcessErrorCount("batch_resource_processing")
+					p.logger.WithFields(logrus.Fields{"total_resources_in_batch": len(resources)}).WithError(err).Error("Error processing batch")
+				}
+				resources = resetResourceBatch(p.Config.BatchSize)
+				flushTimer.Reset(flushTimerInterval)
+			}
+
+		case <-flushTimer.C:
+			if len(resources) > 0 {
+				if err := p.processBatch(resources); err != nil {
+					p.metrics.CollectTotalProcessErrorCount("resource_processing_channel_flush")
+					p.logger.WithFields(logrus.Fields{"total_resources_in_batch": len(resources)}).WithError(err).Error("Error processing batch during resource channel flush")
+				}
+				resources = resetResourceBatch(p.Config.BatchSize)
+			}
+			flushTimer.Reset(flushTimerInterval)
 		}
-	} else {
-		fmt.Println("No remaining resources to be processed.")
 	}
 }
 
 func (p *Processor) shouldProcessBatch(resources []resource.Resource) bool {
-	return len(resources) == p.Config.BatchSize
+	return len(resources) >= p.Config.BatchSize
 }
 
 func resetResourceBatch(capacity int) []resource.Resource {
@@ -103,14 +187,19 @@ func resetResourceBatch(capacity int) []resource.Resource {
 }
 
 func (p *Processor) processBatch(resources []resource.Resource) error {
-	fmt.Println("\nProcessing batch of", len(resources), "resources...")
-
-	for _, res := range resources {
-		fmt.Println(emoji.Sprintf(":check_mark: Processed resource: [ %s ] - %s", res.Kind, res.Name))
-	}
+	start := time.Now()
+	p.logger.WithFields(logrus.Fields{"total_resources_in_batch": len(resources)}).Info("Processing batch of resources")
 
 	if err := p.Storage.Persist(resources); err != nil {
-		return errors.New("Failed to persist resources: " + err.Error())
+		p.logger.WithField("total_resources_affected", len(resources)).WithError(err).Errorf("failed to persist resources")
+		p.metrics.CollectTotalProcessErrorCount("resource_persistence")
+		return fmt.Errorf("failed to persist resources: %w", err)
 	}
+
+	p.logger.WithField("total_resources", len(resources)).Info("Batch of resources has been processed successfully")
+
+	duration := time.Since(start)
+
+	p.metrics.CollectTotalStorageBatchPersistingLatencyInMs(float64(duration.Milliseconds()))
 	return nil
 }
