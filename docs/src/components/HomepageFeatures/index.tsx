@@ -10,33 +10,75 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: 'Manage Tech Resources',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        terediX fetch, monitor your tech resources from various sources and make it available for you in one place.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: 'Solve Real World Problems',
+    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    description: (
+      <>
+        terediX helps you to solve real world problems like, resource visibility, resource management, resource monitoring, resource reporting etc.
+      </>
+    ),
+  },
+  {
+    title: 'Resource Visibility',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Explore your tech resources in one place. Greater visibility of your resources will help you to make better decisions.
       </>
     ),
   },
   {
-    title: 'Powered by React',
+    title: 'Easy to Configure',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Configure teredix with a simple configuration file. Run the tools, it will start working it's job.
       </>
+    ),
+  },
+  {
+    title: 'Multiple Deployment Options',
+    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    description: (
+      <>
+        Deploy terediX in your own machine or deploy in Kubernetes or just run it as a docker container.
+      </>
+    ),
+  },
+  {
+    title: 'Monitoring & Reporting',
+    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    description: (
+      <>
+        TerediX exposes prometheus metrics and it already provides some built-in Grafana dashboard to monitor your resources.
+      </>
+    ),
+  },
+  {
+    title: 'Fully Open Source',
+    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    description: (
+      <>
+        terediX is fully open source and community driven project. You can contribute to the project and make it better.
+      </>
+    ),
+  },
+  {
+    title: 'Support Major Resource Types',
+    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    description: (
+        <>
+          terediX can connect to major resource providers such as AWS, GitHub
+        </>
     ),
   },
 ];
