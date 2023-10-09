@@ -77,6 +77,8 @@ func TestProcess(t *testing.T) {
 				mockStorage.On("Persist", tc.resources).Return(tc.persistError)
 			}
 			mockStorage.On("CleanupOldVersion", "scannerName", "kindName").Return(int64(1), nil)
+			mockStorage.On("GetResourceCountByMetaData").Return([]storage.MetadataCount{}, nil)
+			mockStorage.On("GetResourceCount").Return([]storage.ResourceCount{}, nil)
 
 			p := NewProcessor(Config{BatchSize: len(tc.resources)}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{}, &metrics.Collector{})
 
@@ -133,6 +135,8 @@ func TestProcessWithDifferentBatchSizes(t *testing.T) {
 			// This will ensure the Persist method is called expectedBatches times
 			mockStorage.On("Persist", mock.Anything).Times(tc.expectedBatches).Return(nil)
 			mockStorage.On("CleanupOldVersion", "scannerName", "kindName").Return(int64(1), nil)
+			mockStorage.On("GetResourceCountByMetaData").Return([]storage.MetadataCount{}, nil)
+			mockStorage.On("GetResourceCount").Return([]storage.ResourceCount{}, nil)
 
 			p := NewProcessor(Config{BatchSize: tc.batchSize}, mockStorage, []scanner.Scanner{firstScanner}, &logrus.Logger{}, &metrics.Collector{})
 

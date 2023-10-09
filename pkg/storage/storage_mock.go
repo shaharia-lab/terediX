@@ -166,3 +166,49 @@ func (_m *Mock) CleanupOldVersion(source string, kind string) (int64, error) {
 
 	return r0, r1
 }
+
+// GetResourceCount provides a mock function with given fields:
+func (_m *Mock) GetResourceCount() ([]ResourceCount, error) {
+	ret := _m.Called()
+
+	var r0 []ResourceCount
+	if rf, ok := ret.Get(0).(func() []ResourceCount); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]ResourceCount)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetResourceCountByMetaData provides a mock function with given fields:
+func (_m *Mock) GetResourceCountByMetaData() ([]MetadataCount, error) {
+	ret := _m.Called()
+
+	var r0 []MetadataCount
+	if rf, ok := ret.Get(0).(func() []MetadataCount); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]MetadataCount)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
