@@ -25,7 +25,7 @@ source:
   fs_one:
     type: file_system
     configuration:
-      root_directory: "/home/shaharia/Projects/hellodev"
+      root_directory: "/home/shaharia/Projects/terediX"
     fields:
       - machineHost
       - rootDirectory

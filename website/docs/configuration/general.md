@@ -44,7 +44,49 @@ source:
     fields:
       - machineHost
       - rootDirectory
-    schedule: &schedule "@every 1m"
+    schedule: &schedule "@every 1d"
+github_repo:
+  type: github_repository
+  configuration:
+    user_or_org: "some_org"
+    token: "token"
+  fields:
+     - company
+     - homepage
+     - language
+     - organization
+     - stars
+     - git_url
+     - owner_login
+     - owner_name
+     - topics
+  schedule: *schedule
+relations:
+  criteria:
+    - name: "file-system-rule1"
+      source:
+        kind: "FilePath"
+        meta_key: "rootDirectory"
+        meta_value: "/some/path"
+      target:
+        kind: "FilePath"
+        meta_key: "rootDirectory"
+        meta_value: "/some/path"
 ```
 
 This is the most basic one. You can add more sources, more storage engines, more discovery and more configuration as per your need.
+
+## Validate Configuration
+
+You can validate your configuration file with the following command:
+
+```bash
+teredix validate -c config.yaml
+```
+
+The above command will validate your `config.yaml` file against the [JSON schema](https://github.com/shaharia-lab/terediX/blob/master/pkg/config/schema.json).
+
+
+## JSON Schema for Configuration
+
+You can find the JSON schema for configuration file [here](https://github.com/shaharia-lab/terediX/blob/master/pkg/config/schema.json).
