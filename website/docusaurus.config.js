@@ -43,13 +43,13 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           breadcrumbs: true,
           showLastUpdateTime: true,
-          editUrl: 'https://github.com/shaharia-lab/teredix/tree/main/website/docs',
+          editUrl: 'https://github.com/shaharia-lab/teredix/tree/master/website',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/shaharia-lab/teredix/tree/main/website/blog',
+          editUrl: 'https://github.com/shaharia-lab/teredix/tree/master/website',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

@@ -18,7 +18,12 @@ function HomepageHeader() {
           <Link
             className="button button--secondary button--lg"
             to="/docs/intro">
-            Docusaurus Tutorial - 5min ⏱️
+            What is terediX? 🤔
+          </Link> &nbsp; &nbsp;
+          <Link
+            className="button button--secondary button--lg"
+            to="/docs/intro">
+            Getting Started 🚀
           </Link>
         </div>
       </div>
