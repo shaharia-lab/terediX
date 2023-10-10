@@ -63,8 +63,15 @@ RUN chown app:app /home/app/supervisord.conf
 CMD ["/usr/bin/supervisord"]
 
 # Install Node.js and related packages
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get install -y nodejs
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl gnupg && \
+    mkdir -p /etc/apt/keyrings &&  \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+
+RUN apt-get update && \
+    apt-get install -y nodejs
 
 # Install Yarn
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/yarnkey.gpg
@@ -83,7 +90,7 @@ RUN \
 
 RUN \
     apt-get update                                                     && \
-    apt-get install -y postgresql-12 postgresql-contrib php-pgsql && \
+    apt-get install -y postgresql-14 postgresql-contrib && \
     rm -rf /var/lib/apt/lists/*
 
 RUN \
@@ -98,7 +105,7 @@ RUN \
 
 RUN \
     echo "host    all             all             172.26.0.1/8           md5" >> /etc/postgresql/12/main/pg_hba.conf && \
-    sed -i "s|#listen_addresses =.*|listen_addresses = '*'|g" /etc/postgresql/12/main/postgresql.conf
+    sed -i "s|#listen_addresses =.*|listen_addresses = '*'|g" /etc/postgresql/14/main/postgresql.conf
 
 RUN \
     echo "[program:postgresql]" >> /etc/supervisor/conf.d/supervisord.conf                                                                                                                   && \
