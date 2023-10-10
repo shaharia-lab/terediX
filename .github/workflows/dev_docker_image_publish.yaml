@@ -52,5 +52,5 @@ jobs:
           file: ./.dev/Dockerfile
           context: ./.dev
           push: ${{ github.ref == 'refs/heads/master' }}
-          tags: dev
+          tags: ghcr.io/${{ github.repository_owner }}/teredix:dev
           labels: ${{ steps.meta.outputs.labels }}
