@@ -1,6 +1,9 @@
 # Base Image
 FROM ubuntu:22.04
 
+LABEL org.opencontainers.image.source="https://github.com/shaharia-lab/terediX"
+
+
 RUN \
     echo "Europe/Berlin" > /etc/timezone   && \
     echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
