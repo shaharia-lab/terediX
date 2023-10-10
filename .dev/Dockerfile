@@ -104,7 +104,7 @@ RUN \
     service postgresql stop
 
 RUN \
-    echo "host    all             all             172.26.0.1/8           md5" >> /etc/postgresql/12/main/pg_hba.conf && \
+    echo "host    all             all             172.26.0.1/8           md5" >> /etc/postgresql/14/main/pg_hba.conf && \
     sed -i "s|#listen_addresses =.*|listen_addresses = '*'|g" /etc/postgresql/14/main/postgresql.conf
 
 RUN \
