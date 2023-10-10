@@ -83,6 +83,17 @@ ENV NODE_ENV=development
 
 ## > End of Node.js
 
+# to use GitHub repo for private Go package
+RUN git config --global --add url."git@github.com:".insteadOf "https://github.com/"
+
+# Download Go 1.2.2 and install it to /usr/local/go
+RUN curl -s https://storage.googleapis.com/golang/go1.20.linux-amd64.tar.gz| tar -v -C /usr/local -xz
+
+# Let's people find our Go binaries
+ENV PATH $PATH:/usr/local/go/bin
+RUN echo "export PATH=$PATH" > /etc/environment
+
+
 ## postgres
 RUN \
     curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -                                        && \
@@ -90,7 +101,7 @@ RUN \
 
 RUN \
     apt-get update                                                     && \
-    apt-get install -y postgresql-14 postgresql-contrib && \
+    apt-get install -y postgresql-14 postgresql-contrib php-pgsql && \
     rm -rf /var/lib/apt/lists/*
 
 RUN \
@@ -109,22 +120,10 @@ RUN \
 
 RUN \
     echo "[program:postgresql]" >> /etc/supervisor/conf.d/supervisord.conf                                                                                                                   && \
-    echo "command = /usr/lib/postgresql/12/bin/postgres -D /var/lib/postgresql/12/main -c config_file=/etc/postgresql/12/main/postgresql.conf" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "command = /usr/lib/postgresql/14/bin/postgres -D /var/lib/postgresql/14/main -c config_file=/etc/postgresql/14/main/postgresql.conf" >> /etc/supervisor/conf.d/supervisord.conf && \
     echo "user = postgres" >> /etc/supervisor/conf.d/supervisord.conf                                                                                                                        && \
     echo "autostart = true" >> /etc/supervisor/conf.d/supervisord.conf                                                                                                                       && \
     echo "stdout_events_enabled = true" >> /etc/supervisor/conf.d/supervisord.conf                                                                                                           && \
-    echo "stderr_events_enabled = true" >> /etc/supervisor/conf.d/supervisord.conf
+    echo "stderr_events_enabled = true" >> /etc/supervisor/conf.d/supervisord.con
 
 # end of postgres
-
-# Install Go
-# Download Go 1.20 and install it to /usr/local/go
-RUN curl -s https://storage.googleapis.com/golang/go1.20.linux-amd64.tar.gz| tar -v -C /usr/local -xz
-
-# Let's people find our Go binaries
-ENV PATH $PATH:/usr/local/go/bin
-RUN echo "export PATH=$PATH" >> /etc/environment
-
-
-# Set the working directory
-WORKDIR /app
