@@ -1,5 +1,6 @@
 ---
-title: "AWS ECR"
+title: "Configure AWS ECR Resource Scanner for TerediX"
+sidebar_label: AWS ECR
 ---
 
 # AWS ECR

@@ -1,5 +1,6 @@
 ---
-title: "File System"
+title: "Configure File System Resource Scanner for TerediX"
+sidebar_label: File System
 ---
 
 # File System

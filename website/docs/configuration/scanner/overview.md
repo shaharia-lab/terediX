@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
-title: "Overview"
+title: "Available Scanners and Configurations"
+sidebar_label: Overview
 ---
 
 # Source

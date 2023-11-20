@@ -1,5 +1,6 @@
 ---
-title: "AWS EC2"
+title: "Configure AWS EC2 Resource Scanner for TerediX"
+sidebar_label: AWS EC2
 ---
 
 # AWS EC2
