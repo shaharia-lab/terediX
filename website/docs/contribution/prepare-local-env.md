@@ -23,6 +23,7 @@ We have a Docker image for development purpose. You can run the following comman
 docker run -i -d --name teredix-dev \
   -v $(pwd):/home/app/src \
   -p 3000:3000 \
+  -p 8080:8080 \
   -p 2112:2112 \
   ghcr.io/shaharia-lab/teredix:dev
 ```
