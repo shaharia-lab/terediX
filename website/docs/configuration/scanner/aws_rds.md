@@ -1,5 +1,6 @@
 ---
-title: "AWS RDS"
+title: "Configure AWS RDS Resource Scanner for TerediX"
+sidebar_label: AWS RDS
 ---
 
 # AWS RDS

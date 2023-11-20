@@ -1,5 +1,6 @@
 ---
-title: "AWS S3"
+title: "Configure AWS S3 Resource Scanner for TerediX"
+sidebar_label: AWS S3
 ---
 
 # AWS S3

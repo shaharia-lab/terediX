@@ -1,5 +1,6 @@
 ---
-title: "GitHub Repository"
+title: "Configure GitHub Repository Resource Scanner for TerediX"
+sidebar_label: GitHub Repository
 ---
 
 # GitHub Repository
