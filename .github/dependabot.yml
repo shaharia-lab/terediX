@@ -5,10 +5,16 @@
 
 version: 2
 updates:
-  - package-ecosystem: "gomod" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "gomod"
+    directory: "/"
+    rebase-strategy: "disabled"
     schedule:
       interval: "weekly"
+    groups:
+      stable-updates:
+        update-types:
+          - "minor"
+          - "patch"
     assignees:
       - "shahariaazam"
 
@@ -16,5 +22,10 @@ updates:
     directory: "/website"
     schedule:
       interval: "weekly"
+    groups:
+      stable-updates:
+        update-types:
+          - "minor"
+          - "patch"
     assignees:
       - "shahariaazam"
