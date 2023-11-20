@@ -15,7 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.38.5
 	github.com/go-co-op/gocron v1.34.2
 	github.com/google/go-github/v50 v50.2.0
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/lib/pq v1.10.7
 	github.com/prometheus/client_golang v1.17.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
