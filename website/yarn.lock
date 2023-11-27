@@ -151,20 +151,20 @@
   resolved "https://registry.yarnpkg.com/@argos-ci/browser/-/browser-1.1.0.tgz#c92966db364eee1a49ed69e4c59a46bcfa23cee2"
   integrity sha512-ZtSjZu0eJ5JMCRkBTgK+wCIJ0rWbiQ80Nq7BKn04VIwbjjsQfhSKoMQnlEmaokS6cU8TnHsySOQzMcvipd+Prg==
 
-"@argos-ci/cli@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@argos-ci/cli/-/cli-1.0.3.tgz#fc9b25bb6beaaffaac6dd4d2fc754d243a8f65b2"
-  integrity sha512-/CWgHEdP6q0QfnQ8JqTDkHUozYyffnuIyBzb6hoTarAZG3zlsb2+2yVlVRxrlNOAxeABdhn4BY6RFKkPw2rTBg==
+"@argos-ci/cli@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@argos-ci/cli/-/cli-1.0.4.tgz#b0d8f668ed6442b818b255c36bd9627ec771a379"
+  integrity sha512-wcaUFzDJ04ODCGeDG3CGfmkZXbNvHRMhKGglR9bcKO47T9vUP0enJQ0CKsGe1278Kht77ZBlByfu8Or5L+WZKA==
   dependencies:
-    "@argos-ci/core" "1.2.1"
+    "@argos-ci/core" "1.3.0"
     commander "^11.0.0"
     ora "^7.0.1"
     update-notifier "^6.0.2"
 
-"@argos-ci/core@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@argos-ci/core/-/core-1.2.1.tgz#86de9b94873318c6482b58cacf0119ecc82f2e99"
-  integrity sha512-mutWqVyL7ffduFznkPZiFirusx9dLsHzdxnmmh2HARrkQlqfKFwMYgRedY87ifZrOLdoPYBDB+RwRImU9ZQX3w==
+"@argos-ci/core@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@argos-ci/core/-/core-1.3.0.tgz#6215bba2fdfea9f7a0c1455bf7b35e2716e11686"
+  integrity sha512-f/8oMNeaj5iraZppdbi4SR9tzxuWvTrtiNyQZUVndaL8AuSjMk2tMrnHK/XEAin7ki64cwCNaa0FEMLKrKbgzA==
   dependencies:
     "@argos-ci/util" "1.1.0"
     axios "^1.5.0"
@@ -174,13 +174,13 @@
     sharp "^0.32.5"
     tmp "^0.2.1"
 
-"@argos-ci/playwright@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@argos-ci/playwright/-/playwright-1.3.0.tgz#10dea6aecc991ccc2d10f0dee4a4b957db1c65af"
-  integrity sha512-uGeARi/+wlBjmQANt4hAbYL252SvryTpumCXTjPfdiQm0MdZtxQlcX59bWi6wjCLCeVW0zptqz+WkctwMHLb6A==
+"@argos-ci/playwright@^1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@argos-ci/playwright/-/playwright-1.3.1.tgz#d6da8c99978ded1a39b02c739bd09ac6de4ebc66"
+  integrity sha512-JeWpG+eDfZplgNNwy0jP9XvimymxG2lkQ/+8bW9Xy+eiKwhmakiRixmSNQ2kik6R2VwvfPdOILzsQVMTZChdHA==
   dependencies:
     "@argos-ci/browser" "1.1.0"
-    "@argos-ci/core" "1.2.1"
+    "@argos-ci/core" "1.3.0"
     "@argos-ci/util" "1.1.0"
 
 "@argos-ci/util@1.1.0":
@@ -2940,19 +2940,10 @@
     "@types/history" "^4.7.11"
     "@types/react" "*"
 
-"@types/react@*":
-  version "18.2.25"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-18.2.25.tgz#99fa44154132979e870ff409dc5b6e67f06f0199"
-  integrity sha512-24xqse6+VByVLIr+xWaQ9muX1B4bXJKXBbjszbld/UEDslGLY53+ZucF44HCmLbMPejTzGG9XgR+3m2/Wqu1kw==
-  dependencies:
-    "@types/prop-types" "*"
-    "@types/scheduler" "*"
-    csstype "^3.0.2"
-
-"@types/react@^18.2.29":
-  version "18.2.37"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-18.2.37.tgz#0f03af69e463c0f19a356c2660dbca5d19c44cae"
-  integrity sha512-RGAYMi2bhRgEXT3f4B92WTohopH6bIXw05FuGlmJEnv/omEn190+QYEIYxIAuIBdKgboYYdVved2p1AxZVQnaw==
+"@types/react@*", "@types/react@^18.2.38":
+  version "18.2.38"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-18.2.38.tgz#3605ca41d3daff2c434e0b98d79a2469d4c2dd52"
+  integrity sha512-cBBXHzuPtQK6wNthuVMV6IjHAFkdl/FOPFIlkd81/Cd1+IqkHu/A+w4g43kaQQoYHik/ruaQBDL72HyCy1vuMw==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
@@ -3865,6 +3856,11 @@ clsx@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/clsx/-/clsx-1.2.1.tgz#0ddc4a20a549b59c93a4116bb26f5294ca17dc12"
   integrity sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==
+
+clsx@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/clsx/-/clsx-2.0.0.tgz#12658f3fd98fafe62075595a5c30e43d18f3d00b"
+  integrity sha512-rQ1+kcj+ttHG0MKVGBUXwayCCF1oh39BF5COIpRzuCEv8Mwjv0XucrI2ExNTOn9IlLifGClWQcU9BrZORvtw6Q==
 
 collapse-white-space@^2.0.0:
   version "2.1.0"
@@ -7810,13 +7806,13 @@ pretty-time@^1.1.0:
   resolved "https://registry.yarnpkg.com/pretty-time/-/pretty-time-1.1.0.tgz#ffb7429afabb8535c346a34e41873adf3d74dd0e"
   integrity sha512-28iF6xPQrP8Oa6uxE6a1biz+lWeTOAPKggvjB8HAs6nVMKZwf5bG++632Dx614hIWgUPkgivRfG+a8uAXGTIbA==
 
-prism-react-renderer@^2.1.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/prism-react-renderer/-/prism-react-renderer-2.2.0.tgz#f199b15716e0b8d0ccfd1986ff6fa226fb7ff2b1"
-  integrity sha512-j4AN0VkEr72598+47xDvpzeYyeh/wPPRNTt9nJFZqIZUxwGKwYqYgt7RVigZ3ZICJWJWN84KEuMKPNyypyhNIw==
+prism-react-renderer@^2.1.0, prism-react-renderer@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/prism-react-renderer/-/prism-react-renderer-2.3.0.tgz#5f8f615af6af8201a0b734bd8c946df3d818ea54"
+  integrity sha512-UYRg2TkVIaI6tRVHC5OJ4/BxqPUxJkJvq/odLT/ykpt1zGYXooNperUxQcCvi87LyRnR4nCh81ceOA+e7nrydg==
   dependencies:
     "@types/prismjs" "^1.26.0"
-    clsx "^1.2.1"
+    clsx "^2.0.0"
 
 prismjs@^1.29.0:
   version "1.29.0"
@@ -9161,10 +9157,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript@~5.2.2:
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.2.2.tgz#5ebb5e5a5b75f085f22bc3f8460fba308310fa78"
-  integrity sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==
+typescript@~5.3.2:
+  version "5.3.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.3.2.tgz#00d1c7c1c46928c5845c1ee8d0cc2791031d4c43"
+  integrity sha512-6l+RyNy7oAHDfxC4FzSJcz9vnjTKxrLpDG5M2Vu4SHRVNg6xzqZp6LYSR9zjqQTu8DU/f5xwxUdADOkbrIX2gQ==
 
 ua-parser-js@^1.0.35:
   version "1.0.36"
