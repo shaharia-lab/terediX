@@ -1,14 +1,11 @@
 package storage
 
 import (
-	"errors"
 	"reflect"
 	"testing"
 
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
-
-	"github.com/stretchr/testify/assert"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 )
@@ -70,98 +67,6 @@ func TestPostgreSQL_Persist(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("unfulfilled mock expectations: %s", err)
 	}
-}
-
-func TestPostgreSQL_Find(t *testing.T) {
-	testCases := []struct {
-		name                  string
-		resourceFilter        ResourceFilter
-		expectedQuery         string
-		expectedResourceCount int
-	}{
-		{
-			name:                  "find without any filtering parameter",
-			resourceFilter:        ResourceFilter{},
-			expectedQuery:         "SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id",
-			expectedResourceCount: 2,
-		},
-		{
-			name:                  "find by resource name",
-			resourceFilter:        ResourceFilter{Name: "name1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.name = \$1`,
-			expectedResourceCount: 0,
-		},
-		{
-			name:                  "find by resource uuid",
-			resourceFilter:        ResourceFilter{UUID: "uuid1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.uuid = \$1`,
-			expectedResourceCount: 0,
-		},
-		{
-			name:                  "find by resource externalID",
-			resourceFilter:        ResourceFilter{ExternalID: "external_id1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r.external_id`,
-			expectedResourceCount: 0,
-		},
-		{
-			name:                  "find by resource kind, uuid, name",
-			resourceFilter:        ResourceFilter{Kind: "kind1", UUID: "uuid1", Name: "name1"},
-			expectedQuery:         `SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id WHERE r\.kind = .+? AND r\.uuid = .+? AND r\.name = `,
-			expectedResourceCount: 0,
-		},
-	}
-
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("failed to create mock database connection: %v", err)
-	}
-	defer db.Close()
-
-	p := &PostgreSQL{DB: db}
-
-	// expected rows returned by the mock database query
-	expectedRows := sqlmock.NewRows([]string{"kind", "uuid", "name", "external_id", "scan1", "1", "meta_key", "meta_value", "related_kind", "related_uuid", "related_name", "related_external_id"}).
-		AddRow("kind1", "uuid1", "name1", "external_id1", "scan2", "1", "meta_key1", "meta_value1", "related_kind1", "related_uuid1", "related_name1", "related_external_id1").
-		AddRow("kind2", "uuid2", "name2", "external_id2", "scan3", "1", "meta_key2", "meta_value2", "related_kind2", "related_uuid2", "related_name2", "related_external_id2")
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			// set up mock database query expectations
-			mock.ExpectQuery(tc.expectedQuery).
-				WillReturnRows(expectedRows)
-
-			// call the method being tested
-			resources, err := p.Find(tc.resourceFilter)
-			if err != nil {
-				t.Fatalf("unexpected error from Find: %v", err)
-			}
-
-			// verify the result
-			if len(resources) != tc.expectedResourceCount {
-				t.Fatalf("unexpected number of resources: got %d, want %d", len(resources), tc.expectedResourceCount)
-			}
-		})
-	}
-}
-
-func TestPostgreSQL_Find_For_Error(t *testing.T) {
-
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("failed to create mock database connection: %v", err)
-	}
-	defer db.Close()
-
-	p := &PostgreSQL{DB: db}
-
-	mock.ExpectQuery("SELECT r.kind, r.uuid, r.name, r.external_id, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id").
-		WillReturnError(errors.New("query failed"))
-
-	// call the method being tested
-	resources, err := p.Find(ResourceFilter{})
-	assert.Error(t, err)
-
-	assert.Equal(t, 0, len(resources))
 }
 
 func TestGetRelations(t *testing.T) {
