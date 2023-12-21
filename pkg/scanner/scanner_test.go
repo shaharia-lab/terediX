@@ -11,7 +11,6 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/resource"
 	"github.com/shaharia-lab/teredix/pkg/scheduler"
 	"github.com/shaharia-lab/teredix/pkg/storage"
-	"github.com/shaharia-lab/teredix/pkg/util"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -87,7 +86,7 @@ func RunCommonScannerAssertionTest(t *testing.T, scanner Scanner, expectedResour
 	data := res[0].GetMetaData()
 	assert.Equal(t, expectedMetaDataCount, len(data.Get()))
 
-	util.CheckIfMetaKeysExistsInResources(t, res, expectedMetaDataKeys)
+	checkIfMetaKeysExistsInResources(t, res, expectedMetaDataKeys)
 }
 
 // TestBuildScanners tests the BuildScanners function
@@ -130,5 +129,16 @@ func TestBuildScanners(t *testing.T) {
 			scanners := BuildScanners(testCase.sources, NewScannerDependencies(scheduler.NewStaticScheduler(), storageMock, &logrus.Logger{}, metrics.NewCollector()))
 			assert.Equal(t, testCase.expectedTotalScanner, len(scanners))
 		})
+	}
+}
+
+// checkIfMetaKeysExistsInResources Checks if all the keys in the given list exist in the metaData of all the Resources
+func checkIfMetaKeysExistsInResources(t *testing.T, res []resource.Resource, expectedMetaDataKeys []string) {
+	for k, v := range res {
+		data := v.GetMetaData()
+		missingKeys := data.FindMissingKeys(expectedMetaDataKeys)
+		if len(missingKeys) > 0 {
+			t.Errorf("Metadata missing. Missing keys [%d]: %v", k, missingKeys)
+		}
 	}
 }

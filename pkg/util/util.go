@@ -4,11 +4,9 @@ package util
 import (
 	"context"
 	"fmt"
-	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
-	"github.com/shaharia-lab/teredix/pkg/resource"
 )
 
 // RetryWithExponentialBackoff retries a function with exponential backoff in case of errors
@@ -71,15 +69,4 @@ func IsFieldExistsInConfig(value string, fields []string) bool {
 		}
 	}
 	return false
-}
-
-// CheckIfMetaKeysExistsInResources Checks if all the keys in the given list exist in the metaData of all the Resources
-func CheckIfMetaKeysExistsInResources(t *testing.T, res []resource.Resource, expectedMetaDataKeys []string) {
-	for k, v := range res {
-		data := v.GetMetaData()
-		missingKeys := data.FindMissingKeys(expectedMetaDataKeys)
-		if len(missingKeys) > 0 {
-			t.Errorf("Metadata missing. Missing keys [%d]: %v", k, missingKeys)
-		}
-	}
 }
