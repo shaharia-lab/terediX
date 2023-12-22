@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+data:
+  {{ toYaml .Values.configMap | indent 2 }}
+
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-configmap-volume
+data:
+  config.yaml: |
+    {{- toYaml .Values.appConfig | nindent 4 }}
