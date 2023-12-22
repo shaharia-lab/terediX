@@ -17,9 +17,6 @@ coverage:
         enabled: no
 ignore:
   - ".github/**"
-  - ".dev/**"
-  - "dashboard/**"
-  - "website/**"
   - "ci/**"
   - "**/*_test.go"
   - "**/*_test.go"
