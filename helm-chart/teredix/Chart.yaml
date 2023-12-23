@@ -2,8 +2,7 @@ apiVersion: v2
 name: teredix
 description: A Helm chart for Kubernetes
 maintainers:
-  - name: Shaharia Lab
-    email: hello@shaharialab.com
+  - name: shaharia-lab
 type: application
 version: 0.1.0
 appVersion: "1.0.0"
