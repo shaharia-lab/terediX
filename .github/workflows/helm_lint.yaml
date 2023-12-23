@@ -16,6 +16,8 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
+    env:
+        CT_CHART_DIRS: helm-chart
     steps:
       - name: Checkout
         uses: actions/checkout@v3
