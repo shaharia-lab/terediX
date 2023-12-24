@@ -1,16 +1,8 @@
-# Default values for teredix.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: 1
-
 image:
-  repository: teredix
+  repository: ghcr.io/shaharia-lab/teredix
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "1.0.0"
 
-imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
@@ -125,13 +117,6 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
