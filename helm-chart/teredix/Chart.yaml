@@ -1,8 +1,8 @@
 apiVersion: v2
 name: teredix
-description: A Helm chart for Kubernetes
+description: A Helm chart for Kubernetes to install terediX
 maintainers:
   - name: shaharia-lab
 type: application
-version: 0.1.0
+version: 0.0.1
 appVersion: "1.0.0"
