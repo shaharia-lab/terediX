@@ -5,11 +5,6 @@ on:
       branches: [ master ]
       paths:
         - 'helm-chart/**'
-    pull_request:
-      branches: [ master ]
-      paths:
-        - 'helm-chart/**'
-      types: [opened, synchronize, reopened]
 
 jobs:
   release:
@@ -18,8 +13,6 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    env:
-        CT_CHART_DIRS: helm-chart
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,3 +31,5 @@ jobs:
         uses: helm/chart-releaser-action@v1.6.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+            charts_dir: helm-chart
