@@ -93,7 +93,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 2112
+  port: 8080
 
 ingress:
   enabled: true
