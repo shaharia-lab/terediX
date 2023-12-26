@@ -1,5 +1,4 @@
 image:
-  repository: ghcr.io/shaharia-lab/teredix
   pullPolicy: IfNotPresent
   tag: "1.0.0"
 
@@ -9,8 +8,11 @@ fullnameOverride: ""
 configMap:
   KEY: "value"
 
+# config.yaml for running terediX
+# Documentations for the configuration can be found at https://teredix.shaharialab.com/docs/configuration/general
+# Schema for the configuration is available at https://github.com/shaharia-lab/terediX/blob/master/pkg/config/schema.json
 appConfig:
-#   organization:
+#  organization:
 #     name: Your Organization
 #     logo: https://your-org-url.com/logo.png
 #   discovery:
