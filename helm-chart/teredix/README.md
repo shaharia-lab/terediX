@@ -18,3 +18,29 @@ To add the repository to Helm:
 ```shell
 helm repo add teredix https://shaharia-lab.github.io/terediX
 ```
+
+## Install locally
+
+First, you need to create a namespace for `terediX`, then need to install PostgreSQL and then you can install the application
+
+```bash
+kubectl create ns tererdix
+
+helm repo add https://charts.bitnami.com/bitnami
+helm repo update
+
+helm upgrade --install postgresql bitnami/postgresql --namespace "teredix" \
+        --set auth.username="app" \
+        --set auth.password="pass" \
+        --set auth.database="app"
+```
+
+Build Docker image
+
+```bash
+docker build -t teredix:prod -f Dockerfile .
+
+helm upgrade --install teredix ./helm-chart/teredix --namespace teredix \
+        -f ./helm-chart/teredix/values.yaml \
+        -f ./helm-chart/teredix/values-local.yaml
+```

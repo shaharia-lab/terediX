@@ -12,7 +12,7 @@ on:
       types: [opened, synchronize, reopened]
 
 jobs:
-  release:
+  lint:
     permissions:
       contents: write
     runs-on: ubuntu-latest

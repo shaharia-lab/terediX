@@ -1,4 +1,5 @@
 image:
+  repository: ghcr.io/shaharia-lab/teredix
   pullPolicy: IfNotPresent
   tag: "1.0.0"
 
