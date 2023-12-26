@@ -5,6 +5,8 @@ image:
 nameOverride: ""
 fullnameOverride: ""
 
+# configMap for running terediX
+# The following configMap will be loaded as environment variables in the terediX container
 configMap:
   KEY: "value"
 
