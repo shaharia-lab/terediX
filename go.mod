@@ -4,20 +4,20 @@ go 1.18
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.1
-	github.com/aws/aws-sdk-go v1.49.9
+	github.com/aws/aws-sdk-go v1.49.12
 	github.com/aws/aws-sdk-go-v2 v1.24.0
 	github.com/aws/aws-sdk-go-v2/config v1.26.2
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.13
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.142.0
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.24.6
-	github.com/aws/aws-sdk-go-v2/service/rds v1.66.0
+	github.com/aws/aws-sdk-go-v2/service/rds v1.66.1
 	github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.19.6
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.47.7
 	github.com/go-co-op/gocron v1.37.0
 	github.com/google/go-github/v50 v50.2.0
 	github.com/google/uuid v1.5.0
 	github.com/lib/pq v1.10.9
-	github.com/prometheus/client_golang v1.17.0
+	github.com/prometheus/client_golang v1.18.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
@@ -51,11 +51,11 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
+	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_model v0.4.1-0.20230718164431-9a2bf3000d16 // indirect
-	github.com/prometheus/common v0.44.0 // indirect
-	github.com/prometheus/procfs v0.11.1 // indirect
+	github.com/prometheus/client_model v0.5.0 // indirect
+	github.com/prometheus/common v0.45.0 // indirect
+	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
