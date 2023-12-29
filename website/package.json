@@ -24,15 +24,15 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@argos-ci/cli": "^1.0.4",
-    "@argos-ci/playwright": "^1.4.2",
+    "@argos-ci/cli": "^1.0.5",
+    "@argos-ci/playwright": "^1.6.0",
     "@docusaurus/module-type-aliases": "3.0.1",
     "@docusaurus/types": "3.0.1",
     "@playwright/test": "^1.40.1",
     "@tsconfig/docusaurus": "^2.0.2",
     "cheerio": "^1.0.0-rc.12",
     "@docusaurus/tsconfig": "3.0.1",
-    "@types/react": "^18.2.45",
+    "@types/react": "^18.2.46",
     "typescript": "~5.3.3"
   },
   "browserslist": {
