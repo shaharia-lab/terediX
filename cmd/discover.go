@@ -77,46 +77,26 @@ func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger
 	http.Handle("/metrics", promhttp.Handler())
 
 	// Use http.Server directly to gain control over its lifecycle
-	promMetricsServer := &http.Server{
+	server := &http.Server{
 		Addr: ":2112",
 	}
 
 	// Start server in a separate goroutine so it doesn't block
 	go func() {
-		if err := promMetricsServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.WithError(err).Error("failed to start http server")
-		}
-	}()
-
-	// Start another HTTP server for the API server
-	apiServer := &http.Server{
-		Addr: ":8080",
-	}
-
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
-	})
-
-	go func() {
-		if err := apiServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Error("failed to start API server")
 		}
 	}()
 
 	// Wait for context cancellation (in your case, the timeout)
 	<-ctx.Done()
 
-	// Shutdown the servers gracefully with a timeout.
+	// Shutdown the server gracefully with a timeout.
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := promMetricsServer.Shutdown(shutdownCtx); err != nil {
-		logger.WithError(err).Error("failed to shutdown Prometheus metrics server gracefully")
-		return err
-	}
-
-	if err := apiServer.Shutdown(shutdownCtx); err != nil {
-		logger.WithError(err).Error("failed to shutdown API server gracefully")
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("failed to shutdown server gracefully")
 		return err
 	}
 
