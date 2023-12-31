@@ -60,7 +60,6 @@ jobs:
       - name: Prepare kind cluster
         if: steps.list-changed.outputs.changed == 'true'
         run: |
-          kubectl delete namespace teredix-testing
           kubectl create namespace teredix-testing
           
           helm upgrade --install postgresql bitnami/postgresql --namespace "teredix-testing" \
