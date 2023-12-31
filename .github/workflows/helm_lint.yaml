@@ -111,5 +111,5 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         run: |
           ct install --target-branch ${{ github.event.repository.default_branch }} \
-            --charts teredix --namespace teredix-testing --debug \
+            --chart-dirs helm-chart --charts teredix --namespace teredix-testing --debug \
             --helm-extra-args "-f teredix/values.yaml -f teredix_values_ci.yaml --timeout 500s"
