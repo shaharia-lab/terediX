@@ -52,3 +52,25 @@ jobs:
 
       - name: Run chart-testing (lint)
         run: ct lint --target-branch ${{ github.event.repository.default_branch }}
+
+      - name: Create kind cluster
+        if: steps.list-changed.outputs.changed == 'true'
+        uses: helm/kind-action@v1.8.0
+
+      - name: Prepare kind cluster
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          kubectl delete namespace teredix-testing
+          kubectl create namespace teredix-testing
+          
+          helm upgrade --install postgresql bitnami/postgresql --namespace "teredix-testing" \
+            --set auth.username="app" \
+            --set auth.password="pass" \
+            --set auth.database="app"
+
+      - name: Run chart-testing (install)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          ct install --target-branch ${{ github.event.repository.default_branch }} \
+            --charts teredix --namespace teredix-testing --debug \
+            --helm-extra-args "-f teredix/values.yaml -f teredix/values-local.yaml --timeout 500s"
