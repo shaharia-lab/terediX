@@ -62,6 +62,8 @@ jobs:
         run: |
           kubectl create namespace teredix-testing
           
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
           helm upgrade --install postgresql bitnami/postgresql --namespace "teredix-testing" \
             --set auth.username="app" \
             --set auth.password="pass" \
