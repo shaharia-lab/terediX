@@ -80,23 +80,23 @@ serviceAccount:
 
 livenessProbe:
   httpGet:
-    path: /ping
-    port: http
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  successThreshold: 1
-  failureThreshold: 3
+    path: /ping  # Path that the probe requests
+    port: http  # Port that the probe connects to
+  initialDelaySeconds: 10  # Number of seconds after the container starts before the probe starts
+  periodSeconds: 5  # How often (in seconds) to perform the probe
+  timeoutSeconds: 2  # Number of seconds after which the probe times out
+  successThreshold: 1  # Minimum consecutive successes for the probe to be considered successful
+  failureThreshold: 3  # When probe is considered failed after it fails for these many times
 
 readinessProbe:
   httpGet:
-    path: /ping
-    port: http
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  successThreshold: 1
-  failureThreshold: 3
+    path: /ping  # Path that the probe requests
+    port: http  # Port that the probe connects to
+  initialDelaySeconds: 10  # Number of seconds after the container starts before the probe starts
+  periodSeconds: 5  # How often (in seconds) to perform the probe
+  timeoutSeconds: 2  # Number of seconds after which the probe times out
+  successThreshold: 1  # Minimum consecutive successes for the probe to be considered successful
+  failureThreshold: 3  # When probe is considered failed after it fails for these many times
 
 podAnnotations: {}
 
