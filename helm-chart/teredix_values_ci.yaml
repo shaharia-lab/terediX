@@ -1,7 +1,3 @@
-image:
-  repository: teredix
-  tag: "prod"
-
 appConfig:
   organization:
     name: Your Organization
