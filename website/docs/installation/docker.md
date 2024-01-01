@@ -3,7 +3,7 @@ title: "Run terediX using Docker"
 sidebar_label: Docker
 ---
 
-# Docker
+## Docker
 
 If you want to install **terediX** with Docker, then you can run the following command to pull the docker image:
 

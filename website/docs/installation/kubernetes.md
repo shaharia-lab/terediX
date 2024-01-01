@@ -3,18 +3,18 @@ title: "Deploy terediX in Kubernetes"
 sidebar_label: Kubernetes
 ---
 
-# Deploy in Kubernetes using Helm Chart
+## Deploy in Kubernetes using Helm Chart
 
 It's very simple to install `terediX` in Kubernetes. You can install using Helm chart. Here are the simplest steps to follow.
 
-## Add Helm Repository
+### Add Helm Repository
 
 ```bash
 helm repo add teredix https://teredix.shaharialab.com
 helm repo update
 ```
 
-## Add Configuration
+### Add Configuration
 
 Create a separate helm values file and override necessary configuration. Specially you need to provide the configuration for `terediX`.
 
@@ -33,7 +33,7 @@ appConfig:
 .........
 ```
 
-## Install
+### Install
 After that, just install terediX using the following command.
 
 ```bash
