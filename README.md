@@ -15,6 +15,7 @@
   <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=duplicated_lines_density" height="20"/></a>
   <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=bugs" height="20"/></a>
   <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=sqale_index" height="20"/></a>
+  <a href="https://app.argos-ci.com/shahariaazam/terediX/reference"><img src="https://argos-ci.com/badge.svg" height="20"/></a>
 </p><br/><br/>
 
 <p align="center">
