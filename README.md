@@ -15,13 +15,14 @@
   <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=duplicated_lines_density" height="20"/></a>
   <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=bugs" height="20"/></a>
   <a href="https://sonarcloud.io/summary/new_code?id=shaharia-lab_terediX"><img src="https://sonarcloud.io/api/project_badges/measure?project=shaharia-lab_terediX&metric=sqale_index" height="20"/></a>
+  <a href="https://app.argos-ci.com/shahariaazam/terediX/reference"><img src="https://argos-ci.com/badge.svg" height="20"/></a>
 </p><br/><br/>
 
 <p align="center">
   <a href="https://github.com/shaharia-lab/teredix"><img src="https://user-images.githubusercontent.com/1095008/229536376-51ddaa75-85ee-4e3e-95df-7cf6093392bf.png" width="100%"/></a>
 </p><br/>
 
-Welcome to the official repository of TerediX. TerediX is a tech resource graph discovery and exploration tool. 
+Welcome to the official repository of TerediX. TerediX is a tech resource graph discovery and exploration tool.
 It helps you to discover your tech resources, monitor your resources in one place.
 
 Documentations are available on [https://teredix.shaharia.com](https://teredix.shaharia.com).

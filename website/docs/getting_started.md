@@ -3,64 +3,23 @@ sidebar_position: 3
 title: "Getting Started"
 ---
 
-# Getting Started
+## Getting Started
 
-## Installation
+### Installation
 
-There are several ways to install **terediX**. You can install **terediX** with standalone binary, `go install` command or with Docker.
+There are several ways to install **terediX**. You can install **terediX** with any of the following methods:
 
-### Standalone Binary
+- [Standalone Binary](/docs/installation/standalone_binary)
+- [Using Go Install](/docs/installation/standalone_binary)
+- [Docker](/docs/installation/docker)
 
-If you want to install **terediX** with binary, then you can download the binary from [release page](https://github.
-com/shaharia-lab/teredix/releases). May be you need to make the binary executable by running the following command:
+Also, you can deploy `terediX` in Kubernetes using Helm Chart. Read more about [deploying teredix in Kubernetes](/docs/installation/kubernetes).
 
-```bash
-chmod +x terediX
-```
+### Create Configuration File
 
-### Go Install
+To run **terediX** you need to create a configuration file. Create a configuration file based on [the documentation](/docs/configuration/general).
 
-If you want to install **terediX** with `go install` command, then you can run the following command:
+### Run
 
-```bash
-go install github.com/shaharia-lab/teredix/cmd/terediX@latest
-```
-
-### Docker
-
-If you want to install **terediX** with Docker, then you can run the following command to pull the docker image:
-
-```bash
-docker pull shaharialab/teredix:latest
-```
-
-Or, if you want to run the docker image, then you can run the following command:
-
-```bash
-docker run -it --rm shaharialab/teredix:latest --help
-```
-
-After installing the binary in your target machine, you can run the following command to see the help message:
-
-```bash
-teredix --help
-```
-
-## Create Configuration File
-
-**terediX** uses a configuration file to run. You can create a configuration file with the following command:
-
-```bash
-teredix init
-```
-
-It will create a skeleton configuration file `config.yaml` in your current directory. You can edit the configuration 
-file as per your need.
-
-## Start Resource Scanner
-
-After creating the configuration file, you can run the following command to run **terediX**:
-
-```bash
-teredix discover --config config.yaml
-```
+After creating the configuration file, you can run the following command to start **terediX**.
+To learn how to run, go to specific installation page from above.

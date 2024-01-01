@@ -1,0 +1,45 @@
+{{- if .Values.apiService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "teredix.fullname" . }}-api
+  {{- if .Values.apiService.annotations }}
+  annotations:
+    {{- toYaml .Values.apiService.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "teredix.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.apiService.type }}
+  ports:
+    - port: {{ .Values.apiService.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "teredix.selectorLabels" . | nindent 4 }}
+---
+{{- end }}
+
+{{- if .Values.prometheusMetricsService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "teredix.fullname" . }}-metrics
+  {{- if .Values.prometheusMetricsService.annotations }}
+  annotations:
+    {{- toYaml .Values.prometheusMetricsService.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "teredix.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.prometheusMetricsService.type }}
+  ports:
+    - port: {{ .Values.prometheusMetricsService.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "teredix.selectorLabels" . | nindent 4 }}
+---
+{{- end }}
