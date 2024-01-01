@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   teredix:
   - apiVersion: v2
+    created: "2024-01-01T22:32:05.568458162Z"
+    description: A Helm chart for Kubernetes to install terediX
+    digest: 85a800b590452a9e8cca3d3fb1d2ca8c6d9249ab87c91c074c7a14bcfca2a650
+    maintainers:
+    - name: shaharia-lab
+    name: teredix
+    type: application
+    urls:
+    - https://github.com/shaharia-lab/terediX/releases/download/helm-chart-0.0.2/teredix-0.0.2.tgz
+    version: 0.0.2
+  - apiVersion: v2
     appVersion: 1.0.0
     created: "2024-01-01T15:21:06.127358392Z"
     description: A Helm chart for Kubernetes to install terediX
@@ -13,4 +24,4 @@ entries:
     urls:
     - https://github.com/shaharia-lab/terediX/releases/download/helm-chart-0.0.1/teredix-0.0.1.tgz
     version: 0.0.1
-generated: "2024-01-01T15:21:06.127364573Z"
+generated: "2024-01-01T22:32:05.56846741Z"
