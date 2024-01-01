@@ -47,6 +47,56 @@ func NewDiscoverCommand() *cobra.Command {
 	return &cmd
 }
 
+type Server struct {
+	apiServer         *http.Server
+	promMetricsServer *http.Server
+	logger            *logrus.Logger
+}
+
+func NewServer(logger *logrus.Logger) *Server {
+	return &Server{
+		logger: logger,
+	}
+}
+
+func (s *Server) setupAPIServer() {
+	r := chi.NewRouter()
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("pong"))
+	})
+
+	s.apiServer = &http.Server{
+		Addr:    ":8080",
+		Handler: r,
+	}
+}
+
+func (s *Server) setupPromMetricsServer() {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	s.promMetricsServer = &http.Server{
+		Addr:    ":2112",
+		Handler: mux,
+	}
+}
+
+func (s *Server) startServer(server *http.Server, serverName string) {
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			s.logger.WithError(err).Errorf("failed to start %s server", serverName)
+		}
+	}()
+}
+
+func (s *Server) shutdownServer(ctx context.Context, server *http.Server, serverName string) error {
+	if err := server.Shutdown(ctx); err != nil {
+		s.logger.WithError(err).Errorf("failed to shutdown %s gracefully", serverName)
+		return err
+	}
+	return nil
+}
+
 func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger) error {
 	st, err := storage.BuildStorage(appConfig)
 	if err != nil {
@@ -74,44 +124,12 @@ func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger
 
 	logger.Info("started processing scheduled jobs")
 
-	// Create a new ServeMux
-	mux := http.NewServeMux()
+	s := NewServer(logger)
+	s.setupAPIServer()
+	s.setupPromMetricsServer()
 
-	// Set up your handler
-	mux.Handle("/metrics", promhttp.Handler())
-
-	// Use http.Server directly to gain control over its lifecycle
-	promMetricsServer := &http.Server{
-		Addr:    ":2112",
-		Handler: mux, // Use the new ServeMux as the handler
-	}
-
-	// Start server in a separate goroutine so it doesn't block
-	go func() {
-		if err := promMetricsServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Error("failed to start http server")
-		}
-	}()
-
-	// Create a new router
-	r := chi.NewRouter()
-
-	// Define your routes
-	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
-	})
-
-	// Start another HTTP server for the API server
-	apiServer := &http.Server{
-		Addr:    ":8080",
-		Handler: r, // Use the chi router as the handler
-	}
-
-	go func() {
-		if err := apiServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Error("failed to start API server")
-		}
-	}()
+	s.startServer(s.promMetricsServer, "metrics")
+	s.startServer(s.apiServer, "api")
 
 	// Wait for context cancellation (in your case, the timeout)
 	<-ctx.Done()
@@ -120,13 +138,11 @@ func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := promMetricsServer.Shutdown(shutdownCtx); err != nil {
-		logger.WithError(err).Error("failed to shutdown Prometheus metrics server gracefully")
+	if err := s.shutdownServer(shutdownCtx, s.apiServer, "API server"); err != nil {
 		return err
 	}
 
-	if err := apiServer.Shutdown(shutdownCtx); err != nil {
-		logger.WithError(err).Error("failed to shutdown API server gracefully")
+	if err := s.shutdownServer(shutdownCtx, s.promMetricsServer, "Prometheus metrics server"); err != nil {
 		return err
 	}
 
