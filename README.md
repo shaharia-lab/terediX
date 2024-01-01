@@ -22,7 +22,7 @@
   <a href="https://github.com/shaharia-lab/teredix"><img src="https://user-images.githubusercontent.com/1095008/229536376-51ddaa75-85ee-4e3e-95df-7cf6093392bf.png" width="100%"/></a>
 </p><br/>
 
-Welcome to the official repository of TerediX. TerediX is a tech resource graph discovery and exploration tool. 
+Welcome to the official repository of TerediX. TerediX is a tech resource graph discovery and exploration tool.
 It helps you to discover your tech resources, monitor your resources in one place.
 
 Documentations are available on [https://teredix.shaharia.com](https://teredix.shaharia.com).
