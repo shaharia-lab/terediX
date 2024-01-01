@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/metrics"
@@ -73,12 +74,16 @@ func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger
 
 	logger.Info("started processing scheduled jobs")
 
+	// Create a new ServeMux
+	mux := http.NewServeMux()
+
 	// Set up your handler
-	http.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/metrics", promhttp.Handler())
 
 	// Use http.Server directly to gain control over its lifecycle
 	promMetricsServer := &http.Server{
-		Addr: ":2112",
+		Addr:    ":2112",
+		Handler: mux, // Use the new ServeMux as the handler
 	}
 
 	// Start server in a separate goroutine so it doesn't block
@@ -88,14 +93,19 @@ func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger
 		}
 	}()
 
-	// Start another HTTP server for the API server
-	apiServer := &http.Server{
-		Addr: ":8080",
-	}
+	// Create a new router
+	r := chi.NewRouter()
 
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+	// Define your routes
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("pong"))
 	})
+
+	// Start another HTTP server for the API server
+	apiServer := &http.Server{
+		Addr:    ":8080",
+		Handler: r, // Use the chi router as the handler
+	}
 
 	go func() {
 		if err := apiServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
