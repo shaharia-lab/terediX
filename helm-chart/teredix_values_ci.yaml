@@ -37,10 +37,6 @@ appConfig:
           meta_key: "rootDirectory"
           meta_value: "/some/path"
 
-service:
-  type: ClusterIP
-  port: 2112
-
 ingress:
   enabled: true
   hosts:
