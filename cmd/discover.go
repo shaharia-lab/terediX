@@ -61,6 +61,18 @@ func NewServer(logger *logrus.Logger) *Server {
 
 func (s *Server) setupAPIServer() {
 	r := chi.NewRouter()
+
+	// Create a new router group
+	r.Route("/api", func(r chi.Router) {
+		r.Route("/v1", func(r chi.Router) {
+			r.Get("/resources", func(w http.ResponseWriter, r *http.Request) {
+				// Return an empty JSON response
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte("{}"))
+			})
+		})
+	})
+
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("pong"))
 	})
