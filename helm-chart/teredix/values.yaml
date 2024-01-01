@@ -120,9 +120,9 @@ services:
   #   port: 2112
   #   annotations:
   # Help Prometheus to discover the custom metrics endpoint to scrape the metrics from this service
-  #    prometheus.io/scrape: "true"
-  #    prometheus.io/port: "2112"
-  #    prometheus.io/path: "/metrics"
+  #     prometheus.io/scrape: "true"
+  #     prometheus.io/port: "2112"
+  #     prometheus.io/path: "/metrics"
   # Add more services as needed
 
 ingress:
