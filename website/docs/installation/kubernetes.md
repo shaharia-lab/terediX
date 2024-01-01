@@ -1,6 +1,6 @@
 ---
-sidebar_position: 3
 title: "Deploy terediX in Kubernetes"
+sidebar_label: Kubernetes
 ---
 
 # Deploy in Kubernetes using Helm Chart
@@ -18,8 +18,9 @@ helm repo update
 
 Create a separate helm values file and override necessary configuration. Specially you need to provide the configuration for `terediX`.
 
+Create a `values-prod.yaml` file and put the following content. You can override any configuration as you need. Read more about [terediX configuration](/docs/configuration/general).
+
 ```bash
-# values-prod.yaml
 appConfig:
 #  organization:
 #     name: Your Organization
