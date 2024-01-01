@@ -19,4 +19,4 @@ RUN apk add --no-cache ca-certificates git bash curl jq openssh-client gnupg
 
 COPY --from=builder /workspace/teredix/dist/teredix /usr/local/bin/teredix
 
-CMD ["/usr/local/bin/teredix"]
+CMD ["/usr/local/bin/teredix", "--version"]

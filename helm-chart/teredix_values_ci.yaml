@@ -1,0 +1,46 @@
+appConfig:
+  organization:
+    name: Your Organization
+    logo: https://your-org-url.com/logo.png
+  discovery:
+    name: Name of the discovery
+    description: Some description about the discovery
+    worker_pool_size: 1
+  storage:
+    batch_size: 2
+    engines:
+      postgresql:
+        host: "postgresql"
+        port: 5432
+        user: "app"
+        password: "pass"
+        db: "app"
+    default_engine: postgresql
+  source:
+    fs_one:
+      type: file_system
+      configuration:
+        root_directory: "/config"
+      fields:
+        - machineHost
+        - rootDirectory
+      schedule: "@every 300s"
+  relations:
+    criteria:
+      - name: "file-system-rule1"
+        source:
+          kind: "FilePath"
+          meta_key: "rootDirectory"
+          meta_value: "/some/path"
+        target:
+          kind: "FilePath"
+          meta_key: "rootDirectory"
+          meta_value: "/some/path"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: teredix-testing.dev.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific

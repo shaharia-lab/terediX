@@ -7,6 +7,9 @@ docker-compose.yml
 config.yaml
 coverage_*.out
 
+# helm-chart
+helm-chart/*/values-*.yaml
+
 # docusaurus gitignore
 /website/node_modules
 

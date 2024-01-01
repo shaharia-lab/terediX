@@ -1,0 +1,150 @@
+image:
+  repository: ghcr.io/shaharia-lab/teredix
+  pullPolicy: IfNotPresent
+  tag: "0.0.2"
+
+nameOverride: ""
+fullnameOverride: ""
+
+# configMap for running terediX
+# The following configMap will be loaded as environment variables in the terediX container
+configMap:
+  KEY: "value"
+
+# config.yaml for running terediX
+# Documentations for the configuration can be found at https://teredix.shaharialab.com/docs/configuration/general
+# Schema for the configuration is available at https://github.com/shaharia-lab/terediX/blob/master/pkg/config/schema.json
+appConfig:
+#  organization:
+#     name: Your Organization
+#     logo: https://your-org-url.com/logo.png
+#   discovery:
+#     name: Name of the discovery
+#     description: Some description about the discovery
+#     worker_pool_size: 1
+#   storage:
+#     batch_size: 2
+#     engines:
+#       postgresql:
+#         host: "localhost"
+#         port: 5432
+#         user: "app"
+#         password: "pass"
+#         db: "app"
+#     default_engine: postgresql
+#   source:
+#     fs_one:
+#       type: file_system
+#       configuration:
+#         root_directory: "/root_directory"
+#       fields:
+#         - machineHost
+#         - rootDirectory
+#       schedule: &schedule "@every 1d"
+#   github_repo:
+#     type: github_repository
+#     configuration:
+#       user_or_org: "some_org"
+#       token: "token"
+#     fields:
+#       - company
+#       - homepage
+#       - language
+#       - organization
+#       - stars
+#       - git_url
+#       - owner_login
+#       - owner_name
+#       - topics
+#     schedule: *schedule
+#   relations:
+#     criteria:
+#       - name: "file-system-rule1"
+#         source:
+#           kind: "FilePath"
+#           meta_key: "rootDirectory"
+#           meta_value: "/some/path"
+#         target:
+#           kind: "FilePath"
+#           meta_key: "rootDirectory"
+#           meta_value: "/some/path"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+livenessProbe:
+  httpGet:
+    path: /ping  # Path that the probe requests
+    port: http  # Port that the probe connects to
+  initialDelaySeconds: 10  # Number of seconds after the container starts before the probe starts
+  periodSeconds: 5  # How often (in seconds) to perform the probe
+  timeoutSeconds: 2  # Number of seconds after which the probe times out
+  successThreshold: 1  # Minimum consecutive successes for the probe to be considered successful
+  failureThreshold: 3  # When probe is considered failed after it fails for these many times
+
+readinessProbe:
+  httpGet:
+    path: /ping  # Path that the probe requests
+    port: http  # Port that the probe connects to
+  initialDelaySeconds: 10  # Number of seconds after the container starts before the probe starts
+  periodSeconds: 5  # How often (in seconds) to perform the probe
+  timeoutSeconds: 2  # Number of seconds after which the probe times out
+  successThreshold: 1  # Minimum consecutive successes for the probe to be considered successful
+  failureThreshold: 3  # When probe is considered failed after it fails for these many times
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    # - host: teredix.dev.local
+    #   paths:
+    #     - path: /
+    #       pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
