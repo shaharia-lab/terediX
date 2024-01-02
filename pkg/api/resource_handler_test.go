@@ -42,3 +42,49 @@ func TestGetAllResources(t *testing.T) {
 		})
 	}
 }
+
+func TestParseMetaDataEquals(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    string
+		expected map[string]string
+	}{
+		{
+			name:     "Single key-value pair",
+			input:    "key1=value1",
+			expected: map[string]string{"key1": "value1"},
+		},
+		{
+			name:     "Multiple key-value pairs",
+			input:    "key1=value1,key2=value2",
+			expected: map[string]string{"key1": "value1", "key2": "value2"},
+		},
+		{
+			name:     "Empty string",
+			input:    "",
+			expected: map[string]string{},
+		},
+		{
+			name:     "No value for key",
+			input:    "key1=",
+			expected: map[string]string{"key1": ""},
+		},
+		{
+			name:     "No key for value",
+			input:    "=value1",
+			expected: map[string]string{"": "value1"},
+		},
+		{
+			name:     "Extra equals signs",
+			input:    "key1=value1=value2",
+			expected: map[string]string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := parseMetaDataEquals(tc.input)
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}

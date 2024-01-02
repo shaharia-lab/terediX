@@ -133,6 +133,12 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 		q.SetOffset(filter.Offset)
 	}
 
+	if len(filter.MetaDataEquals) > 0 {
+		for k, v := range filter.MetaDataEquals {
+			q.AddMetaDataEqFilter(k, v)
+		}
+	}
+
 	// Build the query
 	query, args := q.Build()
 
@@ -151,11 +157,11 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 		var metaJSON []byte // For the aggregated metadata JSON
 
 		err := rows.Scan(
+			&source,
 			&kind,
 			&uuid,
 			&name,
 			&externalID,
-			&source,
 			&version,
 			&discoveredAt,
 			&metaJSON, // Scan the JSON data
