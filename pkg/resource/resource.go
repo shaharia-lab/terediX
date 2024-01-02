@@ -20,6 +20,26 @@ type Resource struct {
 	version     int
 }
 
+// Response represent resource response
+type Response struct {
+	Kind       string            `json:"kind"`
+	UUID       string            `json:"uuid"`
+	Name       string            `json:"name"`
+	ExternalID string            `json:"external_id"`
+	MetaData   map[string]string `json:"meta_data"`
+	Scanner    string            `json:"scanner"`
+	FetchedAt  time.Time         `json:"fetched_at"`
+	Version    int               `json:"version"`
+}
+
+// ListResponse represent list of resources
+type ListResponse struct {
+	Page      int        `json:"page"`
+	PerPage   int        `json:"per_page"`
+	HasMore   bool       `json:"has_more"`
+	Resources []Response `json:"resources"`
+}
+
 // NewResource instantiate new resource
 func NewResource(kind, name, externalID, scannerName string, version int) Resource {
 	return Resource{

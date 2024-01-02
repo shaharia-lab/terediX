@@ -3,8 +3,10 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -51,11 +53,13 @@ type Server struct {
 	apiServer         *http.Server
 	promMetricsServer *http.Server
 	logger            *logrus.Logger
+	storage           storage.Storage
 }
 
-func NewServer(logger *logrus.Logger) *Server {
+func NewServer(logger *logrus.Logger, storage storage.Storage) *Server {
 	return &Server{
-		logger: logger,
+		logger:  logger,
+		storage: storage,
 	}
 }
 
@@ -66,9 +70,22 @@ func (s *Server) setupAPIServer() {
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Get("/resources", func(w http.ResponseWriter, r *http.Request) {
-				// Return an empty JSON response
+				rResponse, err := s.getResources(w, r)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				// Convert the response to JSON
+				jsonResponse, err := json.Marshal(rResponse)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				// Write the response
 				w.Header().Set("Content-Type", "application/json")
-				w.Write([]byte("{}"))
+				w.Write(jsonResponse)
 			})
 		})
 	})
@@ -81,6 +98,58 @@ func (s *Server) setupAPIServer() {
 		Addr:    ":8080",
 		Handler: r,
 	}
+}
+
+func (s *Server) getResources(w http.ResponseWriter, r *http.Request) (resource.ListResponse, error) {
+	// Parse query parameters
+	page := r.URL.Query().Get("page")
+	perPage := r.URL.Query().Get("per_page")
+
+	// Convert query parameters to integers
+	pageInt, _ := strconv.Atoi(page)
+	perPageInt, _ := strconv.Atoi(perPage)
+
+	// Ensure perPage does not exceed 200
+	if perPageInt > 200 {
+		perPageInt = 200
+	}
+
+	// Create a ResourceFilter
+	filter := storage.ResourceFilter{}
+
+	// Use the Find method to retrieve resources
+	resources, err := s.storage.Find(filter)
+	if err != nil {
+		return resource.ListResponse{}, err
+	}
+
+	rResponse := resource.ListResponse{
+		Page:      pageInt,
+		PerPage:   perPageInt,
+		HasMore:   false,
+		Resources: []resource.Response{},
+	}
+	for _, re := range resources {
+		res := resource.Response{
+			Kind:       re.GetKind(),
+			UUID:       re.GetUUID(),
+			Name:       re.GetName(),
+			ExternalID: re.GetExternalID(),
+			Scanner:    re.GetScanner(),
+			FetchedAt:  re.GetFetchedAt(),
+			Version:    re.GetVersion(),
+		}
+
+		rm := re.GetMetaData()
+		if rm.Get() != nil {
+			for _, m := range rm.Get() {
+				res.MetaData[m.Key] = m.Value
+			}
+		}
+
+		rResponse.Resources = append(rResponse.Resources, res)
+	}
+	return rResponse, nil
 }
 
 func (s *Server) setupPromMetricsServer() {
@@ -136,7 +205,7 @@ func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger
 
 	logger.Info("started processing scheduled jobs")
 
-	s := NewServer(logger)
+	s := NewServer(logger, st)
 	s.setupAPIServer()
 	s.setupPromMetricsServer()
 
