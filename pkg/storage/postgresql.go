@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -145,6 +146,8 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	// Execute the query
 	rows, err := p.DB.Query(query, args...)
 	if err != nil {
+		log.Printf("Query: \n%s\n", query)
+		log.Printf("Args: \n%v\n", args)
 		return resources, fmt.Errorf("failed to execute query to find resource: %w", err)
 	}
 	defer rows.Close()

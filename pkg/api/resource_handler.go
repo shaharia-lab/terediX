@@ -1,3 +1,4 @@
+// Package api provides api handlers
 package api
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/shaharia-lab/teredix/pkg/storage"
 )
 
+// GetAllResources returns a handler function that retrieves all resources
 func GetAllResources(s storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		page := r.URL.Query().Get("page")
