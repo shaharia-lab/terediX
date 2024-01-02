@@ -58,6 +58,11 @@ func (r *Resource) SetUUID(uuid string) {
 	r.uuid = uuid
 }
 
+// SetFetchedAt sets resource fetched at
+func (r *Resource) SetFetchedAt(fetchedAt time.Time) {
+	r.fetchedAt = fetchedAt
+}
+
 // GetScanner returns resource scanner
 func (r *Resource) GetScanner() string {
 	return r.scanner

@@ -80,7 +80,18 @@ func (q *Query) Build() (string, []interface{}) {
 	if len(q.filters) > 0 {
 		whereClause = "WHERE " + strings.Join(q.filters, " AND ")
 	}
-	return fmt.Sprintf("SELECT r.kind, r.uuid, r.name, r.external_id, r.source, r.version, m.key, m.value, rr.kind, rr.uuid, rr.name, rr.external_id FROM resources r LEFT JOIN metadata m ON r.id = m.resource_id LEFT JOIN relations rl ON r.id = rl.resource_id LEFT JOIN resources rr ON rl.related_resource_id = rr.id %s", whereClause), q.params
+
+	query := fmt.Sprintf(`SELECT  r.source, r.kind, r.uuid, r.name, r.external_id, r.version, r.discovered_at, json_object_agg(m.key, m.value) FILTER (WHERE m.key IS NOT NULL) AS meta_data
+FROM 
+    resources r
+LEFT JOIN 
+    metadata m ON r.id = m.resource_id
+%s
+GROUP BY 
+    r.id
+`, whereClause)
+
+	return query, q.params
 }
 
 // BuildStorage build storage based on configuration

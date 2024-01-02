@@ -138,6 +138,7 @@ func (s *Server) getResources(w http.ResponseWriter, r *http.Request) (resource.
 			Scanner:    re.GetScanner(),
 			FetchedAt:  re.GetFetchedAt(),
 			Version:    re.GetVersion(),
+			MetaData:   map[string]string{},
 		}
 
 		rm := re.GetMetaData()
