@@ -120,6 +120,7 @@ func (r *Resource) AddMetaData(metaDataMap map[string]string) {
 	}
 }
 
+// ToAPIResponse converts resource to API response
 func (r *Resource) ToAPIResponse() Response {
 	res := Response{
 		Kind:       r.GetKind(),
