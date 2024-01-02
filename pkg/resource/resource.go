@@ -119,3 +119,25 @@ func (r *Resource) AddMetaData(metaDataMap map[string]string) {
 		r.metaData.Add(k, v)
 	}
 }
+
+func (r *Resource) ToAPIResponse() Response {
+	res := Response{
+		Kind:       r.GetKind(),
+		UUID:       r.GetUUID(),
+		Name:       r.GetName(),
+		ExternalID: r.GetExternalID(),
+		Scanner:    r.GetScanner(),
+		FetchedAt:  r.GetFetchedAt(),
+		Version:    r.GetVersion(),
+		MetaData:   map[string]string{},
+	}
+
+	rm := r.GetMetaData()
+	if rm.Get() != nil {
+		for _, m := range rm.Get() {
+			res.MetaData[m.Key] = m.Value
+		}
+	}
+
+	return res
+}

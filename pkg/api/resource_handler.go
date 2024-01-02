@@ -65,25 +65,7 @@ func getResources(s storage.Storage, page, perPage string) (resource.ListRespons
 		Resources: []resource.Response{},
 	}
 	for _, re := range resources {
-		res := resource.Response{
-			Kind:       re.GetKind(),
-			UUID:       re.GetUUID(),
-			Name:       re.GetName(),
-			ExternalID: re.GetExternalID(),
-			Scanner:    re.GetScanner(),
-			FetchedAt:  re.GetFetchedAt(),
-			Version:    re.GetVersion(),
-			MetaData:   map[string]string{},
-		}
-
-		rm := re.GetMetaData()
-		if rm.Get() != nil {
-			for _, m := range rm.Get() {
-				res.MetaData[m.Key] = m.Value
-			}
-		}
-
-		rResponse.Resources = append(rResponse.Resources, res)
+		rResponse.Resources = append(rResponse.Resources, re.ToAPIResponse())
 	}
 	return rResponse, nil
 }
