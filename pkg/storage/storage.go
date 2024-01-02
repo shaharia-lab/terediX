@@ -126,6 +126,11 @@ func (q *Query) Build() (string, []interface{}) {
 		q.offset = 0
 	}
 
+	var whereClause string
+	if len(q.filters) > 0 {
+		whereClause = "WHERE " + strings.Join(q.filters, " AND ")
+	}
+
 	subQueries := make([]string, 0, len(q.MetaData))
 	for key, value := range q.MetaData {
 		subQuery := fmt.Sprintf(`
@@ -136,11 +141,19 @@ func (q *Query) Build() (string, []interface{}) {
 		q.params = append(q.params, key, value)
 	}
 
-	query := fmt.Sprintf(`SELECT  r.source, r.kind, r.uuid, r.name, r.external_id, r.version, r.discovered_at, json_object_agg(m.key, m.value) FILTER (WHERE m.key IS NOT NULL) AS meta_data
-    FROM resources r
-    %s
-    LEFT JOIN metadata m ON r.id = m.resource_id
-    GROUP BY r.id LIMIT %d OFFSET %d`, strings.Join(subQueries, " "), q.perPage, q.offset)
+	query := fmt.Sprintf(`SELECT  
+    r.source, 
+    r.kind, 
+    r.uuid, 
+    r.name, 
+    r.external_id, 
+    r.version, 
+    r.discovered_at, 
+    json_object_agg(m.key, m.value) FILTER (WHERE m.key IS NOT NULL) AS meta_data 
+FROM resources r %s 
+LEFT JOIN metadata m ON r.id = m.resource_id %s 
+GROUP BY r.id 
+LIMIT %d OFFSET %d`, strings.Join(subQueries, " "), whereClause, q.perPage, q.offset)
 
 	return query, q.params
 }
