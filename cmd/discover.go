@@ -49,6 +49,7 @@ func NewDiscoverCommand() *cobra.Command {
 	return &cmd
 }
 
+// Server represent server
 type Server struct {
 	apiServer         *http.Server
 	promMetricsServer *http.Server
@@ -56,6 +57,7 @@ type Server struct {
 	storage           storage.Storage
 }
 
+// NewServer instantiate new server
 func NewServer(logger *logrus.Logger, storage storage.Storage) *Server {
 	return &Server{
 		logger:  logger,

@@ -148,7 +148,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 		var kind, uuid, name, externalID, source string
 		var version int
 		var discoveredAt time.Time
-		var metaJson []byte // For the aggregated metadata JSON
+		var metaJSON []byte // For the aggregated metadata JSON
 
 		err := rows.Scan(
 			&kind,
@@ -158,7 +158,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 			&source,
 			&version,
 			&discoveredAt,
-			&metaJson, // Scan the JSON data
+			&metaJSON, // Scan the JSON data
 		)
 		if err != nil {
 			return resources, fmt.Errorf("failed to scan row to fetch the resource result: %w", err)
@@ -170,7 +170,7 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 		res.SetFetchedAt(discoveredAt)
 
 		var metaData map[string]string
-		if err := json.Unmarshal(metaJson, &metaData); err != nil {
+		if err := json.Unmarshal(metaJSON, &metaData); err != nil {
 			return resources, fmt.Errorf("failed to unmarshal metadata JSON: %w", err)
 		}
 
