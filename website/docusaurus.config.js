@@ -93,6 +93,11 @@ const config = {
             label: 'Documentations',
           },
           {
+            to: '/api',
+            label: 'API Reference',
+            position: 'left'
+          },
+          {
             to: 'https://github.com/shaharia-lab/terediX/releases',
             label: 'Releases',
             position: 'left'
