@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/shaharia-lab/teredix/pkg/resource"
@@ -10,6 +12,43 @@ import (
 )
 
 func TestGetAllResources(t *testing.T) {
+	st := new(storage.Mock)
+	st.On("Find", mock.Anything).Return([]resource.Resource{}, nil)
+
+	handler := GetAllResources(st)
+
+	req, err := http.NewRequest("GET", "/resources?page=1&per_page=10", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	req, err = http.NewRequest("GET", "/resources", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	req, err = http.NewRequest("GET", "/resources?page=1&per_page=300", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestGetResources(t *testing.T) {
 	st := new(storage.Mock)
 	st.On("Find", mock.Anything).Return([]resource.Resource{}, nil)
 
