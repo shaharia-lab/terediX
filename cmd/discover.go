@@ -3,14 +3,13 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/shaharia-lab/teredix/pkg/api"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/processor"
@@ -71,25 +70,7 @@ func (s *Server) setupAPIServer(port string) {
 	// Create a new router group
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
-			r.Get("/resources", func(w http.ResponseWriter, r *http.Request) {
-				// Parse query parameters
-				rResponse, err := s.getResources(r.URL.Query().Get("page"), r.URL.Query().Get("per_page"))
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				// Convert the response to JSON
-				jsonResponse, err := json.Marshal(rResponse)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				// Write the response
-				w.Header().Set("Content-Type", "application/json")
-				w.Write(jsonResponse)
-			})
+			r.Get("/resources", api.GetAllResources(s.storage))
 		})
 	})
 
@@ -101,63 +82,6 @@ func (s *Server) setupAPIServer(port string) {
 		Addr:    ":" + port,
 		Handler: r,
 	}
-}
-
-func (s *Server) getResources(page, perPage string) (resource.ListResponse, error) {
-	if page == "" {
-		page = "1"
-	}
-
-	if perPage == "" {
-		perPage = "200"
-	}
-
-	// Convert query parameters to integers
-	pageInt, _ := strconv.Atoi(page)
-	perPageInt, _ := strconv.Atoi(perPage)
-
-	// Ensure perPage does not exceed 200
-	if perPageInt > 200 {
-		perPageInt = 200
-	}
-
-	// Create a ResourceFilter
-	filter := storage.ResourceFilter{PerPage: perPageInt, Offset: (pageInt - 1) * perPageInt}
-
-	// Use the Find method to retrieve resources
-	resources, err := s.storage.Find(filter)
-	if err != nil {
-		return resource.ListResponse{}, err
-	}
-
-	rResponse := resource.ListResponse{
-		Page:      pageInt,
-		PerPage:   perPageInt,
-		HasMore:   true,
-		Resources: []resource.Response{},
-	}
-	for _, re := range resources {
-		res := resource.Response{
-			Kind:       re.GetKind(),
-			UUID:       re.GetUUID(),
-			Name:       re.GetName(),
-			ExternalID: re.GetExternalID(),
-			Scanner:    re.GetScanner(),
-			FetchedAt:  re.GetFetchedAt(),
-			Version:    re.GetVersion(),
-			MetaData:   map[string]string{},
-		}
-
-		rm := re.GetMetaData()
-		if rm.Get() != nil {
-			for _, m := range rm.Get() {
-				res.MetaData[m.Key] = m.Value
-			}
-		}
-
-		rResponse.Resources = append(rResponse.Resources, res)
-	}
-	return rResponse, nil
 }
 
 func (s *Server) setupPromMetricsServer() {
