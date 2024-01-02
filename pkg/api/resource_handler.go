@@ -3,7 +3,6 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,83 +14,79 @@ import (
 // GetAllResources returns a handler function that retrieves all resources
 func GetAllResources(s storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		page := r.URL.Query().Get("page")
-		perPage := r.URL.Query().Get("per_page")
-
-		if page == "" {
-			page = "1"
+		filter, err := buildResourceFilterFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
-		if perPage == "" {
-			perPage = "200"
-		}
-
-		// Convert query parameters to integers
-		pageInt, _ := strconv.Atoi(page)
-		perPageInt, _ := strconv.Atoi(perPage)
-
-		// Ensure perPage does not exceed 200
-		if perPageInt > 200 {
-			perPageInt = 200
-		}
-
-		// Create a ResourceFilter
-		filter := storage.ResourceFilter{PerPage: perPageInt, Offset: (pageInt - 1) * perPageInt}
-
-		if kind := r.URL.Query().Get("kind"); kind != "" {
-			filter.Kind = kind
-		}
-
-		if name := r.URL.Query().Get("name"); name != "" {
-			filter.Name = name
-		}
-
-		if externalID := r.URL.Query().Get("external_id"); externalID != "" {
-			filter.ExternalID = externalID
-		}
-
-		if uuid := r.URL.Query().Get("uuid"); uuid != "" {
-			filter.UUID = uuid
-		}
-
-		if metaDataEq := r.URL.Query().Get("meta_data_eq"); metaDataEq != "" {
-			filter.MetaDataEquals = parseMetaDataEquals(metaDataEq)
-		}
-
-		for k, v := range filter.MetaDataEquals {
-			log.Print(k, v)
-		}
-
-		// Parse query parameters
-		rResponse, err := getResources(s, filter, pageInt, perPageInt)
+		resources, err := getResources(s, filter)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Convert the response to JSON
-		jsonResponse, err := json.Marshal(rResponse)
+		jsonResponse, err := json.Marshal(resources)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Write the response
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(jsonResponse)
 	}
 }
 
-func getResources(s storage.Storage, filter storage.ResourceFilter, page, perPage int) (resource.ListResponse, error) {
-	// Use the Find method to retrieve resources
+func buildResourceFilterFromRequest(r *http.Request) (storage.ResourceFilter, error) {
+	page, perPage := getPageAndPerPage(r)
+
+	filter := storage.ResourceFilter{
+		PerPage:    perPage,
+		Offset:     (page - 1) * perPage,
+		Kind:       r.URL.Query().Get("kind"),
+		Name:       r.URL.Query().Get("name"),
+		ExternalID: r.URL.Query().Get("external_id"),
+		UUID:       r.URL.Query().Get("uuid"),
+	}
+
+	if metaDataEq := r.URL.Query().Get("meta_data_eq"); metaDataEq != "" {
+		filter.MetaDataEquals = parseMetaDataEquals(metaDataEq)
+	}
+
+	return filter, nil
+}
+
+func getPageAndPerPage(r *http.Request) (int, int) {
+	pageStr := r.URL.Query().Get("page")
+	perPageStr := r.URL.Query().Get("per_page")
+
+	if pageStr == "" {
+		pageStr = "1"
+	}
+
+	if perPageStr == "" {
+		perPageStr = "200"
+	}
+
+	page, _ := strconv.Atoi(pageStr)
+	perPage, _ := strconv.Atoi(perPageStr)
+
+	if perPage > 200 {
+		perPage = 200
+	}
+
+	return page, perPage
+}
+
+func getResources(s storage.Storage, filter storage.ResourceFilter) (resource.ListResponse, error) {
 	resources, err := s.Find(filter)
 	if err != nil {
 		return resource.ListResponse{}, err
 	}
 
 	rResponse := resource.ListResponse{
-		Page:      page,
-		PerPage:   perPage,
+		Page:      filter.Offset + 1,
+		PerPage:   filter.PerPage,
 		HasMore:   true,
 		Resources: []resource.Response{},
 	}
