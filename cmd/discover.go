@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/shaharia-lab/teredix/pkg/api"
 	"github.com/shaharia-lab/teredix/pkg/config"
@@ -66,6 +67,16 @@ func NewServer(logger *logrus.Logger, storage storage.Storage) *Server {
 
 func (s *Server) setupAPIServer(port string) {
 	r := chi.NewRouter()
+
+	// Set up CORS
+	crs := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // Allow all origins
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum age to cache preflight request
+	})
+	r.Use(crs.Handler)
 
 	// Create a new router group
 	r.Route("/api", func(r chi.Router) {
