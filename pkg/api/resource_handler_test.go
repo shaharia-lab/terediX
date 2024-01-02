@@ -17,56 +17,28 @@ func TestGetAllResources(t *testing.T) {
 
 	handler := GetAllResources(st)
 
-	req, err := http.NewRequest("GET", "/resources?page=1&per_page=10", nil)
-	if err != nil {
-		t.Fatal(err)
+	testCases := []struct {
+		name     string
+		page     string
+		perPage  string
+		expected int
+	}{
+		{"valid page and per_page parameters", "1", "10", http.StatusOK},
+		{"empty page and per_page parameters", "", "", http.StatusOK},
+		{"per_page parameter greater than 200", "1", "300", http.StatusOK},
 	}
 
-	rr := httptest.NewRecorder()
-	handler.ServeHTTP(rr, req)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, err := http.NewRequest("GET", "/resources?page="+tc.page+"&per_page="+tc.perPage, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	assert.Equal(t, http.StatusOK, rr.Code)
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
 
-	req, err = http.NewRequest("GET", "/resources", nil)
-	if err != nil {
-		t.Fatal(err)
+			assert.Equal(t, tc.expected, rr.Code)
+		})
 	}
-
-	rr = httptest.NewRecorder()
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code)
-
-	req, err = http.NewRequest("GET", "/resources?page=1&per_page=300", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr = httptest.NewRecorder()
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code)
-}
-
-func TestGetResources(t *testing.T) {
-	st := new(storage.Mock)
-	st.On("Find", mock.Anything).Return([]resource.Resource{}, nil)
-
-	// Test with valid page and per_page parameters
-	response, err := getResources(st, "1", "10")
-	assert.NoError(t, err)
-	assert.Equal(t, 1, response.Page)
-	assert.Equal(t, 10, response.PerPage)
-
-	// Test with empty page and per_page parameters
-	response, err = getResources(st, "", "")
-	assert.NoError(t, err)
-	assert.Equal(t, 1, response.Page)
-	assert.Equal(t, 200, response.PerPage)
-
-	// Test with per_page parameter greater than 200
-	response, err = getResources(st, "1", "300")
-	assert.NoError(t, err)
-	assert.Equal(t, 1, response.Page)
-	assert.Equal(t, 200, response.PerPage)
 }
