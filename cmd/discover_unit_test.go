@@ -54,7 +54,9 @@ func TestServer_GetResources(t *testing.T) {
 func TestServer_APIEndpoint(t *testing.T) {
 	logger := logrus.New()
 	st := new(storage.Mock)
-	st.On("Find", mock.Anything).Return([]resource.Resource{}, nil)
+
+	r1 := resource.NewResource("vm", "test", "test", "test", 1)
+	st.On("Find", mock.Anything).Return([]resource.Resource{r1}, nil)
 
 	s := NewServer(logger, st)
 	s.setupAPIServer()
