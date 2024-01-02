@@ -72,7 +72,8 @@ func (s *Server) setupAPIServer() {
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Get("/resources", func(w http.ResponseWriter, r *http.Request) {
-				rResponse, err := s.getResources(w, r)
+				// Parse query parameters
+				rResponse, err := s.getResources(r.URL.Query().Get("page"), r.URL.Query().Get("per_page"))
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -102,11 +103,7 @@ func (s *Server) setupAPIServer() {
 	}
 }
 
-func (s *Server) getResources(w http.ResponseWriter, r *http.Request) (resource.ListResponse, error) {
-	// Parse query parameters
-	page := r.URL.Query().Get("page")
-	perPage := r.URL.Query().Get("per_page")
-
+func (s *Server) getResources(page, perPage string) (resource.ListResponse, error) {
 	if page == "" {
 		page = "1"
 	}
