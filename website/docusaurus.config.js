@@ -1,8 +1,8 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer').themes.github;
-const darkCodeTheme = require('prism-react-renderer').themes.dracula;
+const lightCodeTheme = require('prism-react-renderer').themes.github
+const darkCodeTheme = require('prism-react-renderer').themes.dracula
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -20,7 +20,7 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'shaharia-lab', // Usually your GitHub org/user name.
   projectName: 'teredix', // Usually your repo name.
-  deploymentBranch: "gh-pages",
+  deploymentBranch: 'gh-pages',
   trailingSlash: false,
 
   onBrokenLinks: 'throw',
@@ -31,7 +31,7 @@ const config = {
   // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en']
   },
 
   presets: [
@@ -43,18 +43,18 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           breadcrumbs: true,
           showLastUpdateTime: true,
-          editUrl: 'https://github.com/shaharia-lab/teredix/tree/master/website',
+          editUrl: 'https://github.com/shaharia-lab/teredix/tree/master/website'
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/shaharia-lab/teredix/tree/master/website',
+          editUrl: 'https://github.com/shaharia-lab/teredix/tree/master/website'
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
-        },
-      }),
+          customCss: require.resolve('./src/css/custom.css')
+        }
+      })
     ],
     [
       'redocusaurus',
@@ -63,15 +63,15 @@ const config = {
         specs: [
           {
             spec: 'static/openapi.yaml',
-            route: '/api/',
-          },
+            route: '/api/'
+          }
         ],
         theme: {
           // Change with your site colors
-          primaryColor: '#1890ff',
-        },
-      },
-    ],
+          primaryColor: '#1890ff'
+        }
+      }
+    ]
   ],
 
   themeConfig:
@@ -83,14 +83,14 @@ const config = {
         title: 'terediX',
         logo: {
           alt: 'terediX - Tech Resource Discovery',
-          src: 'img/teredix_logo.png',
+          src: 'img/teredix_logo.png'
         },
         items: [
           {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Documentations',
+            label: 'Documentations'
           },
           {
             to: '/api',
@@ -115,9 +115,9 @@ const config = {
           {
             href: 'https://github.com/shaharia-lab/teredix',
             label: 'GitHub',
-            position: 'right',
-          },
-        ],
+            position: 'right'
+          }
+        ]
       },
       footer: {
         style: 'dark',
@@ -127,48 +127,48 @@ const config = {
             items: [
               {
                 label: 'Documentations',
-                to: '/docs/intro',
-              },
-            ],
+                to: '/docs/intro'
+              }
+            ]
           },
           {
             title: 'Community',
             items: [
               {
                 label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/teredix',
+                href: 'https://stackoverflow.com/questions/tagged/teredix'
               },
               {
                 label: 'Discord',
-                href: 'https://discordapp.com/invite/teredix',
-              },
-            ],
+                href: 'https://discordapp.com/invite/teredix'
+              }
+            ]
           },
           {
             title: 'More',
             items: [
               {
                 label: 'Releases',
-                to: 'https://github.com/shaharia-lab/terediX/releases',
+                to: 'https://github.com/shaharia-lab/terediX/releases'
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/shaharia-lab/teredix',
-              },
-            ],
-          },
+                href: 'https://github.com/shaharia-lab/teredix'
+              }
+            ]
+          }
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Shaharia Lab OÜ. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Shaharia Lab OÜ. Built with Docusaurus.`
       },
       prism: {
         theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
+        darkTheme: darkCodeTheme
       },
       tableOfContents: {
         minHeadingLevel: 2,
-        maxHeadingLevel: 5,
-      },
-    }),
-};
+        maxHeadingLevel: 5
+      }
+    })
+}
 
-module.exports = config;
+module.exports = config
