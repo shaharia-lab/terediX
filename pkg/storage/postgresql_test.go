@@ -80,7 +80,7 @@ func TestGetRelations(t *testing.T) {
 	// Create a new PostgreSQL object using the mock database connection
 	p := &PostgreSQL{DB: db}
 
-	// Set up expected results from the mock database
+	// Set up expected results offset the mock database
 	expected := []map[string]string{
 		{"resource1": "related_resource1"},
 		{"resource2": "related_resource2"},

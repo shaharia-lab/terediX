@@ -18,6 +18,8 @@ type ResourceFilter struct {
 	UUID       string
 	Name       string
 	ExternalID string
+	PerPage    int
+	Offset     int
 }
 
 // ResourceCount count resource
@@ -66,6 +68,8 @@ type Storage interface {
 type Query struct {
 	filters []string
 	params  []interface{}
+	perPage int
+	offset  int
 }
 
 // AddFilter adds filter
@@ -74,8 +78,27 @@ func (q *Query) AddFilter(field, operator string, value interface{}) {
 	q.params = append(q.params, value)
 }
 
+// SetPerPage set per page
+func (q *Query) SetPerPage(perPage int) {
+	q.perPage = perPage
+}
+
+// SetOffset set offset
+func (q *Query) SetOffset(from int) {
+	q.offset = from
+}
+
 // Build builds query
 func (q *Query) Build() (string, []interface{}) {
+
+	if q.perPage == 0 {
+		q.perPage = 200
+	}
+
+	if q.offset == 0 {
+		q.offset = 0
+	}
+
 	var whereClause string
 	if len(q.filters) > 0 {
 		whereClause = "WHERE " + strings.Join(q.filters, " AND ")
@@ -87,9 +110,8 @@ FROM
 LEFT JOIN 
     metadata m ON r.id = m.resource_id
 %s
-GROUP BY 
-    r.id
-`, whereClause)
+GROUP BY r.id LIMIT %d OFFSET %d
+`, whereClause, q.perPage, q.offset)
 
 	return query, q.params
 }

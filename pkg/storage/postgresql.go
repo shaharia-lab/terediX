@@ -126,6 +126,12 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	if filter.ExternalID != "" {
 		q.AddFilter("r.external_id", "=", filter.ExternalID)
 	}
+	if filter.PerPage != 0 {
+		q.SetPerPage(filter.PerPage)
+	}
+	if filter.Offset != 0 {
+		q.SetOffset(filter.Offset)
+	}
 
 	// Build the query
 	query, args := q.Build()
@@ -259,7 +265,7 @@ func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBu
 	return matrix
 }
 
-// GetResources fetch all resources from storage
+// GetResources fetch all resources offset storage
 func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 	var resources []resource.Resource
 
@@ -456,7 +462,7 @@ func (p *PostgreSQL) GetResourceCountByMetaData() ([]MetadataCount, error) {
 		results = append(results, mkvc)
 	}
 
-	// Check for errors from iterating over rows.
+	// Check for errors offset iterating over rows.
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

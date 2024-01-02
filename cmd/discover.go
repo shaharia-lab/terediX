@@ -105,6 +105,14 @@ func (s *Server) getResources(w http.ResponseWriter, r *http.Request) (resource.
 	page := r.URL.Query().Get("page")
 	perPage := r.URL.Query().Get("per_page")
 
+	if page == "" {
+		page = "1"
+	}
+
+	if perPage == "" {
+		perPage = "200"
+	}
+
 	// Convert query parameters to integers
 	pageInt, _ := strconv.Atoi(page)
 	perPageInt, _ := strconv.Atoi(perPage)
@@ -115,7 +123,7 @@ func (s *Server) getResources(w http.ResponseWriter, r *http.Request) (resource.
 	}
 
 	// Create a ResourceFilter
-	filter := storage.ResourceFilter{}
+	filter := storage.ResourceFilter{PerPage: perPageInt, Offset: (pageInt - 1) * perPageInt}
 
 	// Use the Find method to retrieve resources
 	resources, err := s.storage.Find(filter)
@@ -126,7 +134,7 @@ func (s *Server) getResources(w http.ResponseWriter, r *http.Request) (resource.
 	rResponse := resource.ListResponse{
 		Page:      pageInt,
 		PerPage:   perPageInt,
-		HasMore:   false,
+		HasMore:   true,
 		Resources: []resource.Response{},
 	}
 	for _, re := range resources {

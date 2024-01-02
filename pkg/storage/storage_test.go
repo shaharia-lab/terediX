@@ -21,8 +21,7 @@ FROM
 LEFT JOIN 
     metadata m ON r.id = m.resource_id
 WHERE kind = $1 AND name LIKE $2
-GROUP BY 
-    r.id
+GROUP BY r.id LIMIT 200 OFFSET 0
 `
 	expectedParams := []interface{}{"vm", "%web%"}
 
@@ -43,8 +42,7 @@ FROM
 LEFT JOIN 
     metadata m ON r.id = m.resource_id
 
-GROUP BY 
-    r.id
+GROUP BY r.id LIMIT 200 OFFSET 0
 `, query)
 	assert.Empty(t, params)
 
@@ -57,8 +55,7 @@ FROM
 LEFT JOIN 
     metadata m ON r.id = m.resource_id
 WHERE kind = $1
-GROUP BY 
-    r.id
+GROUP BY r.id LIMIT 200 OFFSET 0
 `, query)
 	assert.Equal(t, []interface{}{"test"}, params)
 	// Test a query with multiple filters
@@ -72,8 +69,7 @@ FROM
 LEFT JOIN 
     metadata m ON r.id = m.resource_id
 WHERE kind = $1 AND name = $2 AND uuid != $3 AND external_id like $4
-GROUP BY 
-    r.id
+GROUP BY r.id LIMIT 200 OFFSET 0
 `, query)
 	assert.Equal(t, []interface{}{"test", "test-resource", "1234", "%abc%"}, params)
 }
