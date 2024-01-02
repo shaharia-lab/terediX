@@ -65,7 +65,7 @@ func NewServer(logger *logrus.Logger, storage storage.Storage) *Server {
 	}
 }
 
-func (s *Server) setupAPIServer() {
+func (s *Server) setupAPIServer(port string) {
 	r := chi.NewRouter()
 
 	// Create a new router group
@@ -98,7 +98,7 @@ func (s *Server) setupAPIServer() {
 	})
 
 	s.apiServer = &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: r,
 	}
 }
@@ -183,6 +183,7 @@ func (s *Server) shutdownServer(ctx context.Context, server *http.Server, server
 		s.logger.WithError(err).Errorf("failed to shutdown %s gracefully", serverName)
 		return err
 	}
+	s.apiServer = nil
 	return nil
 }
 
@@ -214,7 +215,7 @@ func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger
 	logger.Info("started processing scheduled jobs")
 
 	s := NewServer(logger, st)
-	s.setupAPIServer()
+	s.setupAPIServer("8080")
 	s.setupPromMetricsServer()
 
 	s.startServer(s.promMetricsServer, "metrics")
