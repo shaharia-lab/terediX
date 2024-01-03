@@ -86,6 +86,11 @@ func (s *Server) setupAPIServer(port string) {
 	})
 	r.Use(crs.Handler)
 
+	// Redirect the home page to /app/index.html
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/app/index.html", http.StatusMovedPermanently)
+	})
+
 	// Create a new router group
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
