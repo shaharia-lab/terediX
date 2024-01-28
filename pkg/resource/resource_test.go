@@ -44,3 +44,40 @@ func TestResource_FindMetaValue(t *testing.T) {
 	value = res1.metaData.Find("key3")
 	assert.Nil(t, value)
 }
+
+func TestResource_ToAPIResponse(t *testing.T) {
+	testCases := []struct {
+		name     string
+		resource Resource
+		expected Response
+	}{
+		{
+			name: "Test case 1: All fields are filled",
+			resource: Resource{
+				kind:       "testKind",
+				uuid:       "testUUID",
+				name:       "testName",
+				externalID: "testExternalID",
+				scanner:    "testScanner",
+				version:    1,
+				metaData:   MetaDataLists{data: []MetaData{{Key: "key1", Value: "value1"}}},
+			},
+			expected: Response{
+				Kind:       "testKind",
+				UUID:       "testUUID",
+				Name:       "testName",
+				ExternalID: "testExternalID",
+				Scanner:    "testScanner",
+				Version:    1,
+				MetaData:   map[string]string{"key1": "value1"},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := tc.resource.ToAPIResponse()
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}

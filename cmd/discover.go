@@ -3,11 +3,16 @@ package cmd
 
 import (
 	"context"
+	"embed"
 	"errors"
+	"io/fs"
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/shaharia-lab/teredix/pkg/api"
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/metrics"
 	"github.com/shaharia-lab/teredix/pkg/processor"
@@ -18,6 +23,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+// Embed the entire static directory. frontend/static directory is located under `cmd` directory
+// because go:embed doesn't support relative path
+//
+//go:embed frontend/static/*
+var webStaticFiles embed.FS
 
 // NewDiscoverCommand build "discover" command
 func NewDiscoverCommand() *cobra.Command {
@@ -44,6 +55,97 @@ func NewDiscoverCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "a valid yaml file is required")
 
 	return &cmd
+}
+
+// Server represent server
+type Server struct {
+	apiServer         *http.Server
+	promMetricsServer *http.Server
+	logger            *logrus.Logger
+	storage           storage.Storage
+}
+
+// NewServer instantiate new server
+func NewServer(logger *logrus.Logger, storage storage.Storage) *Server {
+	return &Server{
+		logger:  logger,
+		storage: storage,
+	}
+}
+
+func (s *Server) setupAPIServer(port string) {
+	r := chi.NewRouter()
+
+	// Set up CORS
+	crs := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // Allow all origins
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum age to cache preflight request
+	})
+	r.Use(crs.Handler)
+
+	// Redirect the home page to /app/index.html
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/app/index.html", http.StatusMovedPermanently)
+	})
+
+	// Create a new router group
+	r.Route("/api", func(r chi.Router) {
+		r.Route("/v1", func(r chi.Router) {
+			r.Get("/resources", api.GetAllResources(s.storage))
+		})
+	})
+
+	// Serve static files
+	r.Get("/app/*", func(w http.ResponseWriter, r *http.Request) {
+		// Create a subdirectory for the embedded files
+		staticFS, err := fs.Sub(webStaticFiles, "frontend/static")
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		// Strip the "/app" prefix and serve the files
+		http.StripPrefix("/app", http.FileServer(http.FS(staticFS))).ServeHTTP(w, r)
+	})
+
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("pong"))
+	})
+
+	s.apiServer = &http.Server{
+		Addr:    ":" + port,
+		Handler: r,
+	}
+}
+
+func (s *Server) setupPromMetricsServer() {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	s.promMetricsServer = &http.Server{
+		Addr:    ":2112",
+		Handler: mux,
+	}
+}
+
+func (s *Server) startServer(server *http.Server, serverName string) {
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			s.logger.WithError(err).Errorf("failed to start %s server", serverName)
+		}
+	}()
+}
+
+func (s *Server) shutdownServer(ctx context.Context, server *http.Server, serverName string) error {
+	if err := server.Shutdown(ctx); err != nil {
+		s.logger.WithError(err).Errorf("failed to shutdown %s gracefully", serverName)
+		return err
+	}
+	s.apiServer = nil
+	return nil
 }
 
 func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger) error {
@@ -73,35 +175,12 @@ func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger
 
 	logger.Info("started processing scheduled jobs")
 
-	// Set up your handler
-	http.Handle("/metrics", promhttp.Handler())
+	s := NewServer(logger, st)
+	s.setupAPIServer("8080")
+	s.setupPromMetricsServer()
 
-	// Use http.Server directly to gain control over its lifecycle
-	promMetricsServer := &http.Server{
-		Addr: ":2112",
-	}
-
-	// Start server in a separate goroutine so it doesn't block
-	go func() {
-		if err := promMetricsServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Error("failed to start http server")
-		}
-	}()
-
-	// Start another HTTP server for the API server
-	apiServer := &http.Server{
-		Addr: ":8080",
-	}
-
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
-	})
-
-	go func() {
-		if err := apiServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Error("failed to start API server")
-		}
-	}()
+	s.startServer(s.promMetricsServer, "metrics")
+	s.startServer(s.apiServer, "api")
 
 	// Wait for context cancellation (in your case, the timeout)
 	<-ctx.Done()
@@ -110,13 +189,11 @@ func run(ctx context.Context, appConfig *config.AppConfig, logger *logrus.Logger
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := promMetricsServer.Shutdown(shutdownCtx); err != nil {
-		logger.WithError(err).Error("failed to shutdown Prometheus metrics server gracefully")
+	if err := s.shutdownServer(shutdownCtx, s.apiServer, "API server"); err != nil {
 		return err
 	}
 
-	if err := apiServer.Shutdown(shutdownCtx); err != nil {
-		logger.WithError(err).Error("failed to shutdown API server gracefully")
+	if err := s.shutdownServer(shutdownCtx, s.promMetricsServer, "Prometheus metrics server"); err != nil {
 		return err
 	}
 

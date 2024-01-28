@@ -13,6 +13,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/rds v1.66.1
 	github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.19.6
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.47.7
+	github.com/go-chi/chi v1.5.5
+	github.com/go-chi/cors v1.2.1
 	github.com/go-co-op/gocron v1.37.0
 	github.com/google/go-github/v50 v50.2.0
 	github.com/google/uuid v1.5.0

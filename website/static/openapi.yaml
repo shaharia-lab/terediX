@@ -1,0 +1,97 @@
+openapi: 3.0.0
+info:
+  title: Teredix API
+  version: 1.0.0
+paths:
+  /api/v1/resources:
+    get:
+      summary: Get all resources
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+          description: Page number. Default is 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+          example: 10
+          description: Maximum number of resources per page. Default is 200
+        - name: kind
+          in: query
+          schema:
+            type: string
+          example: "resource_kind"
+          description: Resource kind
+        - name: name
+          in: query
+          schema:
+            type: string
+          example: "resource_name"
+          description: Resource name
+        - name: external_id
+          in: query
+          schema:
+            type: string
+          example: "external_id"
+          description: External ID
+        - name: uuid
+          in: query
+          schema:
+            type: string
+          example: "uuid"
+          description: UUID
+        - name: meta_data_eq
+          in: query
+          schema:
+            type: string
+          example: "key1=value1,key2=value2"
+          description: Filter resources by metadata (key, value pair). Multiple key-value pairs can be provided separated by comma
+      responses:
+        '200':
+          description: A list of resources
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                    description: Page number
+                  per_page:
+                    type: integer
+                    description: Maximum number of resources per page
+                  has_more:
+                    type: boolean
+                    description: Indicates if there are more resources to fetch
+                  resources:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Resource'
+components:
+  schemas:
+    Resource:
+      type: object
+      properties:
+        kind:
+          type: string
+        uuid:
+          type: string
+        name:
+          type: string
+        external_id:
+          type: string
+        scanner:
+          type: string
+        fetched_at:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int32
+        meta_data:
+          type: object
+          additionalProperties:
+            type: string

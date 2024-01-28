@@ -3,8 +3,11 @@ package storage
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/shaharia-lab/teredix/pkg/config"
 	"github.com/shaharia-lab/teredix/pkg/resource"
@@ -124,6 +127,18 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	if filter.ExternalID != "" {
 		q.AddFilter("r.external_id", "=", filter.ExternalID)
 	}
+	if filter.PerPage != 0 {
+		q.SetPerPage(filter.PerPage)
+	}
+	if filter.Offset != 0 {
+		q.SetOffset(filter.Offset)
+	}
+
+	if len(filter.MetaDataEquals) > 0 {
+		for k, v := range filter.MetaDataEquals {
+			q.AddMetaDataEqFilter(k, v)
+		}
+	}
 
 	// Build the query
 	query, args := q.Build()
@@ -131,54 +146,47 @@ func (p *PostgreSQL) Find(filter ResourceFilter) ([]resource.Resource, error) {
 	// Execute the query
 	rows, err := p.DB.Query(query, args...)
 	if err != nil {
+		log.Printf("Query: \n%s\n", query)
+		log.Printf("Args: \n%v\n", args)
 		return resources, fmt.Errorf("failed to execute query to find resource: %w", err)
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			return
-		}
-	}(rows)
+	defer rows.Close()
 
 	// Parse the results
 	for rows.Next() {
-		var kind, uuid, name, externalID, metaKey, metaValue, source string
+		var kind, uuid, name, externalID, source string
 		var version int
-		var relatedKind, relatedUUID, relatedName, relatedExternalID sql.NullString
+		var discoveredAt time.Time
+		var metaJSON []byte // For the aggregated metadata JSON
 
-		err := rows.Scan(&kind, &uuid, &name, &externalID, &source, &version, &metaKey, &metaValue, &relatedKind, &relatedUUID, &relatedName, &relatedExternalID)
+		err := rows.Scan(
+			&source,
+			&kind,
+			&uuid,
+			&name,
+			&externalID,
+			&version,
+			&discoveredAt,
+			&metaJSON, // Scan the JSON data
+		)
 		if err != nil {
 			return resources, fmt.Errorf("failed to scan row to fetch the resource result: %w", err)
 		}
 
-		// Create a resource object if it doesn't exist in the slice yet
-		var res *resource.Resource
-		for i := range resources {
-			if resources[i].GetUUID() == uuid {
-				res = &resources[i]
-				break
-			}
-		}
-		if res == nil {
-			r := resource.NewResource(kind, name, externalID, source, version)
-			r.SetUUID(uuid)
-			res = &r
-			resources = append(resources, r)
+		// Create a resource object and use setters
+		res := resource.NewResource(kind, name, externalID, source, version)
+		res.SetUUID(uuid)
+		res.SetFetchedAt(discoveredAt)
+
+		var metaData map[string]string
+		if err := json.Unmarshal(metaJSON, &metaData); err != nil {
+			return resources, fmt.Errorf("failed to unmarshal metadata JSON: %w", err)
 		}
 
-		// Add metadata to the resource
-		if metaKey != "" && metaValue != "" {
-			res.AddMetaData(map[string]string{
-				metaKey: metaValue,
-			})
-		}
+		// Assuming there's a method to set all metadata at once
+		res.AddMetaData(metaData)
 
-		// Add related resource to the resource
-		if relatedKind.Valid && relatedKind.String != "" && relatedUUID.String != "" {
-			r := resource.NewResource(relatedKind.String, relatedName.String, relatedExternalID.String, "", 1)
-			r.SetUUID(relatedUUID.String)
-			res.AddRelation(r)
-		}
+		resources = append(resources, res)
 	}
 
 	return resources, nil
@@ -266,7 +274,7 @@ func (p *PostgreSQL) generateRelationMatrix(relatedToIds []string, resourceForBu
 	return matrix
 }
 
-// GetResources fetch all resources from storage
+// GetResources fetch all resources offset storage
 func (p *PostgreSQL) GetResources() ([]resource.Resource, error) {
 	var resources []resource.Resource
 
@@ -463,7 +471,7 @@ func (p *PostgreSQL) GetResourceCountByMetaData() ([]MetadataCount, error) {
 		results = append(results, mkvc)
 	}
 
-	// Check for errors from iterating over rows.
+	// Check for errors offset iterating over rows.
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
