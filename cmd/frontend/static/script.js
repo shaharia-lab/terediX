@@ -3,12 +3,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const currentPage = 1
 
   // Moved this event listener inside DOMContentLoaded
-  document.getElementById('kindDropdown').addEventListener('change', function () {
+  document.getElementById('kind-drop-down').addEventListener('change', function () {
     updateMetadataKeysDropdown(this.value)
   })
 
   // Setup filter form submission with proper event handling
-  const filterForm = document.getElementById('filterForm')
+  const filterForm = document.getElementById('filter-form')
   if (filterForm) {
     filterForm.removeEventListener('submit', handleFilterSubmit)
     filterForm.addEventListener('submit', handleFilterSubmit)
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function displayResources (resources) {
     console.log('Displaying Resources:', resources) // Debugging line
-    const tableBody = document.getElementById('resourceTable').getElementsByTagName('tbody')[0]
+    const tableBody = document.getElementById('resource-table').getElementsByTagName('tbody')[0]
     tableBody.innerHTML = '' // Clear existing rows
 
     resources.forEach(resource => {
@@ -120,9 +120,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function getCurrentFilters () {
-    const kind = document.getElementById('kindDropdown') ? document.getElementById('kindDropdown').value : ''
-    const metadataKey = document.getElementById('metadataKeys') ? document.getElementById('metadataKeys').value : ''
-    const metadataValue = document.getElementById('metadataValue') ? document.getElementById('metadataValue').value : ''
+    const kind = document.getElementById('kind-drop-down') ? document.getElementById('kind-drop-down').value : ''
+    const metadataKey = document.getElementById('metadata-keys') ? document.getElementById('metadata-keys').value : ''
+    const metadataValue = document.getElementById('metadata-values') ? document.getElementById('metadata-values').value : ''
 
     // Prepare the meta_data_eq filter if both key and value are provided
     let metaDataEq = ''
@@ -150,7 +150,7 @@ const kindMetadataMap = {
 
 // Function to update metadata keys dropdown based on selected kind
 function updateMetadataKeysDropdown (selectedKind) {
-  const metadataKeysDropdown = document.getElementById('metadataKeys')
+  const metadataKeysDropdown = document.getElementById('metadata-keys')
   metadataKeysDropdown.innerHTML = '' // Clear existing options
 
   // Add an empty option as the default
