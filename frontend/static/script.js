@@ -1,22 +1,22 @@
-function getCookie(name) {
-  let cookieArr = document.cookie.split(";");
-  for(let i = 0; i < cookieArr.length; i++) {
-    let cookiePair = cookieArr[i].split("=");
-    if(name === cookiePair[0].trim()) {
-      return decodeURIComponent(cookiePair[1]);
+function getCookie (name) {
+  const cookieArr = document.cookie.split(';')
+  for (let i = 0; i < cookieArr.length; i++) {
+    const cookiePair = cookieArr[i].split('=')
+    if (name === cookiePair[0].trim()) {
+      return decodeURIComponent(cookiePair[1])
     }
   }
-  return null;
+  return null
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  let apiUrl = getCookie('backend_endpoint');
+  let apiUrl = getCookie('backend_endpoint')
   if (!apiUrl) {
-    window.location.href = 'set-backend.html';
-    return;
+    window.location.href = 'set-backend.html'
+    return
   }
 
-  apiUrl = `${apiUrl}/api/v1/resources`;
+  apiUrl = `${apiUrl}/api/v1/resources`
 
   const currentPage = 1
 
