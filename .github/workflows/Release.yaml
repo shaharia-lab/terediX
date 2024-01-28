@@ -36,3 +36,12 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step to build and push Docker image
+      - name: Build and Push Docker Image
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG=${GITHUB_REF#refs/tags/v}
+          IMAGE_NAME=ghcr.io/${{ github.repository }}/frontend:$TAG
+          docker build -f frontend.dockerfile -t $IMAGE_NAME .
+          docker push $IMAGE_NAME

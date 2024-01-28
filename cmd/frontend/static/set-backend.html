@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Set terediX Backend</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .input-field, .submit-button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .submit-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .submit-button:hover {
+            background-color: #45a049;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <input id="backend-url" type="text" class="input-field" value="http://localhost:8080">
+    <button onclick="setBackendUrl()" class="submit-button">Set Backend</button>
+</div>
+<script>
+    function setBackendUrl() {
+        var backendUrl = document.getElementById('backend-url').value;
+        if(backendUrl) {
+            document.cookie = "backend_endpoint=" + backendUrl + ";path=/";
+            window.location.href = 'index.html';
+        } else {
+            alert('Please enter a URL.');
+        }
+    }
+</script>
+</body>
+</html>
