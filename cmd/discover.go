@@ -3,9 +3,7 @@ package cmd
 
 import (
 	"context"
-	"embed"
 	"errors"
-	"io/fs"
 	"net/http"
 	"time"
 
@@ -23,12 +21,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
-
-// Embed the entire static directory. frontend/static directory is located under `cmd` directory
-// because go:embed doesn't support relative path
-//
-//go:embed frontend/static/*
-var webStaticFiles embed.FS
 
 // NewDiscoverCommand build "discover" command
 func NewDiscoverCommand() *cobra.Command {
@@ -96,19 +88,6 @@ func (s *Server) setupAPIServer(port string) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Get("/resources", api.GetAllResources(s.storage))
 		})
-	})
-
-	// Serve static files
-	r.Get("/app/*", func(w http.ResponseWriter, r *http.Request) {
-		// Create a subdirectory for the embedded files
-		staticFS, err := fs.Sub(webStaticFiles, "frontend/static")
-		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		// Strip the "/app" prefix and serve the files
-		http.StripPrefix("/app", http.FileServer(http.FS(staticFS))).ServeHTTP(w, r)
 	})
 
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
