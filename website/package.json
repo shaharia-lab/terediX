@@ -15,8 +15,8 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "3.0.1",
-    "@docusaurus/preset-classic": "3.0.1",
+    "@docusaurus/core": "3.1.1",
+    "@docusaurus/preset-classic": "3.1.1",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.1.0",
     "prism-react-renderer": "^2.3.1",
@@ -25,14 +25,14 @@
     "redocusaurus": "^2.0.0"
   },
   "devDependencies": {
-    "@argos-ci/cli": "^1.0.5",
-    "@argos-ci/playwright": "^1.6.0",
-    "@docusaurus/module-type-aliases": "3.0.1",
-    "@docusaurus/tsconfig": "3.0.1",
-    "@docusaurus/types": "3.0.1",
-    "@playwright/test": "^1.40.1",
+    "@argos-ci/cli": "^1.0.8",
+    "@argos-ci/playwright": "^1.8.0",
+    "@docusaurus/module-type-aliases": "3.1.1",
+    "@docusaurus/tsconfig": "3.1.1",
+    "@docusaurus/types": "3.1.1",
+    "@playwright/test": "^1.41.1",
     "@tsconfig/docusaurus": "^2.0.2",
-    "@types/react": "^18.2.46",
+    "@types/react": "^18.2.51",
     "cheerio": "^1.0.0-rc.12",
     "typescript": "~5.3.3"
   },
