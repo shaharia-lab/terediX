@@ -15,26 +15,26 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "3.2.1",
-    "@docusaurus/preset-classic": "3.2.1",
-    "@mdx-js/react": "^3.0.1",
-    "clsx": "^2.1.0",
-    "prism-react-renderer": "^2.3.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "redocusaurus": "^2.0.2"
+    "@docusaurus/core": "3.6.3",
+    "@docusaurus/preset-classic": "3.6.3",
+    "@mdx-js/react": "^3.1.0",
+    "clsx": "^2.1.1",
+    "prism-react-renderer": "^2.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "redocusaurus": "^2.2.0"
   },
   "devDependencies": {
     "@argos-ci/cli": "^1.0.11",
-    "@argos-ci/playwright": "^3.0.1",
-    "@docusaurus/module-type-aliases": "3.2.1",
-    "@docusaurus/tsconfig": "3.2.1",
-    "@docusaurus/types": "3.2.1",
-    "@playwright/test": "^1.43.1",
+    "@argos-ci/playwright": "^3.9.2",
+    "@docusaurus/module-type-aliases": "3.6.3",
+    "@docusaurus/tsconfig": "3.6.3",
+    "@docusaurus/types": "3.6.3",
+    "@playwright/test": "^1.49.0",
     "@tsconfig/docusaurus": "^2.0.3",
-    "@types/react": "^18.2.78",
+    "@types/react": "^18.3.12",
     "cheerio": "^1.0.0-rc.12",
-    "typescript": "~5.4.5"
+    "typescript": "~5.7.2"
   },
   "browserslist": {
     "production": [
