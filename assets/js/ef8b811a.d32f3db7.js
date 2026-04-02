@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[8947],{56600:a=>{a.exports=JSON.parse('{"authors":[{"name":"Shaharia Azam","title":"Founder of Shaharia Lab","url":"https://github.com/shahariaazam","imageURL":"https://github.com/shahariaazam.png","key":"shaharia","page":null,"count":0}]}')}}]);
