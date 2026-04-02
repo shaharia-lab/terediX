@@ -91,7 +91,7 @@ jobs:
           gocovmerge coverage_unit.out coverage_integration.out > coverage.out
 
       - name: Publish artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ github.sha }}.out
           path: coverage.out
@@ -106,7 +106,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download test coverage artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: coverage-${{ github.sha }}.out
 
