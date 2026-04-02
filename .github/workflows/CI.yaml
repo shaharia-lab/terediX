@@ -68,6 +68,11 @@ jobs:
         ports:
           - 5432:5432
     steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update -y
+          apt-get install -y make curl git
+
       - name: Checkout
         uses: actions/checkout@v3
 
