@@ -3,14 +3,19 @@ name: CI
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - 'website/**'
   pull_request:
     branches: [ master ]
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'website/**'
 
 jobs:
 
   build:
     name: Build Binary
+    if: "! contains(github.event.*.head_commit.modified, 'website/')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
