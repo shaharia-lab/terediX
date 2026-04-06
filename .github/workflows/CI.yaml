@@ -3,21 +3,26 @@ name: CI
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - 'website/**'
   pull_request:
     branches: [ master ]
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'website/**'
 
 jobs:
 
   build:
     name: Build Binary
+    if: "! contains(github.event.*.head_commit.modified, 'website/')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Set up Go ^1.20
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '^1.20'
 
@@ -31,15 +36,16 @@ jobs:
       pull-requests: write  # for golangci/golangci-lint-action to fetch pull requests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-go@v3
+      - name: Set up Go ^1.20
+        uses: actions/setup-go@v5
         with:
           go-version: '^1.20'
-          check-latest: true
           cache: true
+          check-latest: true
 
       - name: Lint Code Base
         uses: github/super-linter/slim@v4
@@ -74,10 +80,10 @@ jobs:
           apt-get install -y make curl git
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Set up Go ^1.20
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '^1.20'
 
@@ -106,7 +112,7 @@ jobs:
     needs: tests
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -116,10 +122,12 @@ jobs:
           name: coverage-${{ github.sha }}.out
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: false
 
       - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

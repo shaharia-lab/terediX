@@ -1,0 +1,8 @@
+{
+  "token": "${ARGOS_TOKEN}",
+  "build": "${GITHUB_SHA}",
+  "commit": "${GITHUB_SHA}",
+  "branch": "${GITHUB_REF_NAME}",
+  "viewports": ["1920x1080"],
+  "workingDir": "./screenshots"
+}
