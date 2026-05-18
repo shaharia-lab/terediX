@@ -72,7 +72,7 @@ func TestFsScanner_Scan(t *testing.T) {
 			// Create files
 			err := generateTmpTestFiles(tmpDir, tt.files)
 			if err != nil {
-				t.Errorf(err.Error())
+				t.Errorf("%v", err)
 			}
 
 			sc := config.Source{
