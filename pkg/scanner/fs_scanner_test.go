@@ -65,7 +65,6 @@ func TestFsScanner_Scan(t *testing.T) {
 				fileSystemFieldRootDirectory,
 			},
 		},
-	},
 	}
 
 	for _, tt := range tests {
